@@ -49,3 +49,11 @@ The server writes to the `Alloy` output channel. `alloy-luau.server.logLevel`
 picks how much: `off`, `error`, `warn` (the default), `info`, `debug`, or
 `trace`. `alloy-luau.trace.server` traces the messages between VS Code and
 the server from the client side.
+
+## alloy.toml
+
+The project file gets its own language, `Alloy config`, with the icon,
+TOML highlighting, completion for every table and key with its type and
+default, hover documentation, and diagnostics for a key the compiler
+would reject. The lint names in `[lint]` come from `alloy doc --json`
+when the binary is on PATH.

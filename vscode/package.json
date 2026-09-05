@@ -19,7 +19,8 @@
 	"activationEvents": [
 		"onLanguage:alloy-luau",
 		"onLanguage:alloy-luau-declaration",
-		"onLanguage:alloy-luau-jsx"
+		"onLanguage:alloy-luau-jsx",
+		"onLanguage:alloy-toml"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -68,6 +69,21 @@
 					"light": "./assets/alx-symbol.png",
 					"dark": "./assets/alx-symbol.png"
 				}
+			},
+			{
+				"id": "alloy-toml",
+				"aliases": [
+					"Alloy config",
+					"alloy.toml"
+				],
+				"filenames": [
+					"alloy.toml"
+				],
+				"configuration": "./toml-language-configuration.json",
+				"icon": {
+					"light": "./assets/alloy-toml-symbol.png",
+					"dark": "./assets/alloy-toml-symbol.png"
+				}
 			}
 		],
 		"grammars": [
@@ -85,6 +101,11 @@
 				"language": "alloy-luau-jsx",
 				"scopeName": "source.alx",
 				"path": "./syntaxes/alx.tmLanguage.json"
+			},
+			{
+				"language": "alloy-toml",
+				"scopeName": "source.toml.alloy",
+				"path": "./syntaxes/alloy-toml.tmLanguage.json"
 			}
 		],
 		"configurationDefaults": {

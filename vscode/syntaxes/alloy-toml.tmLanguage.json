@@ -1,0 +1,98 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Alloy config",
+	"scopeName": "source.toml.alloy",
+	"patterns": [
+		{ "include": "#comment" },
+		{ "include": "#table" },
+		{ "include": "#pair" }
+	],
+	"repository": {
+		"comment": {
+			"match": "#.*$",
+			"name": "comment.line.number-sign.toml"
+		},
+		"table": {
+			"match": "^\\s*(\\[\\[?)\\s*([A-Za-z0-9_.-]+)\\s*(\\]\\]?)",
+			"captures": {
+				"1": { "name": "punctuation.definition.table.toml" },
+				"2": { "name": "entity.name.section.table.toml" },
+				"3": { "name": "punctuation.definition.table.toml" }
+			}
+		},
+		"pair": {
+			"begin": "^\\s*([A-Za-z0-9_-]+|\"[^\"]*\")\\s*(=)",
+			"beginCaptures": {
+				"1": { "name": "variable.other.key.toml" },
+				"2": { "name": "keyword.operator.assignment.toml" }
+			},
+			"end": "$",
+			"patterns": [{ "include": "#value" }]
+		},
+		"value": {
+			"patterns": [
+				{ "include": "#comment" },
+				{ "include": "#string" },
+				{ "include": "#boolean" },
+				{ "include": "#number" },
+				{ "include": "#array" },
+				{ "include": "#inline-table" }
+			]
+		},
+		"string": {
+			"patterns": [
+				{
+					"begin": "\"",
+					"end": "\"",
+					"name": "string.quoted.double.toml",
+					"patterns": [
+						{ "match": "\\\\.", "name": "constant.character.escape.toml" },
+						{
+							"match": "@game(/[A-Za-z0-9_]+)*",
+							"name": "support.class.mount.toml"
+						},
+						{
+							"match": "@[A-Za-z_][A-Za-z0-9_]*",
+							"name": "support.class.alias.toml"
+						}
+					]
+				},
+				{ "begin": "'", "end": "'", "name": "string.quoted.single.toml" }
+			]
+		},
+		"boolean": {
+			"match": "\\b(true|false)\\b",
+			"name": "constant.language.boolean.toml"
+		},
+		"number": {
+			"match": "[+-]?\\b\\d[\\d_]*(\\.\\d[\\d_]*)?([eE][+-]?\\d+)?\\b",
+			"name": "constant.numeric.toml"
+		},
+		"array": {
+			"begin": "\\[",
+			"end": "\\]",
+			"beginCaptures": { "0": { "name": "punctuation.definition.array.toml" } },
+			"endCaptures": { "0": { "name": "punctuation.definition.array.toml" } },
+			"patterns": [
+				{ "include": "#value" },
+				{ "match": ",", "name": "punctuation.separator.array.toml" }
+			]
+		},
+		"inline-table": {
+			"begin": "\\{",
+			"end": "\\}",
+			"name": "meta.table.inline.toml",
+			"patterns": [
+				{
+					"match": "([A-Za-z0-9_-]+)\\s*(=)",
+					"captures": {
+						"1": { "name": "variable.other.key.toml" },
+						"2": { "name": "keyword.operator.assignment.toml" }
+					}
+				},
+				{ "include": "#value" },
+				{ "match": ",", "name": "punctuation.separator.toml" }
+			]
+		}
+	}
+}
