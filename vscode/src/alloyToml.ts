@@ -50,16 +50,36 @@ type Table = {
 	open?: { type: string; doc: string; snippet: string }
 }
 
+/** The groups a `[lint]` list may name in place of a lint. */
+const GROUPS = [
+	'correctness',
+	'suspicious',
+	'style',
+	'complexity',
+	'perf',
+	'roblox',
+	'pedantic',
+	'luau',
+]
+
 const LINTS_FALLBACK = [
 	'optional_access',
 	'unreachable_default',
 	'empty_default',
-	'deprecated_global',
 	'unused_import',
+	'self_assignment',
+	'unreachable_code',
+	'constant_condition',
+	'duplicate_key',
+	'misplaced_not',
+	'identical_branches',
+	'circular_import',
+	'and_or_ternary',
+	'empty_block',
+	'bool_comparison',
+	'needless_bool',
 	'manual_safe_access',
 	'manual_coalesce',
-	'and_or_ternary',
-	'manual_child_lookup',
 	'nil_check_call',
 	'manual_type_test',
 	'legacy_iterator',
@@ -69,16 +89,38 @@ const LINTS_FALLBACK = [
 	'raw_pcall',
 	'raw_require',
 	'manual_class',
+	'manual_ternary_return',
+	'redundant_return',
+	'local_then_return',
+	'numeric_for_index',
+	'too_many_arguments',
+	'too_many_lines',
+	'deep_nesting',
+	'cognitive_complexity',
+	'collapsible_if',
+	'collapsible_else_if',
+	'concat_in_loop',
+	'service_in_loop',
+	'table_insert_position',
+	'deprecated_global',
+	'manual_child_lookup',
+	'deprecated_method',
+	'instance_new_parent',
+	'deprecated_body_mover',
 	'explicit_any',
 	'implicit_any',
 	'missing_return_type',
+	'todo_comment',
+	'print_debug',
+	'missing_doc',
 ]
 
 /** The lints, from `alloy doc --json` when the binary answers, so a
  *  new lint reaches the editor without an extension release. */
 let lints: string[] = LINTS_FALLBACK
 
-const lintList = (): Key['values'] => lints
+/** What a `[lint]` list accepts: the groups, then the lints. */
+const lintList = (): Key['values'] => [...GROUPS, ...lints]
 
 export const TABLES: Table[] = [
 	{
@@ -149,20 +191,20 @@ export const TABLES: Table[] = [
 	},
 	{
 		name: 'lint',
-		doc: 'Which lints `alloy lint` runs, and at what level. `alloy doc lints` names them.',
+		doc: "The level of each lint under `alloy flux` and `alloy lint`. A list takes a lint name or a group name: correctness, suspicious, style, complexity, perf, roblox, pedantic, or luau for the type checker's own. A name beats its group. `alloy doc lints` names them.",
 		keys: [
 			{
 				name: 'strict',
 				type: 'bool',
 				default: 'false',
-				doc: 'Turns the strict-only lints on: `implicit_any` and `missing_return_type`.',
+				doc: 'Turns the pedantic group on, at warn: `implicit_any`, `missing_return_type`, `explicit_any`, `todo_comment`, `print_debug`, `missing_doc`.',
 				values: ['true', 'false'],
 			},
 			{
 				name: 'deny',
 				type: 'string[]',
 				default: '[]',
-				doc: 'Lints that fail the run.',
+				doc: 'Lints or groups that fail the run.',
 				snippet: '["${1}"]',
 				values: lintList(),
 			},
@@ -170,7 +212,7 @@ export const TABLES: Table[] = [
 				name: 'warn',
 				type: 'string[]',
 				default: '[]',
-				doc: 'Lints that print and pass.',
+				doc: 'Lints or groups that print and pass.',
 				snippet: '["${1}"]',
 				values: lintList(),
 			},
@@ -178,9 +220,108 @@ export const TABLES: Table[] = [
 				name: 'allow',
 				type: 'string[]',
 				default: '[]',
-				doc: 'Lints that stay silent.',
+				doc: 'Lints or groups that stay silent.',
 				snippet: '["${1}"]',
 				values: lintList(),
+			},
+		],
+	},
+	{
+		name: 'flux',
+		doc: 'What `alloy flux` runs beyond the lints, and the limits of the complexity lints. The levels of the lints stay in `[lint]`. `alloy doc flux` explains it.',
+		keys: [
+			{
+				name: 'typecheck',
+				type: 'bool',
+				default: 'true',
+				doc: 'Run luau-lsp over the check artifact and report its type errors on the source lines.',
+				values: ['true', 'false'],
+			},
+			{
+				name: 'definitions',
+				type: 'string[]',
+				default: '[]',
+				doc: "Definitions files for the type check, `.d.luau` or `.d.aly`, relative to this file. The project's `.d.aly` files join them on their own.",
+				snippet: '["${1:types/game.d.luau}"]',
+			},
+			{
+				name: 'roblox_types',
+				type: 'bool',
+				default: 'true',
+				doc: "Load the Roblox globals. The file comes from the luau-lsp extension's storage, or downloads once into `~/.alloy/types`.",
+				values: ['true', 'false'],
+			},
+			{
+				name: 'security_level',
+				type: 'string',
+				default: '"PluginSecurity"',
+				doc: 'The security level of the Roblox globals.',
+				values: [
+					'"PluginSecurity"',
+					'"LocalUserSecurity"',
+					'"RobloxScriptSecurity"',
+					'"None"',
+				],
+			},
+			{
+				name: 'luau_lsp',
+				type: 'string',
+				default: 'unset',
+				doc: 'The luau-lsp binary. Unset means `luau-lsp` on the PATH, then `~/.alloy/bin` and `~/.ember/bin`.',
+				snippet: '"${1:/usr/local/bin/luau-lsp}"',
+			},
+			{
+				name: 'too_many_arguments',
+				type: 'number',
+				default: '7',
+				doc: '`too_many_arguments` fires past this many parameters; `self` does not count.',
+				snippet: '${1:7}',
+			},
+			{
+				name: 'too_many_lines',
+				type: 'number',
+				default: '100',
+				doc: '`too_many_lines` fires past this many lines in one function.',
+				snippet: '${1:100}',
+			},
+			{
+				name: 'max_nesting',
+				type: 'number',
+				default: '5',
+				doc: '`deep_nesting` fires past this many nested blocks.',
+				snippet: '${1:5}',
+			},
+			{
+				name: 'cognitive_complexity',
+				type: 'number',
+				default: '25',
+				doc: '`cognitive_complexity` fires past this score: one per branch, loop, `and`, `or`, and ternary, plus the depth of each branch.',
+				snippet: '${1:25}',
+			},
+		],
+	},
+	{
+		name: 'test',
+		doc: 'Where `alloy test` writes the specs: one lest spec per source with a `@test`, with everything the tests reach. `alloy doc test` explains it.',
+		keys: [
+			{
+				name: 'out',
+				type: 'string',
+				default: '"tests"',
+				doc: 'The folder the specs land in, relative to this file. Each source with a `@test` writes `<out>/<path>.spec.luau`.',
+			},
+			{
+				name: 'suite',
+				type: 'string',
+				default: '"alloy"',
+				doc: 'The suite name in `lest.toml`.',
+			},
+			{
+				name: 'lest',
+				type: 'bool',
+				default: 'true',
+				doc: 'Write `lest.toml` and the `@lest` alias of `.luaurc` when the root has none.',
+				values: ['true', 'false'],
 			},
 		],
 	},
@@ -752,7 +893,7 @@ function check(document: TextDocument): Diagnostic[] {
 					out.push(
 						new Diagnostic(
 							new Range(i, at, i, at + m[0].length),
-							`\`${m[1]}\` is not a lint; \`alloy lint --list\` names them`,
+							`\`${m[1]}\` is neither a lint nor a group; \`alloy flux --list\` names them`,
 							DiagnosticSeverity.Warning,
 						),
 					)
@@ -776,7 +917,7 @@ function loadLints(env: NodeJS.ProcessEnv): void {
 				lints = names
 				for (const k of table('lint')?.keys ?? []) {
 					if (k.values && k.values !== undefined && k.type === 'string[]')
-						k.values = names
+						k.values = lintList()
 				}
 			}
 		} catch {
