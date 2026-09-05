@@ -1,0 +1,764 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Alloy",
+	"scopeName": "source.aly",
+	"patterns": [
+		{
+			"include": "#comment"
+		},
+		{
+			"include": "#string"
+		},
+		{
+			"include": "#number"
+		},
+		{
+			"include": "#attribute"
+		},
+		{
+			"include": "#type-position"
+		},
+		{
+			"include": "#declaration"
+		},
+		{
+			"include": "#remote"
+		},
+		{
+			"include": "#keyword"
+		},
+		{
+			"include": "#macro-call"
+		},
+		{
+			"include": "#operator"
+		},
+		{
+			"include": "#library"
+		},
+		{
+			"include": "#std"
+		},
+		{
+			"include": "#call"
+		},
+		{
+			"include": "#identifier"
+		}
+	],
+	"repository": {
+		"comment": {
+			"patterns": [
+				{
+					"name": "comment.line.directive.aly",
+					"match": "--!\\w+.*$"
+				},
+				{
+					"name": "comment.block.aly",
+					"begin": "--\\[(=*)\\[",
+					"end": "\\]\\1\\]"
+				},
+				{
+					"name": "comment.line.double-dash.aly",
+					"match": "--.*$"
+				}
+			]
+		},
+		"string": {
+			"patterns": [
+				{
+					"name": "string.quoted.double.aly",
+					"begin": "\"",
+					"end": "\"",
+					"patterns": [
+						{
+							"include": "#escape"
+						}
+					]
+				},
+				{
+					"name": "string.quoted.single.aly",
+					"begin": "'",
+					"end": "'",
+					"patterns": [
+						{
+							"include": "#escape"
+						}
+					]
+				},
+				{
+					"name": "string.interpolated.aly",
+					"begin": "`",
+					"end": "`",
+					"patterns": [
+						{
+							"include": "#escape"
+						},
+						{
+							"name": "meta.template.expression.aly",
+							"begin": "\\{",
+							"end": "\\}",
+							"patterns": [
+								{
+									"include": "$self"
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "string.quoted.other.multiline.aly",
+					"begin": "\\[(=*)\\[",
+					"end": "\\]\\1\\]"
+				}
+			]
+		},
+		"escape": {
+			"name": "constant.character.escape.aly",
+			"match": "\\\\(?:[abfnrtvz\\\\\"'`\\n{]|x[0-9A-Fa-f]{2}|\\d{1,3}|u\\{[0-9A-Fa-f]+\\})"
+		},
+		"number": {
+			"name": "constant.numeric.aly",
+			"match": "\\b(?:0[xX][0-9A-Fa-f_]+|0[bB][01_]+|\\d[\\d_]*(?:\\.[\\d_]*)?(?:[eE][+-]?\\d+)?)\\b"
+		},
+		"attribute": {
+			"comment": "@derive(...), @test, @unreliable, @ratelimit(...), @u8, and upstream @native",
+			"match": "(@)([A-Za-z_][A-Za-z0-9_]*)",
+			"captures": {
+				"1": {
+					"name": "punctuation.definition.attribute.aly"
+				},
+				"2": {
+					"name": "entity.other.attribute-name.aly"
+				}
+			}
+		},
+		"declaration": {
+			"patterns": [
+				{
+					"comment": "attribute name(...) on target, target",
+					"match": "\\b(?:(export)\\s+)?(attribute)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+					"captures": {
+						"1": {
+							"name": "storage.type.aly"
+						},
+						"2": {
+							"name": "storage.type.aly"
+						},
+						"3": {
+							"name": "entity.other.attribute-name.aly"
+						}
+					}
+				},
+				{
+					"match": "\\b(on)\\s+((?:function|struct|enum|variant|field|param|remote|interface|type)(?:\\s*,\\s*(?:function|struct|enum|variant|field|param|remote|interface|type))*)\\b",
+					"captures": {
+						"1": {
+							"name": "keyword.control.aly"
+						},
+						"2": {
+							"name": "constant.language.attribute-target.aly"
+						}
+					}
+				},
+				{
+					"comment": "struct Name as, enum Name as, trait Name, interface Name [extends A, B] as",
+					"match": "\\b(struct|enum|trait|interface)\\s+([A-Za-z_][A-Za-z0-9_]*)(?:\\s*<[^>]*>)?",
+					"captures": {
+						"1": {
+							"name": "storage.type.aly"
+						},
+						"2": {
+							"name": "entity.name.type.aly"
+						}
+					}
+				},
+				{
+					"comment": "macro name(",
+					"match": "\\b(macro)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+					"captures": {
+						"1": {
+							"name": "storage.type.aly"
+						},
+						"2": {
+							"name": "entity.name.function.macro.aly"
+						}
+					}
+				},
+				{
+					"comment": "type Name, type function Name",
+					"match": "\\b(type)\\s+(?:(function)\\s+)?([A-Za-z_][A-Za-z0-9_]*)",
+					"captures": {
+						"1": {
+							"name": "storage.type.aly"
+						},
+						"2": {
+							"name": "storage.type.aly"
+						},
+						"3": {
+							"name": "entity.name.type.declaration.aly"
+						}
+					}
+				},
+				{
+					"comment": "read x: T, write x: T field modifiers",
+					"match": "\\b(read|write)\\s+(?=[A-Za-z_][A-Za-z0-9_]*\\s*:)",
+					"captures": {
+						"1": {
+							"name": "storage.modifier.aly"
+						}
+					}
+				},
+				{
+					"comment": "read T[] and write T[] in type position",
+					"match": "\\b(read|write)\\s+(?=[A-Za-z_{(])",
+					"captures": {
+						"1": {
+							"name": "storage.modifier.aly"
+						}
+					}
+				},
+				{
+					"comment": "function name, local function name, async function name",
+					"match": "\\b(function)\\s+([A-Za-z_][A-Za-z0-9_.:]*)",
+					"captures": {
+						"1": {
+							"name": "storage.type.aly"
+						},
+						"2": {
+							"name": "entity.name.function.aly"
+						}
+					}
+				}
+			]
+		},
+		"remote": {
+			"patterns": [
+				{
+					"comment": "remote Name(...) from client, remote function Name(...) from server",
+					"match": "\\b(remote)\\s+(?:(function)\\s+)?([A-Za-z_][A-Za-z0-9_]*)",
+					"captures": {
+						"1": {
+							"name": "storage.type.remote.aly"
+						},
+						"2": {
+							"name": "storage.type.aly"
+						},
+						"3": {
+							"name": "entity.name.function.remote.aly"
+						}
+					}
+				},
+				{
+					"match": "\\b(from)\\s+(client|server)(?:\\s+(or)\\s+(client|server))?\\b",
+					"captures": {
+						"1": {
+							"name": "keyword.control.aly"
+						},
+						"2": {
+							"name": "constant.language.remote-side.aly"
+						},
+						"3": {
+							"name": "keyword.operator.wordlike.aly"
+						},
+						"4": {
+							"name": "constant.language.remote-side.aly"
+						}
+					}
+				}
+			]
+		},
+		"keyword": {
+			"patterns": [
+				{
+					"comment": "read x: T and write x: T on a field or in a type",
+					"name": "storage.modifier.aly",
+					"match": "\\b(?:read|write)\\b(?=\\s+[A-Za-z_({\\[])"
+				},
+				{
+					"name": "keyword.control.aly",
+					"match": "\\b(?:if|then|elseif|else|end|for|in|while|do|repeat|until|return|break|continue|match|with|as|case|default|try|await|where)\\b"
+				},
+				{
+					"name": "storage.type.aly",
+					"match": "\\b(?:local|const|function|async|macro|struct|trait|impl|enum|interface|extends|type|export|import|from|remote|declare|attribute)\\b"
+				},
+				{
+					"name": "keyword.operator.wordlike.aly",
+					"match": "\\b(?:and|or|not)\\b"
+				},
+				{
+					"name": "keyword.other.bitwise.aly",
+					"match": "\\b(?:band|bor|bxor|bnot|shl|shr)\\b(?=\\s+(?![=,)\\]}]))"
+				},
+				{
+					"name": "keyword.other.satisfies.aly",
+					"match": "\\bsatisfies\\b"
+				},
+				{
+					"name": "keyword.operator.new.aly",
+					"match": "\\bnew\\b(?=\\s+[A-Za-z_])"
+				},
+				{
+					"name": "keyword.operator.expression.delete.aly",
+					"match": "^\\s*\\bdelete\\b(?=\\s+[A-Za-z_])|(?<=\\bend\\s|\\bthen\\s|\\bdo\\s|\\belse\\s)\\bdelete\\b(?=\\s+[A-Za-z_])"
+				},
+				{
+					"name": "keyword.operator.type.aly",
+					"match": "\\b(?:keyof|typeof|rawget|index|setmetatable)\\b(?=\\s*<)"
+				},
+				{
+					"name": "constant.language.aly",
+					"match": "\\b(?:nil|true|false)\\b"
+				},
+				{
+					"name": "variable.language.self.aly",
+					"match": "\\bself\\b"
+				},
+				{
+					"name": "variable.language.wildcard.aly",
+					"match": "\\b_\\b"
+				}
+			]
+		},
+		"macro-call": {
+			"comment": "$name( and $Module.name( are macro calls; intrinsics carry a .intrinsic suffix on the same scope so they color alike by default",
+			"patterns": [
+				{
+					"match": "(\\$)(dbg|todo|unreachable|assert|assert_eq|nameof|stringify|matches|bnot)\\b(?=\\()",
+					"captures": {
+						"1": {
+							"name": "punctuation.definition.macro.aly"
+						},
+						"2": {
+							"name": "entity.name.function.macro.intrinsic.aly"
+						}
+					}
+				},
+				{
+					"match": "(\\$)([A-Za-z_][A-Za-z0-9_.]*)(?=\\()",
+					"captures": {
+						"1": {
+							"name": "punctuation.definition.macro.aly"
+						},
+						"2": {
+							"name": "entity.name.function.macro.aly"
+						}
+					}
+				}
+			]
+		},
+		"operator": {
+			"patterns": [
+				{
+					"name": "keyword.operator.safe-access.aly",
+					"match": "\\?\\?=|\\?\\?|\\?\\.|\\?:|\\?\\[|\\?\\(|->(?=\\s*[A-Za-z_\"'`\\[])|=>(?=\\s*[A-Za-z_\"'`\\[])"
+				},
+				{
+					"name": "keyword.operator.non-nil.aly",
+					"match": "!(?!=)"
+				},
+				{
+					"name": "keyword.operator.spread.aly",
+					"match": "\\.\\.\\.(?=[A-Za-z_(])"
+				},
+				{
+					"name": "keyword.operator.return-type.aly",
+					"match": "->"
+				},
+				{
+					"name": "keyword.operator.aly",
+					"match": "==|~=|<=|>=|<<|>>|<|>|\\+=|-=|\\*=|/=|//=|%=|\\^=|\\.\\.=|::|\\.\\.\\.|\\.\\.|[+\\-*/%^#=|&]"
+				},
+				{
+					"name": "punctuation.definition.array.aly",
+					"match": "\\[(?![\\[=])|\\]"
+				}
+			]
+		},
+		"std": {
+			"name": "support.class.std.aly",
+			"match": "\\b(?:Future|Result|Ok|Err|Array|HashMap|Set|Symbol|Attributes)\\b"
+		},
+		"call": {
+			"match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(?=[({\"'`])",
+			"captures": {
+				"1": {
+					"name": "entity.name.function.aly"
+				}
+			}
+		},
+		"identifier": {
+			"patterns": [
+				{
+					"comment": "a name after ., :, ?., ?:, ?/, or :/ is a property or method, whatever its case",
+					"name": "variable.other.property.aly",
+					"match": "(?<=[.:/])(?<!\\.\\.\\.)[A-Za-z_][A-Za-z0-9_]*\\b(?!\\s*[({\"'`])"
+				},
+				{
+					"name": "entity.name.type.aly",
+					"match": "\\b[A-Z][A-Za-z0-9_]*\\b"
+				},
+				{
+					"name": "variable.other.aly",
+					"match": "\\b[a-z_][A-Za-z0-9_]*\\b"
+				}
+			]
+		},
+		"type-content": {
+			"patterns": [
+				{
+					"name": "storage.modifier.aly",
+					"match": "\\b(?:read|write)\\b(?=\\s+[A-Za-z_({\\[])"
+				},
+				{
+					"include": "#comment"
+				},
+				{
+					"include": "#string"
+				},
+				{
+					"name": "constant.numeric.type.aly",
+					"match": "-?\\b\\d[\\d_]*(?:\\.\\d+)?\\b"
+				},
+				{
+					"name": "support.type.primitive.aly",
+					"match": "\\b(?:string|number|boolean|nil|any|unknown|never|thread|buffer|table|vector|true|false)\\b"
+				},
+				{
+					"comment": "the words of a mapped type and a type query read as keywords",
+					"name": "keyword.control.type.aly",
+					"match": "\\b(?:keyof|typeof|in)\\b"
+				},
+				{
+					"comment": "the built-in type functions",
+					"name": "support.function.type.aly",
+					"match": "\\b(?:index|rawget|setmetatable)\\b"
+				},
+				{
+					"name": "variable.language.self.aly",
+					"match": "\\bself\\b"
+				},
+				{
+					"name": "keyword.operator.type.function.aly",
+					"match": "->"
+				},
+				{
+					"name": "keyword.operator.type.optional.aly",
+					"match": "\\?"
+				},
+				{
+					"name": "keyword.operator.type.union.aly",
+					"match": "[|&]"
+				},
+				{
+					"name": "keyword.operator.type.variadic.aly",
+					"match": "\\.\\.\\."
+				},
+				{
+					"name": "punctuation.definition.type.array.aly",
+					"match": "\\[\\]"
+				},
+				{
+					"begin": "\\{",
+					"end": "\\}",
+					"name": "meta.type.table.aly",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.type.table.aly"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.type.table.aly"
+						}
+					},
+					"patterns": [
+						{
+							"match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(:)(?!:)",
+							"captures": {
+								"1": {
+									"name": "variable.other.property.type.aly"
+								},
+								"2": {
+									"name": "punctuation.separator.type.aly"
+								}
+							}
+						},
+						{
+							"begin": "\\[",
+							"end": "\\]",
+							"patterns": [
+								{
+									"include": "#type-content"
+								}
+							]
+						},
+						{
+							"include": "#type-content"
+						}
+					]
+				},
+				{
+					"begin": "\\(",
+					"end": "\\)",
+					"name": "meta.type.parens.aly",
+					"patterns": [
+						{
+							"match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(:)(?!:)",
+							"captures": {
+								"1": {
+									"name": "variable.parameter.type.aly"
+								},
+								"2": {
+									"name": "punctuation.separator.type.aly"
+								}
+							}
+						},
+						{
+							"include": "#type-content"
+						}
+					]
+				},
+				{
+					"begin": "<",
+					"end": ">",
+					"name": "meta.type.generics.aly",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.type.generics.aly"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.type.generics.aly"
+						}
+					},
+					"patterns": [
+						{
+							"match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(:)(?!:)",
+							"captures": {
+								"1": {
+									"name": "entity.name.type.parameter.aly"
+								},
+								"2": {
+									"name": "punctuation.separator.type.aly"
+								}
+							}
+						},
+						{
+							"include": "#type-content"
+						}
+					]
+				},
+				{
+					"name": "entity.name.type.aly",
+					"match": "\\b[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*\\b"
+				},
+				{
+					"name": "punctuation.separator.type.aly",
+					"match": "[,;]"
+				}
+			]
+		},
+		"type-position": {
+			"patterns": [
+				{
+					"comment": "x: T in bindings, params, fields. Needs whitespace after the colon, which is what separates it from a:b method syntax; the formatter enforces both.",
+					"begin": "(?<!\\s)(:)(?!:)(?=\\s+(?:[A-Za-z_(\\{<'\"`]|\\.\\.\\.|-?\\d))(?!\\s*[A-Za-z_][A-Za-z0-9_.]*\\s*[({\"'`])",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.separator.type.annotation.aly"
+						}
+					},
+					"end": "(?=[=,;)\\]}]|\\b(?:then|do|end|with|from|in|return|local|const|if|for|while|repeat|until)\\b|$)",
+					"name": "meta.type.annotation.aly",
+					"patterns": [
+						{
+							"include": "#type-content"
+						}
+					]
+				},
+				{
+					"comment": "x :: T ascription",
+					"begin": "(::)",
+					"beginCaptures": {
+						"1": {
+							"name": "keyword.operator.type.ascription.aly"
+						}
+					},
+					"end": "(?=[=,;)\\]}]|\\b(?:then|do|end|with|from|in|return|local|const|if|for|while|repeat|until)\\b|$)",
+					"name": "meta.type.ascription.aly",
+					"patterns": [
+						{
+							"include": "#type-content"
+						}
+					]
+				},
+				{
+					"comment": "-> T return type after a parameter list",
+					"begin": "(?<=\\))\\s*(->)",
+					"beginCaptures": {
+						"1": {
+							"name": "keyword.operator.return-type.aly"
+						}
+					},
+					"end": "(?=\\b(?:then|do|end|with|from|return|local|const|if|for|while|repeat|until)\\b|$)",
+					"name": "meta.type.return.aly",
+					"patterns": [
+						{
+							"include": "#type-content"
+						}
+					]
+				},
+				{
+					"comment": "function name<T: Bound>( generic parameter list",
+					"begin": "\\b(function)\\s+([A-Za-z_][A-Za-z0-9_.:]*)\\s*(<)",
+					"beginCaptures": {
+						"1": {
+							"name": "storage.type.aly"
+						},
+						"2": {
+							"name": "entity.name.function.aly"
+						},
+						"3": {
+							"name": "punctuation.definition.type.generics.aly"
+						}
+					},
+					"end": "(>)",
+					"endCaptures": {
+						"1": {
+							"name": "punctuation.definition.type.generics.aly"
+						}
+					},
+					"name": "meta.type.generics.declaration.aly",
+					"patterns": [
+						{
+							"match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(:)(?!:)",
+							"captures": {
+								"1": {
+									"name": "entity.name.type.parameter.aly"
+								},
+								"2": {
+									"name": "punctuation.separator.type.aly"
+								}
+							}
+						},
+						{
+							"include": "#type-content"
+						}
+					]
+				},
+				{
+					"comment": "f<<T>>( explicit instantiation",
+					"begin": "<<",
+					"end": ">>",
+					"name": "meta.type.instantiation.aly",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.type.generics.aly"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.type.generics.aly"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#type-content"
+						}
+					]
+				},
+				{
+					"comment": "type Name<T> = ... and export type",
+					"begin": "\\b(type)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*(?:(<)([^>]*)(>))?\\s*(=)",
+					"beginCaptures": {
+						"1": {
+							"name": "storage.type.aly"
+						},
+						"2": {
+							"name": "entity.name.type.declaration.aly"
+						},
+						"3": {
+							"name": "punctuation.definition.type.generics.aly"
+						},
+						"4": {
+							"name": "entity.name.type.parameter.aly"
+						},
+						"5": {
+							"name": "punctuation.definition.type.generics.aly"
+						},
+						"6": {
+							"name": "keyword.operator.aly"
+						}
+					},
+					"end": "$",
+					"name": "meta.type.alias.aly",
+					"patterns": [
+						{
+							"include": "#type-content"
+						}
+					]
+				},
+				{
+					"comment": "interface X extends A, B with",
+					"begin": "\\b(extends)\\b",
+					"beginCaptures": {
+						"1": {
+							"name": "storage.modifier.extends.aly"
+						}
+					},
+					"end": "(?=\\s+as\\b|\\bas\\b|$)",
+					"name": "meta.type.extends.aly",
+					"patterns": [
+						{
+							"include": "#type-content"
+						}
+					]
+				},
+				{
+					"comment": "expr satisfies T",
+					"begin": "\\b(satisfies)\\b",
+					"beginCaptures": {
+						"1": {
+							"name": "keyword.operator.wordlike.aly"
+						}
+					},
+					"end": "(?=[=,;)\\]}]|\\b(?:then|do|end|with|from|in|return|local|const|if|for|while|repeat|until)\\b|$)",
+					"name": "meta.type.satisfies.aly",
+					"patterns": [
+						{
+							"include": "#type-content"
+						}
+					]
+				},
+				{
+					"comment": "impl Trait for Type and impl Type",
+					"begin": "\\b(impl)\\s+",
+					"beginCaptures": {
+						"1": {
+							"name": "storage.type.aly"
+						}
+					},
+					"end": "$",
+					"name": "meta.type.impl.aly",
+					"patterns": [
+						{
+							"name": "keyword.control.aly",
+							"match": "\\bfor\\b"
+						},
+						{
+							"include": "#type-content"
+						}
+					]
+				}
+			]
+		},
+		"library": {
+			"comment": "the built-in libraries and the Roblox globals, before a member",
+			"name": "support.class.library.aly",
+			"match": "\\b(?:table|string|math|os|task|coroutine|bit32|utf8|buffer|debug|vector|game|workspace|script|plugin)\\b(?=\\s*[.:])"
+		}
+	}
+}

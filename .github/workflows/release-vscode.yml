@@ -1,0 +1,54 @@
+# Releases the VS Code extension on a tag like vscode-v1.2.3.
+# The job fails when the tag version and the package.json version differ.
+name: Release VS Code extension
+
+on:
+  push:
+    tags:
+      - "vscode-v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: vscode
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: vscode/package-lock.json
+      - name: Check version
+        run: |
+          version="${GITHUB_REF_NAME#vscode-v}"
+          found=$(node -p "require('./package.json').version")
+          if [ "$found" != "$version" ]; then
+            echo "tag says $version but package.json says $found"
+            exit 1
+          fi
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run compile
+      - run: npm run package
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "vscode ${GITHUB_REF_NAME#vscode-v}" \
+            --generate-notes \
+            ./*.vsix
+      - name: Publish to Marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          if [ -z "$VSCE_PAT" ]; then
+            echo "VSCE_PAT is not set; skipping Marketplace publish"
+            exit 0
+          fi
+          npx @vscode/vsce publish --packagePath ./*.vsix

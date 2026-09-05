@@ -1,0 +1,142 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Alloy JSX",
+	"scopeName": "source.alx",
+	"patterns": [{ "include": "#markup" }, { "include": "source.aly" }],
+	"repository": {
+		"markup": {
+			"patterns": [
+				{ "include": "#comment" },
+				{ "include": "#fragment" },
+				{ "include": "#element" }
+			]
+		},
+		"comment": {
+			"name": "comment.block.alx",
+			"begin": "<!--",
+			"end": "-->",
+			"beginCaptures": {
+				"0": { "name": "punctuation.definition.comment.begin.alx" }
+			},
+			"endCaptures": {
+				"0": { "name": "punctuation.definition.comment.end.alx" }
+			}
+		},
+		"fragment": {
+			"comment": "<> children </>",
+			"name": "meta.tag.fragment.alx",
+			"begin": "(<)(>)",
+			"beginCaptures": {
+				"1": { "name": "punctuation.definition.tag.begin.alx" },
+				"2": { "name": "punctuation.definition.tag.end.alx" }
+			},
+			"end": "(</)(>)",
+			"endCaptures": {
+				"1": { "name": "punctuation.definition.tag.begin.alx" },
+				"2": { "name": "punctuation.definition.tag.end.alx" }
+			},
+			"patterns": [{ "include": "#children" }]
+		},
+		"element": {
+			"comment": "One element: the head up to > or />, then the children up to the closing tag with the same name. A self-closing head ends the element.",
+			"name": "meta.tag.alx",
+			"begin": "(<)([A-Za-z_][A-Za-z0-9_.:]*)",
+			"beginCaptures": {
+				"1": { "name": "punctuation.definition.tag.begin.alx" },
+				"2": { "name": "entity.name.tag.alx" }
+			},
+			"end": "(</)(\\2)\\s*(>)|(/>)",
+			"endCaptures": {
+				"1": { "name": "punctuation.definition.tag.begin.alx" },
+				"2": { "name": "entity.name.tag.alx" },
+				"3": { "name": "punctuation.definition.tag.end.alx" },
+				"4": { "name": "punctuation.definition.tag.end.alx" }
+			},
+			"patterns": [
+				{
+					"comment": "The head: attributes until > or />. \\G starts where the name ended.",
+					"name": "meta.tag.head.alx",
+					"begin": "\\G",
+					"end": "(?=/>)|(>)",
+					"endCaptures": {
+						"1": { "name": "punctuation.definition.tag.end.alx" }
+					},
+					"patterns": [{ "include": "#attributes" }]
+				},
+				{ "include": "#children" }
+			]
+		},
+		"attributes": {
+			"patterns": [
+				{
+					"comment": "name={expr}, name=\"text\", name='text', name=`text`",
+					"name": "meta.attribute.alx",
+					"begin": "([A-Za-z_][A-Za-z0-9_.:-]*)\\s*(=)",
+					"beginCaptures": {
+						"1": { "name": "entity.other.attribute-name.alx" },
+						"2": { "name": "keyword.operator.assignment.alx" }
+					},
+					"end": "(?<=[}\"'`])|(?=\\s|/>|>)",
+					"patterns": [
+						{ "include": "#hole" },
+						{ "include": "source.aly#string" }
+					]
+				},
+				{
+					"comment": "{...spread} and a bare {value} whose name the compiler infers",
+					"include": "#hole"
+				},
+				{ "include": "#comment" },
+				{
+					"name": "entity.other.attribute-name.alx",
+					"match": "[A-Za-z_][A-Za-z0-9_.:-]*"
+				}
+			]
+		},
+		"children": {
+			"comment": "Between a head and a closing tag: markup, holes, and plain text.",
+			"patterns": [
+				{ "include": "#comment" },
+				{ "include": "#fragment" },
+				{ "include": "#element" },
+				{ "include": "#hole" },
+				{
+					"name": "invalid.illegal.tag.alx",
+					"comment": "A closing tag that does not match the open one",
+					"match": "(</)([A-Za-z_][A-Za-z0-9_.:]*)\\s*(>)",
+					"captures": {
+						"1": { "name": "punctuation.definition.tag.begin.alx" },
+						"2": { "name": "entity.name.tag.alx" },
+						"3": { "name": "punctuation.definition.tag.end.alx" }
+					}
+				},
+				{ "name": "text.alx", "match": "[^<{]+" }
+			]
+		},
+		"hole": {
+			"comment": "{ expression }: Alloy inside, braces balanced, markup allowed again",
+			"name": "meta.embedded.expression.alx",
+			"begin": "\\{",
+			"end": "\\}",
+			"beginCaptures": {
+				"0": { "name": "punctuation.section.embedded.begin.alx" }
+			},
+			"endCaptures": {
+				"0": { "name": "punctuation.section.embedded.end.alx" }
+			},
+			"patterns": [{ "include": "#hole-content" }]
+		},
+		"hole-content": {
+			"patterns": [
+				{ "include": "#markup" },
+				{
+					"name": "meta.brace.alx",
+					"begin": "\\{",
+					"end": "\\}",
+					"patterns": [{ "include": "#hole-content" }]
+				},
+				{ "include": "source.aly" }
+			]
+		}
+	}
+}

@@ -1,0 +1,33 @@
+{
+	"comments": {
+		"lineComment": "--",
+		"blockComment": ["--[[", "]]"]
+	},
+	"brackets": [["{", "}"], ["[", "]"], ["(", ")"]],
+	"autoClosingPairs": [
+		{ "open": "{", "close": "}" },
+		{ "open": "[", "close": "]" },
+		{ "open": "(", "close": ")" },
+		{ "open": "\"", "close": "\"", "notIn": ["string"] },
+		{ "open": "'", "close": "'", "notIn": ["string"] },
+		{ "open": "`", "close": "`", "notIn": ["string"] }
+	],
+	"surroundingPairs": [
+		["{", "}"],
+		["[", "]"],
+		["(", ")"],
+		["\"", "\""],
+		["'", "'"],
+		["`", "`"]
+	],
+	"indentationRules": {
+		"increaseIndentPattern": "^\\s*(?:(?:else)?if\\b.*\\bthen|else|case\\b.*\\bthen|default|for\\b.*\\bdo|while\\b.*\\bdo|repeat|(?:async\\s+|try\\s+)?do|function\\b.*\\)(?:\\s*(?:->|:)\\s*.*)?|(?:local\\s+|const\\s+|export\\s+)?(?:async\\s+)?(?:function|macro)\\b.*|(?:export\\s+)?(?:struct|trait|impl|enum|interface)\\b(?!.*\\bend\\s*$).*|match\\b.*\\bwith|.*[\\{\\[\\(]|.*\\bthen)\\s*$",
+		"decreaseIndentPattern": "^\\s*(?:end|else|elseif|until|case\\b|default\\b|[\\}\\]\\)])"
+	},
+	"folding": {
+		"markers": {
+			"start": "^\\s*--\\s*#?region\\b",
+			"end": "^\\s*--\\s*#?endregion\\b"
+		}
+	}
+}

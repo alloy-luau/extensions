@@ -1,0 +1,270 @@
+{
+	"name": "alloy-luau",
+	"displayName": "Alloy",
+	"description": "Language support for Alloy, a strict superset of Luau",
+	"version": "0.1.0",
+	"publisher": "AndrewBordis",
+	"icon": "assets/aly-extension-icon.png",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/alloy-luau/alloy"
+	},
+	"engines": {
+		"vscode": "^1.102.0"
+	},
+	"categories": [
+		"Programming Languages"
+	],
+	"activationEvents": [
+		"onLanguage:alloy-luau",
+		"onLanguage:alloy-luau-declaration",
+		"onLanguage:alloy-luau-jsx"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"languages": [
+			{
+				"id": "alloy-luau",
+				"aliases": [
+					"Alloy",
+					"alloy",
+					"aly"
+				],
+				"extensions": [
+					".aly"
+				],
+				"configuration": "./language-configuration.json",
+				"icon": {
+					"light": "./assets/aly-symbol.png",
+					"dark": "./assets/aly-symbol.png"
+				}
+			},
+			{
+				"id": "alloy-luau-declaration",
+				"aliases": [
+					"Alloy Declaration"
+				],
+				"filenamePatterns": [
+					"*.d.aly"
+				],
+				"configuration": "./language-configuration.json",
+				"icon": {
+					"light": "./assets/d-aly-symbol.png",
+					"dark": "./assets/d-aly-symbol.png"
+				}
+			},
+			{
+				"id": "alloy-luau-jsx",
+				"aliases": [
+					"Alloy JSX",
+					"alx"
+				],
+				"extensions": [
+					".alx"
+				],
+				"configuration": "./language-configuration.json",
+				"icon": {
+					"light": "./assets/alx-symbol.png",
+					"dark": "./assets/alx-symbol.png"
+				}
+			}
+		],
+		"grammars": [
+			{
+				"language": "alloy-luau",
+				"scopeName": "source.aly",
+				"path": "./syntaxes/aly.tmLanguage.json"
+			},
+			{
+				"language": "alloy-luau-declaration",
+				"scopeName": "source.d.aly",
+				"path": "./syntaxes/daly.tmLanguage.json"
+			},
+			{
+				"language": "alloy-luau-jsx",
+				"scopeName": "source.alx",
+				"path": "./syntaxes/alx.tmLanguage.json"
+			}
+		],
+		"configurationDefaults": {
+			"[alloy-luau]": {
+				"editor.quickSuggestions": {
+					"other": "on",
+					"comments": "off",
+					"strings": "on"
+				},
+				"editor.suggest.snippetsPreventQuickSuggestions": false,
+				"editor.wordBasedSuggestions": "off"
+			},
+			"[alloy-luau-jsx]": {
+				"editor.quickSuggestions": {
+					"other": "on",
+					"comments": "off",
+					"strings": "on"
+				},
+				"editor.suggest.snippetsPreventQuickSuggestions": false,
+				"editor.wordBasedSuggestions": "off"
+			},
+			"[alloy-luau-declaration]": {
+				"editor.quickSuggestions": {
+					"other": "on",
+					"comments": "off",
+					"strings": "on"
+				},
+				"editor.wordBasedSuggestions": "off"
+			}
+		},
+		"commands": [
+			{
+				"command": "alloy-luau.restartServer",
+				"title": "Restart Language Server",
+				"category": "Alloy"
+			},
+			{
+				"command": "alloy-luau.generateSourcemap",
+				"title": "Generate Sourcemap",
+				"category": "Alloy"
+			}
+		],
+		"configuration": {
+			"title": "Alloy",
+			"properties": {
+				"alloy-luau.server.path": {
+					"type": "string",
+					"default": "",
+					"description": "Path to the alloy-lsp binary. Empty means ~/.alloy/bin/alloy-lsp when it exists, then alloy-lsp on PATH."
+				},
+				"alloy-luau.types.definitionFiles": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [],
+					"description": "Declaration files (.d.aly or .d.luau) passed to the language server as --definitions. The Roblox globals of luau-lsp.types.roblox.securityLevel and the files of luau-lsp.types.definitionFiles are passed on their own."
+				},
+				"alloy-luau.server.args": {
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [],
+					"description": "Extra arguments passed to alloy-lsp."
+				},
+				"alloy-luau.server.luauLspPath": {
+					"type": "string",
+					"default": "",
+					"description": "Path to the luau-lsp binary alloy-lsp runs as its child. Empty means the binary of the luau-lsp extension when it is installed, then luau-lsp on PATH."
+				},
+				"alloy-luau.server.logLevel": {
+					"type": "string",
+					"enum": [
+						"off",
+						"error",
+						"warn",
+						"info",
+						"debug",
+						"trace"
+					],
+					"enumDescriptions": [
+						"Nothing.",
+						"Failures only: a child that does not start, a stream that breaks.",
+						"Errors and warnings, such as an argument the server does not know.",
+						"Milestones, such as the workspace shadows opening.",
+						"Counts and decisions, such as semantic token remaps.",
+						"Every message in both directions."
+					],
+					"default": "warn",
+					"description": "What alloy-lsp writes to the Alloy output channel. A change restarts the server."
+				},
+				"alloy-luau.trace.server": {
+					"type": "string",
+					"enum": [
+						"off",
+						"messages",
+						"verbose"
+					],
+					"default": "off",
+					"description": "Trace the messages between VS Code and alloy-lsp in the Alloy output channel. This is the client side; server.logLevel is the server side."
+				},
+				"alloy-luau.inlayHints.variableTypes": {
+					"type": "boolean",
+					"default": true,
+					"description": "Show the inferred type of a variable, including loop variables."
+				},
+				"alloy-luau.inlayHints.parameterTypes": {
+					"type": "boolean",
+					"default": true,
+					"description": "Show the inferred type of an untyped parameter."
+				},
+				"alloy-luau.inlayHints.functionReturnTypes": {
+					"type": "boolean",
+					"default": true,
+					"description": "Show the inferred return type of a function."
+				},
+				"alloy-luau.inlayHints.parameterNames": {
+					"type": "string",
+					"enum": [
+						"none",
+						"literals",
+						"all"
+					],
+					"default": "literals",
+					"description": "Show parameter names at call sites: never, for literal arguments, or always."
+				},
+				"alloy-luau.completion.autocompleteEnd": {
+					"type": "boolean",
+					"default": true,
+					"description": "After Enter on a line that opens a block, insert its `end` a line below the cursor: functions, if, loops, do, repeat, struct, enum, interface, trait, impl, macro, and match."
+				},
+				"alloy-luau.sourcemap.file": {
+					"type": "string",
+					"default": "sourcemap.json",
+					"description": "The sourcemap the server reads for the DataModel, relative to the project root."
+				},
+				"alloy-luau.sourcemap.autogenerate": {
+					"type": "boolean",
+					"default": false,
+					"description": "Run the sourcemap generator command each time a script is saved."
+				},
+				"alloy-luau.sourcemap.generatorCommand": {
+					"type": "string",
+					"default": "rojo sourcemap --output ${sourcemapFile}",
+					"description": "The command that writes the sourcemap, run in the project root. ${sourcemapFile} is the sourcemap file setting, so the default is `rojo sourcemap --output sourcemap.json`."
+				},
+				"alloy-luau.studioPlugin.enabled": {
+					"type": "boolean",
+					"default": false,
+					"description": "Accept the luau-lsp Studio companion plugin, so the DataModel tree types game requires and instance paths in Alloy files. Off by default: the luau-lsp extension's own server may hold the port."
+				},
+				"alloy-luau.studioPlugin.port": {
+					"type": "number",
+					"default": 3667,
+					"description": "The port the Studio companion plugin connects to. Pick another one when the luau-lsp extension also listens on 3667."
+				},
+				"alloy-luau.inlayHints.makeInsertable": {
+					"type": "boolean",
+					"default": true,
+					"description": "A double click on a type hint writes it into the file."
+				}
+			}
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"lint": "biome ci .",
+		"package": "vsce package --skip-license"
+	},
+	"dependencies": {
+		"vscode-languageclient": "^9.0.1"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.4.14",
+		"@types/node": "^20.0.0",
+		"@types/vscode": "^1.102.0",
+		"@vscode/vsce": "^3.0.0",
+		"typescript": "^5.4.0"
+	}
+}
