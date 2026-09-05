@@ -1,0 +1,7 @@
+("(" @open ")" @close)
+("[" @open "]" @close)
+("{" @open "}" @close)
+("function" @open "end" @close)
+("if" @open "end" @close)
+("do" @open "end" @close)
+("repeat" @open "until" @close)

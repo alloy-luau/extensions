@@ -1,0 +1,17 @@
+id = "alloy-luau"
+name = "Alloy"
+version = "0.1.0"
+schema_version = 1
+authors = ["Andrew Bordis <andrewbordis2005@gmail.com>"]
+description = "Alloy, a strict superset of Luau: syntax highlighting and the alloy-lsp language server for .aly and .alx files."
+repository = "https://github.com/alloy-luau/extensions"
+
+# Alloy is a superset of Luau, so the Luau grammar colors the shared
+# part; the language server covers the rest.
+[grammars.luau]
+repository = "https://github.com/tree-sitter-grammars/tree-sitter-luau"
+rev = "a8914d6c1fc5131f8e1c13f769fa704c9f5eb02f"
+
+[language_servers.alloy-lsp]
+name = "Alloy"
+languages = ["Alloy"]

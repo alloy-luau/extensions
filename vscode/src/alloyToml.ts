@@ -59,6 +59,7 @@ const GROUPS = [
 	'perf',
 	'roblox',
 	'pedantic',
+	'naming',
 	'luau',
 ]
 
@@ -75,6 +76,7 @@ const LINTS_FALLBACK = [
 	'identical_branches',
 	'circular_import',
 	'and_or_ternary',
+	'unused_variable',
 	'empty_block',
 	'bool_comparison',
 	'needless_bool',
@@ -113,6 +115,9 @@ const LINTS_FALLBACK = [
 	'todo_comment',
 	'print_debug',
 	'missing_doc',
+	'camel_case_name',
+	'type_case',
+	'pascal_case_function',
 ]
 
 /** The lints, from `alloy doc --json` when the binary answers, so a
@@ -191,7 +196,7 @@ export const TABLES: Table[] = [
 	},
 	{
 		name: 'lint',
-		doc: "The level of each lint under `alloy flux` and `alloy lint`. A list takes a lint name or a group name: correctness, suspicious, style, complexity, perf, roblox, pedantic, or luau for the type checker's own. A name beats its group. `alloy doc lints` names them.",
+		doc: "The level of each lint under `alloy flux` and `alloy lint`. A list takes a lint name or a group name: correctness, suspicious, style, complexity, perf, roblox, pedantic, naming, or luau for the type checker's own. A name beats its group. `alloy doc lints` names them.",
 		keys: [
 			{
 				name: 'strict',

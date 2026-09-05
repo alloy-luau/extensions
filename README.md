@@ -6,7 +6,7 @@ strict superset of Luau that compiles to plain Luau.
 | Folder   | Editor  | State                                 |
 |----------|---------|---------------------------------------|
 | `vscode` | VS Code | Syntax, the language server, commands |
-| `zed`    | Zed     | Planned                               |
+| `zed`    | Zed     | Syntax through the Luau grammar, the language server |
 
 Each extension starts `alloy-lsp` from PATH or from a setting. The
 binaries come from the `alloy` repository: `scripts/build.sh --install`
