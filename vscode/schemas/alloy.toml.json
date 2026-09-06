@@ -781,6 +781,113 @@
         "description": "The options of one ingot, over the defaults its manifest declares. The key is the ingot's name under `[ingots]`; a key the manifest does not declare is an error.",
         "additionalProperties": true
       }
+    },
+    "alx": {
+      "type": "object",
+      "title": "[alx]",
+      "description": "How `.alx` markup lowers: the factory it calls and the names it maps. The shape `luaux.toml` has, kept in this file so a project needs no second one; a `luaux.toml` beside it still reads when this table is empty. `alloy doc markup` explains the keys.",
+      "properties": {
+        "factory": {
+          "type": "object",
+          "title": "[alx.factory]",
+          "description": "The functions the lowered markup calls. With no key set, the markup picks a UI library on its own; with any key set, it assumes nothing.",
+          "properties": {
+            "backend": {
+              "type": "string",
+              "enum": [
+                "table",
+                "element"
+              ],
+              "description": "The arrangement of a lowered element: `table` passes children in the props table, `element` as a third argument."
+            },
+            "create": {
+              "type": "string",
+              "description": "The expression that constructs an element, called with the class name."
+            },
+            "children": {
+              "type": "string",
+              "description": "The expression that attaches children, when the backend takes one."
+            },
+            "event": {
+              "type": "string",
+              "description": "The expression that connects an event handler."
+            },
+            "compute": {
+              "type": "string",
+              "description": "The expression that wraps a computed value."
+            },
+            "use": {
+              "type": "string",
+              "description": "The expression that reads a state value."
+            },
+            "fragment": {
+              "type": "string",
+              "description": "The expression that groups children without a parent."
+            },
+            "interpolate": {
+              "type": "string",
+              "enum": [
+                "plain",
+                "compute"
+              ],
+              "description": "How `{expr}` in text lowers: `plain` inserts the value, `compute` wraps it."
+            },
+            "merge": {
+              "type": "string",
+              "description": "The expression that merges a spread props table."
+            }
+          },
+          "additionalProperties": false
+        },
+        "elements": {
+          "type": "object",
+          "title": "[alx.elements]",
+          "description": "Element name aliases: `Frame = \"frame\"` renames one class in markup, and `all = \"camel\"` renames every class by a scheme: PascalCase, camelCase, snake_case, or flatcase.",
+          "properties": {},
+          "additionalProperties": {
+            "type": "string",
+            "description": "The name markup uses for this class, or a casing scheme for `all`."
+          }
+        },
+        "properties": {
+          "type": "object",
+          "title": "[alx.properties]",
+          "description": "Property and event aliases: `Text = \"text\"` for every class, `all = \"camel\"` for a scheme, or a class table with its own.",
+          "properties": {},
+          "additionalProperties": {
+            "description": "The name markup uses for this property in every class, or a table of aliases for one class.",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              }
+            ]
+          }
+        },
+        "lints": {
+          "type": "object",
+          "title": "[alx.lints]",
+          "description": "The levels of the markup lints.",
+          "properties": {
+            "static_conditional_child": {
+              "type": "string",
+              "enum": [
+                "off",
+                "warn",
+                "error"
+              ],
+              "description": "Markup in a child expression that no function encloses: it is built once, not on each render."
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
     }
   }
 }
