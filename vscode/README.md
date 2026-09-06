@@ -22,6 +22,15 @@ once. `luau-lsp.types.roblox.securityLevel` picks the level and
 `luau-lsp.types.definitionFiles` and `alloy-luau.types.definitionFiles` add
 more files.
 
+## Flags
+
+The server passes Luau flags to luau-lsp the way the luau-lsp extension
+does, under `alloy-luau.fflags`: `enableByDefault` turns every boolean
+flag on (default true), `sync` reads the flags Roblox publishes for
+Studio (default true), `enableNewSolver` keeps the new type solver on
+(default true; Alloy's emitted code needs it), and `override` sets
+single flags last. A change restarts the server.
+
 ## Commands
 
 - `Alloy: Restart Language Server`

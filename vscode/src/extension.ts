@@ -190,18 +190,64 @@ async function serverCommand(): Promise<{ command: string; args: string[] }> {
 	return { command, args }
 }
 
+const FFLAGS_URL =
+	'https://clientsettingscdn.roblox.com/v1/settings/application?applicationName=PCStudioApp'
+const FFLAG_KINDS = ['FFlag', 'FInt', 'DFFlag', 'DFInt']
+
+/**
+ * The Luau flags the server passes to luau-lsp, the way the luau-lsp
+ * extension builds them: every boolean flag on unless `enableByDefault`
+ * is off, the flags Roblox publishes for Studio when `sync` is on, and
+ * `override` last. The new solver stays on unless `enableNewSolver` is
+ * off; Alloy's emit needs it.
+ */
+async function fflagsSection(): Promise<Record<string, unknown>> {
+	const config = workspace.getConfiguration('alloy-luau.fflags')
+	const override: Record<string, string> = {}
+	if (config.get<boolean>('sync', true)) {
+		try {
+			const text = await fetchText(FFLAGS_URL)
+			const published = JSON.parse(text) as {
+				applicationSettings?: Record<string, string>
+			}
+			for (const [name, value] of Object.entries(
+				published.applicationSettings ?? {},
+			)) {
+				for (const kind of FFLAG_KINDS) {
+					if (name.startsWith(`${kind}Luau`)) {
+						override[name.slice(kind.length)] = String(value)
+					}
+				}
+			}
+		} catch (error) {
+			output?.appendLine(`fflags: cannot sync with Roblox: ${String(error)}`)
+		}
+	}
+	for (const [name, value] of Object.entries(
+		config.get<Record<string, unknown>>('override', {}),
+	)) {
+		override[name] = String(value)
+	}
+	return {
+		enableByDefault: config.get<boolean>('enableByDefault', true),
+		enableNewSolver: config.get<boolean>('enableNewSolver', true),
+		override,
+	}
+}
+
 /**
  * What the server needs from the editor's settings: the whole `luau-lsp`
  * section, if the user has one, and the Alloy inlay hint choices on top.
  * The server answers the child's configuration requests from this.
  */
-function serverSettings(): Record<string, unknown> {
+async function serverSettings(): Promise<Record<string, unknown>> {
 	const luauLsp = workspace.getConfiguration('luau-lsp')
 	const hints = workspace.getConfiguration('alloy-luau.inlayHints')
 	const plugin = workspace.getConfiguration('alloy-luau.studioPlugin')
 	const sourcemap = workspace.getConfiguration('alloy-luau.sourcemap')
 	return {
 		luauLsp: JSON.parse(JSON.stringify(luauLsp)),
+		fflags: await fflagsSection(),
 		inlayHints: {
 			variableTypes: hints.get<boolean>('variableTypes', true),
 			parameterTypes: hints.get<boolean>('parameterTypes', true),
@@ -288,11 +334,11 @@ async function startClient(): Promise<void> {
 			{ scheme: 'file', language: 'alloy-luau-declaration' },
 			{ scheme: 'file', language: 'alloy-luau-jsx' },
 		],
-		initializationOptions: serverSettings(),
+		initializationOptions: await serverSettings(),
 		outputChannel: output,
 		synchronize: {
 			fileEvents: [
-				workspace.createFileSystemWatcher('**/*.{aly,alx,luau,lua,json}'),
+				workspace.createFileSystemWatcher('**/*.{aly,alx,luau,lua,json,toml}'),
 				workspace.createFileSystemWatcher('**/.luaurc'),
 			],
 		},
@@ -405,6 +451,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		workspace.onDidChangeConfiguration(async (event) => {
 			if (
 				event.affectsConfiguration('alloy-luau.server') ||
+				event.affectsConfiguration('alloy-luau.fflags') ||
 				event.affectsConfiguration('alloy-luau.types') ||
 				event.affectsConfiguration('luau-lsp.types') ||
 				event.affectsConfiguration('luau-lsp.platform')

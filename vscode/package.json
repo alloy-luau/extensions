@@ -248,6 +248,33 @@
 					"default": 3667,
 					"description": "The port the Studio companion plugin connects to. Pick another one when the luau-lsp extension also listens on 3667."
 				},
+				"alloy-luau.fflags.enableByDefault": {
+					"type": "boolean",
+					"default": true,
+					"description": "Enable every boolean Luau flag in the language server by default. `alloy-luau.fflags.sync` and `alloy-luau.fflags.override` change single flags on top."
+				},
+				"alloy-luau.fflags.sync": {
+					"type": "boolean",
+					"default": true,
+					"description": "Sync the Luau flags with the ones Roblox publishes for Studio, so the checker behaves as the engine does. Only flags whose name begins with Luau are read."
+				},
+				"alloy-luau.fflags.enableNewSolver": {
+					"type": "boolean",
+					"default": true,
+					"description": "Run the new type solver. Alloy's emitted code needs it: the old solver rejects read and write properties and type functions."
+				},
+				"alloy-luau.fflags.override": {
+					"type": "object",
+					"default": {},
+					"additionalProperties": {
+						"type": [
+							"string",
+							"boolean",
+							"number"
+						]
+					},
+					"description": "Flags passed to the language server last, by name: `{ \"LuauTableTypeMaximumStringifierLength\": 200 }`. A change restarts the server."
+				},
 				"alloy-luau.inlayHints.makeInsertable": {
 					"type": "boolean",
 					"default": true,
