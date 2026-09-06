@@ -276,6 +276,11 @@
 					"match": "\\b(?:read|write)\\b(?=\\s+[A-Za-z_({\\[])"
 				},
 				{
+					"comment": "private and public on a struct field or an impl method",
+					"name": "storage.modifier.aly",
+					"match": "\\b(?:private|public)\\b(?=\\s+(?:function|async|read|write|[A-Za-z_]))"
+				},
+				{
 					"name": "keyword.control.aly",
 					"match": "\\b(?:if|then|elseif|else|end|for|in|while|do|repeat|until|return|break|continue|match|with|as|case|default|try|await|where)\\b"
 				},
