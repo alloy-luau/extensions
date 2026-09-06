@@ -17,7 +17,6 @@ import {
 	type LanguageClientOptions,
 	type ServerOptions,
 } from 'vscode-languageclient/node'
-import * as alloyToml from './alloyToml'
 
 let client: LanguageClient | undefined
 let output: OutputChannel | undefined
@@ -427,7 +426,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
 			}
 		}),
 	)
-	alloyToml.register(context, serverEnv())
 	await startClient()
 }
 

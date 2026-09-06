@@ -19,8 +19,7 @@
 	"activationEvents": [
 		"onLanguage:alloy-luau",
 		"onLanguage:alloy-luau-declaration",
-		"onLanguage:alloy-luau-jsx",
-		"onLanguage:alloy-toml"
+		"onLanguage:alloy-luau-jsx"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -69,21 +68,6 @@
 					"light": "./assets/alx-symbol.png",
 					"dark": "./assets/alx-symbol.png"
 				}
-			},
-			{
-				"id": "alloy-toml",
-				"aliases": [
-					"Alloy config",
-					"alloy.toml"
-				],
-				"filenames": [
-					"alloy.toml"
-				],
-				"configuration": "./toml-language-configuration.json",
-				"icon": {
-					"light": "./assets/alloy-toml-symbol.png",
-					"dark": "./assets/alloy-toml-symbol.png"
-				}
 			}
 		],
 		"grammars": [
@@ -101,11 +85,12 @@
 				"language": "alloy-luau-jsx",
 				"scopeName": "source.alx",
 				"path": "./syntaxes/alx.tmLanguage.json"
-			},
+			}
+		],
+		"tomlValidation": [
 			{
-				"language": "alloy-toml",
-				"scopeName": "source.toml.alloy",
-				"path": "./syntaxes/alloy-toml.tmLanguage.json"
+				"fileMatch": "alloy.toml",
+				"url": "https://raw.githubusercontent.com/alloy-luau/extensions/main/vscode/schemas/alloy.toml.json"
 			}
 		],
 		"configurationDefaults": {
@@ -272,7 +257,8 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile",
+		"vscode:prepublish": "npm run schema && npm run compile",
+		"schema": "cargo run -q --manifest-path ../../crates/Cargo.toml -- self schema > schemas/alloy.toml.json",
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
 		"lint": "biome ci .",

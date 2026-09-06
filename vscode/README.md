@@ -52,8 +52,17 @@ the server from the client side.
 
 ## alloy.toml
 
-The project file gets its own language, `Alloy config`, with the icon,
-TOML highlighting, completion for every table and key with its type and
-default, hover documentation, and diagnostics for a key the compiler
-would reject. The lint names in `[lint]` come from `alloy doc --json`
-when the binary is on PATH.
+The project file is plain TOML. Install Even Better TOML
+(`tamasfe.even-better-toml`): it completes every table and key of
+`alloy.toml` from a JSON Schema, shows the type, the default, and the
+text of each one, and marks a key the compiler rejects. The schema ships
+with this extension in `schemas/alloy.toml.json` and is registered
+through Even Better TOML's `tomlValidation` contribution point, which
+takes an absolute URL, so the entry points at the copy on the main
+branch of this repository.
+
+`alloy self code` sets the same thing up without a network: it writes
+the schema to `~/.alloy/alloy.schema.json` and points VS Code, VSCodium,
+Cursor, Windsurf, and Zed at that file through their `settings.json`.
+`alloy self schema` prints the schema, which `npm run schema`
+regenerates here.
