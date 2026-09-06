@@ -16,6 +16,9 @@
 			"include": "#attribute"
 		},
 		{
+			"include": "#enum-body"
+		},
+		{
 			"include": "#type-position"
 		},
 		{
@@ -764,6 +767,96 @@
 			"comment": "the built-in libraries and the Roblox globals, before a member",
 			"name": "support.class.library.aly",
 			"match": "\\b(?:table|string|math|os|task|coroutine|bit32|utf8|buffer|debug|vector|game|workspace|script|plugin)\\b(?=\\s*[.:])"
+		},
+		"enum-body": {
+			"comment": "enum Name as ... end: a variant is a name, a payload is a type list, a value variant takes an expression",
+			"begin": "^\\s*(?:(export)\\s+)?(enum)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+(as)\\b",
+			"beginCaptures": {
+				"1": {
+					"name": "storage.type.aly"
+				},
+				"2": {
+					"name": "storage.type.aly"
+				},
+				"3": {
+					"name": "entity.name.type.enum.aly"
+				},
+				"4": {
+					"name": "keyword.control.aly"
+				}
+			},
+			"end": "^\\s*(end)\\b",
+			"endCaptures": {
+				"1": {
+					"name": "keyword.control.aly"
+				}
+			},
+			"name": "meta.enum.aly",
+			"patterns": [
+				{
+					"include": "#comment"
+				},
+				{
+					"include": "#attribute"
+				},
+				{
+					"comment": "Name(T, U): a variant with a payload",
+					"begin": "\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(\\()",
+					"beginCaptures": {
+						"1": {
+							"name": "variable.other.enummember.aly"
+						},
+						"2": {
+							"name": "punctuation.definition.type.parens.aly"
+						}
+					},
+					"end": "(\\))",
+					"endCaptures": {
+						"1": {
+							"name": "punctuation.definition.type.parens.aly"
+						}
+					},
+					"name": "meta.enum.payload.aly",
+					"patterns": [
+						{
+							"include": "#type-content"
+						}
+					]
+				},
+				{
+					"comment": "Name = value: a variant with an explicit value",
+					"begin": "\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(=)",
+					"beginCaptures": {
+						"1": {
+							"name": "variable.other.enummember.aly"
+						},
+						"2": {
+							"name": "keyword.operator.assignment.aly"
+						}
+					},
+					"end": "(?=,|$)",
+					"patterns": [
+						{
+							"include": "#string"
+						},
+						{
+							"include": "#number"
+						},
+						{
+							"include": "#identifier"
+						}
+					]
+				},
+				{
+					"comment": "Name: a unit variant",
+					"match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\b",
+					"captures": {
+						"1": {
+							"name": "variable.other.enummember.aly"
+						}
+					}
+				}
+			]
 		}
 	}
 }
