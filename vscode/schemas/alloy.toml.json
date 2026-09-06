@@ -1,309 +1,462 @@
 {
-  "$id": "https://raw.githubusercontent.com/alloy-luau/extensions/main/vscode/schemas/alloy.toml.json",
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "additionalProperties": false,
+  "$id": "https://raw.githubusercontent.com/alloy-luau/extensions/main/vscode/schemas/alloy.toml.json",
+  "title": "alloy.toml",
   "description": "The project file of Alloy. Every key has a default, and an unknown key is an error.",
+  "type": "object",
+  "additionalProperties": false,
   "properties": {
     "build": {
-      "additionalProperties": false,
+      "type": "object",
+      "title": "[build]",
       "description": "What compiles, and where the output goes.",
       "properties": {
+        "in": {
+          "type": "string",
+          "description": "The source root. Every `.aly` and `.alx` under it compiles, relative to the folder that holds this file.",
+          "default": "src"
+        },
+        "out": {
+          "type": "string",
+          "description": "The output root. The tree under `in` is mirrored under it, and the runtime is written beside it as `alloy.luau`.",
+          "default": "build"
+        },
+        "exclude": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Glob patterns, relative to `in`, of sources to skip.",
+          "default": []
+        },
+        "clean": {
+          "type": "boolean",
+          "description": "Delete an output whose source is gone.",
+          "default": false
+        },
         "artifact": {
-          "default": "ship",
-          "description": "Which artifact to write. `ship` runs on Roblox; `check` is what luau-lsp sees, with the types kept.",
+          "type": "string",
           "enum": [
             "ship",
             "check"
           ],
-          "type": "string"
-        },
-        "clean": {
-          "default": false,
-          "description": "Delete an output whose source is gone.",
-          "type": "boolean"
-        },
-        "exclude": {
-          "default": [],
-          "description": "Glob patterns, relative to `in`, of sources to skip.",
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
-        "in": {
-          "default": "src",
-          "description": "The source root. Every `.aly` and `.alx` under it compiles, relative to the folder that holds this file.",
-          "type": "string"
-        },
-        "out": {
-          "default": "build",
-          "description": "The output root. The tree under `in` is mirrored under it, and the runtime is written beside it as `alloy.luau`.",
-          "type": "string"
+          "description": "Which artifact to write. `ship` runs on Roblox; `check` is what luau-lsp sees, with the types kept.",
+          "default": "ship"
         }
       },
-      "title": "[build]",
-      "type": "object"
+      "additionalProperties": false
     },
     "emit": {
-      "additionalProperties": false,
+      "type": "object",
+      "title": "[emit]",
       "description": "The few knobs that change what emitted code does.",
       "properties": {
-        "erase_type_imports": {
-          "default": false,
-          "description": "Blank `import type` lines in the output so they add no runtime dependency. The output is then untyped for anyone who analyzes it directly.",
-          "type": "boolean"
+        "wait_timeout": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Seconds passed to every `WaitForChild` that `=>` emits. Unset means no timeout: the engine waits forever and warns after five seconds. With a timeout the call can return nil, so `=>` guards like `->`."
         },
         "std_require": {
-          "description": "The string emitted code passes to `require` for the runtime. Unset means a relative path to the `alloy.luau` the build writes, or the instance path through the mounts.",
-          "type": "string"
+          "type": "string",
+          "description": "The string emitted code passes to `require` for the runtime. Unset means a relative path to the `alloy.luau` the build writes, or the instance path through the mounts."
         },
-        "wait_timeout": {
-          "description": "Seconds passed to every `WaitForChild` that `=>` emits. Unset means no timeout: the engine waits forever and warns after five seconds. With a timeout the call can return nil, so `=>` guards like `->`.",
-          "minimum": 0,
-          "type": "number"
+        "erase_type_imports": {
+          "type": "boolean",
+          "description": "Blank `import type` lines in the output so they add no runtime dependency. The output is then untyped for anyone who analyzes it directly.",
+          "default": false
         }
       },
-      "title": "[emit]",
-      "type": "object"
+      "additionalProperties": false
+    },
+    "lint": {
+      "type": "object",
+      "title": "[lint]",
+      "description": "The level of each lint under `alloy flux` and `alloy lint`. A list takes a lint name or a group name: correctness, suspicious, style, complexity, perf, roblox, pedantic, naming, or luau for the type checker's own. A name beats its group. `alloy doc lints` names them.",
+      "properties": {
+        "strict": {
+          "type": "boolean",
+          "description": "Turns the pedantic group on, at warn: `implicit_any`, `missing_return_type`, `explicit_any`, `todo_comment`, `print_debug`, `missing_doc`.",
+          "default": false
+        },
+        "deny": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "correctness",
+                  "suspicious",
+                  "style",
+                  "complexity",
+                  "perf",
+                  "roblox",
+                  "pedantic",
+                  "naming",
+                  "luau",
+                  "optional_access",
+                  "unreachable_default",
+                  "empty_default",
+                  "unused_import",
+                  "self_assignment",
+                  "unreachable_code",
+                  "constant_condition",
+                  "duplicate_key",
+                  "misplaced_not",
+                  "identical_branches",
+                  "private_access",
+                  "circular_import",
+                  "and_or_ternary",
+                  "unused_variable",
+                  "unused_function",
+                  "empty_block",
+                  "bool_comparison",
+                  "needless_bool",
+                  "manual_safe_access",
+                  "manual_coalesce",
+                  "nil_check_call",
+                  "manual_type_test",
+                  "legacy_iterator",
+                  "manual_floor_div",
+                  "manual_push",
+                  "concat_interpolation",
+                  "raw_pcall",
+                  "raw_require",
+                  "manual_class",
+                  "manual_ternary_return",
+                  "redundant_return",
+                  "local_then_return",
+                  "numeric_for_index",
+                  "too_many_arguments",
+                  "too_many_lines",
+                  "deep_nesting",
+                  "cognitive_complexity",
+                  "collapsible_if",
+                  "collapsible_else_if",
+                  "concat_in_loop",
+                  "service_in_loop",
+                  "table_insert_position",
+                  "deprecated_global",
+                  "manual_child_lookup",
+                  "deprecated_method",
+                  "instance_new_parent",
+                  "deprecated_body_mover",
+                  "explicit_any",
+                  "implicit_any",
+                  "missing_return_type",
+                  "todo_comment",
+                  "print_debug",
+                  "missing_doc",
+                  "camel_case_name",
+                  "type_case",
+                  "pascal_case_function"
+                ]
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "description": "Lints or groups that fail the run.",
+          "default": []
+        },
+        "warn": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "correctness",
+                  "suspicious",
+                  "style",
+                  "complexity",
+                  "perf",
+                  "roblox",
+                  "pedantic",
+                  "naming",
+                  "luau",
+                  "optional_access",
+                  "unreachable_default",
+                  "empty_default",
+                  "unused_import",
+                  "self_assignment",
+                  "unreachable_code",
+                  "constant_condition",
+                  "duplicate_key",
+                  "misplaced_not",
+                  "identical_branches",
+                  "private_access",
+                  "circular_import",
+                  "and_or_ternary",
+                  "unused_variable",
+                  "unused_function",
+                  "empty_block",
+                  "bool_comparison",
+                  "needless_bool",
+                  "manual_safe_access",
+                  "manual_coalesce",
+                  "nil_check_call",
+                  "manual_type_test",
+                  "legacy_iterator",
+                  "manual_floor_div",
+                  "manual_push",
+                  "concat_interpolation",
+                  "raw_pcall",
+                  "raw_require",
+                  "manual_class",
+                  "manual_ternary_return",
+                  "redundant_return",
+                  "local_then_return",
+                  "numeric_for_index",
+                  "too_many_arguments",
+                  "too_many_lines",
+                  "deep_nesting",
+                  "cognitive_complexity",
+                  "collapsible_if",
+                  "collapsible_else_if",
+                  "concat_in_loop",
+                  "service_in_loop",
+                  "table_insert_position",
+                  "deprecated_global",
+                  "manual_child_lookup",
+                  "deprecated_method",
+                  "instance_new_parent",
+                  "deprecated_body_mover",
+                  "explicit_any",
+                  "implicit_any",
+                  "missing_return_type",
+                  "todo_comment",
+                  "print_debug",
+                  "missing_doc",
+                  "camel_case_name",
+                  "type_case",
+                  "pascal_case_function"
+                ]
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "description": "Lints or groups that print and pass.",
+          "default": []
+        },
+        "allow": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "correctness",
+                  "suspicious",
+                  "style",
+                  "complexity",
+                  "perf",
+                  "roblox",
+                  "pedantic",
+                  "naming",
+                  "luau",
+                  "optional_access",
+                  "unreachable_default",
+                  "empty_default",
+                  "unused_import",
+                  "self_assignment",
+                  "unreachable_code",
+                  "constant_condition",
+                  "duplicate_key",
+                  "misplaced_not",
+                  "identical_branches",
+                  "private_access",
+                  "circular_import",
+                  "and_or_ternary",
+                  "unused_variable",
+                  "unused_function",
+                  "empty_block",
+                  "bool_comparison",
+                  "needless_bool",
+                  "manual_safe_access",
+                  "manual_coalesce",
+                  "nil_check_call",
+                  "manual_type_test",
+                  "legacy_iterator",
+                  "manual_floor_div",
+                  "manual_push",
+                  "concat_interpolation",
+                  "raw_pcall",
+                  "raw_require",
+                  "manual_class",
+                  "manual_ternary_return",
+                  "redundant_return",
+                  "local_then_return",
+                  "numeric_for_index",
+                  "too_many_arguments",
+                  "too_many_lines",
+                  "deep_nesting",
+                  "cognitive_complexity",
+                  "collapsible_if",
+                  "collapsible_else_if",
+                  "concat_in_loop",
+                  "service_in_loop",
+                  "table_insert_position",
+                  "deprecated_global",
+                  "manual_child_lookup",
+                  "deprecated_method",
+                  "instance_new_parent",
+                  "deprecated_body_mover",
+                  "explicit_any",
+                  "implicit_any",
+                  "missing_return_type",
+                  "todo_comment",
+                  "print_debug",
+                  "missing_doc",
+                  "camel_case_name",
+                  "type_case",
+                  "pascal_case_function"
+                ]
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
+          "description": "Lints or groups that stay silent.",
+          "default": []
+        }
+      },
+      "additionalProperties": false
     },
     "flux": {
-      "additionalProperties": false,
+      "type": "object",
+      "title": "[flux]",
       "description": "What `alloy flux` runs beyond the lints, and the limits of the complexity lints. The levels of the lints stay in `[lint]`. `alloy doc flux` explains it.",
       "properties": {
-        "cognitive_complexity": {
-          "default": 25,
-          "description": "`cognitive_complexity` fires past this score: one per branch, loop, `and`, `or`, and ternary, plus the depth of each branch.",
-          "minimum": 0,
-          "type": "integer"
+        "typecheck": {
+          "type": "boolean",
+          "description": "Run luau-lsp over the check artifact and report its type errors on the source lines.",
+          "default": true
         },
         "definitions": {
-          "default": [],
-          "description": "Definitions files for the type check, `.d.luau` or `.d.aly`, relative to this file. The project's `.d.aly` files join them on their own.",
+          "type": "array",
           "items": {
             "type": "string"
           },
-          "type": "array"
-        },
-        "luau_lsp": {
-          "description": "The luau-lsp binary. Unset means `luau-lsp` on the PATH, then `~/.alloy/bin` and `~/.ember/bin`.",
-          "type": "string"
-        },
-        "max_nesting": {
-          "default": 5,
-          "description": "`deep_nesting` fires past this many nested blocks.",
-          "minimum": 0,
-          "type": "integer"
+          "description": "Definitions files for the type check, `.d.luau` or `.d.aly`, relative to this file. The project's `.d.aly` files join them on their own.",
+          "default": []
         },
         "roblox_types": {
-          "default": true,
+          "type": "boolean",
           "description": "Load the Roblox globals. The file comes from the luau-lsp extension's storage, or downloads once into `~/.alloy/types`.",
-          "type": "boolean"
+          "default": true
         },
         "security_level": {
-          "default": "PluginSecurity",
-          "description": "The security level of the Roblox globals.",
+          "type": "string",
           "enum": [
             "PluginSecurity",
             "LocalUserSecurity",
             "RobloxScriptSecurity",
             "None"
           ],
-          "type": "string"
+          "description": "The security level of the Roblox globals.",
+          "default": "PluginSecurity"
+        },
+        "luau_lsp": {
+          "type": "string",
+          "description": "The luau-lsp binary. Unset means `luau-lsp` on the PATH, then `~/.alloy/bin` and `~/.ember/bin`."
         },
         "too_many_arguments": {
-          "default": 7,
-          "description": "`too_many_arguments` fires past this many parameters; `self` does not count.",
+          "type": "integer",
           "minimum": 0,
-          "type": "integer"
+          "description": "`too_many_arguments` fires past this many parameters; `self` does not count.",
+          "default": 7
         },
         "too_many_lines": {
-          "default": 100,
-          "description": "`too_many_lines` fires past this many lines in one function.",
+          "type": "integer",
           "minimum": 0,
-          "type": "integer"
+          "description": "`too_many_lines` fires past this many lines in one function.",
+          "default": 100
         },
-        "typecheck": {
-          "default": true,
-          "description": "Run luau-lsp over the check artifact and report its type errors on the source lines.",
-          "type": "boolean"
+        "max_nesting": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "`deep_nesting` fires past this many nested blocks.",
+          "default": 5
+        },
+        "cognitive_complexity": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "`cognitive_complexity` fires past this score: one per branch, loop, `and`, `or`, and ternary, plus the depth of each branch.",
+          "default": 25
         }
       },
-      "title": "[flux]",
-      "type": "object"
+      "additionalProperties": false
+    },
+    "test": {
+      "type": "object",
+      "title": "[test]",
+      "description": "Where `alloy test` writes the specs: one lest spec per source with a `@test`, with everything the tests reach. `alloy doc test` explains it.",
+      "properties": {
+        "out": {
+          "type": "string",
+          "description": "The folder the specs land in, relative to this file. Each source with a `@test` writes `<out>/<path>.spec.luau`.",
+          "default": "tests"
+        },
+        "suite": {
+          "type": "string",
+          "description": "The suite name in `lest.toml`.",
+          "default": "alloy"
+        },
+        "lest": {
+          "type": "boolean",
+          "description": "Write `lest.toml` and the `@lest` alias of `.luaurc` when the root has none.",
+          "default": true
+        },
+        "shim": {
+          "type": "boolean",
+          "description": "Load engine doubles before each spec: `Vector3`, `Color3`, `Enum`, `task`, `game`, and a small Instance tree, so shared code runs on a plain VM. In Studio they do nothing.",
+          "default": true
+        }
+      },
+      "additionalProperties": false
     },
     "fmt": {
-      "additionalProperties": false,
+      "type": "object",
+      "title": "[fmt]",
       "description": "How Anneal, `alloy fmt`, lays code out. The names follow larvae and stylua where the option is theirs; `alloy doc fmt` explains each.",
       "properties": {
-        "align_struct_fields": {
-          "default": false,
-          "description": "Alloy's own: the `:` of a struct's fields line up.",
-          "type": "boolean"
-        },
-        "alx": {
-          "additionalProperties": false,
-          "description": "The markup of `.alx` files, after luaux-worm. The code around it formats like any `.aly` file.",
-          "properties": {
-            "attribute_per_line": {
-              "default": false,
-              "description": "A tag that breaks its attributes puts every attribute on its own line, rather than as many as fit.",
-              "type": "boolean"
-            },
-            "attribute_quotes": {
-              "default": "double",
-              "description": "The quotes of a string attribute: `Name=\"x\"`. `quote_style` does not govern it.",
-              "enum": [
-                "double",
-                "single",
-                "preserve"
-              ],
-              "type": "string"
-            },
-            "blank_lines": {
-              "default": true,
-              "description": "A blank line between two children stays.",
-              "type": "boolean"
-            },
-            "bracket_same_line": {
-              "default": false,
-              "description": "The `>` of a tag that broke its attributes sits on the last attribute's line rather than its own.",
-              "type": "boolean"
-            },
-            "self_closing_space": {
-              "default": true,
-              "description": "`<Frame />` rather than `<Frame/>`.",
-              "type": "boolean"
-            },
-            "text_wrap": {
-              "default": "fill",
-              "description": "`fill` reflows text children to the column width; `preserve` keeps the author's line breaks.",
-              "enum": [
-                "fill",
-                "preserve"
-              ],
-              "type": "string"
-            }
-          },
-          "title": "[fmt.alx]",
-          "type": "object"
-        },
-        "block_newline_gaps": {
-          "default": "never",
-          "description": "A blank line right after a block opener or right before its closer: dropped, or kept.",
-          "enum": [
-            "never",
-            "preserve"
-          ],
-          "type": "string"
-        },
-        "call_chains": {
-          "additionalProperties": false,
-          "description": "How a chain of method calls breaks.",
-          "properties": {
-            "min_calls": {
-              "default": 3,
-              "description": "The number of calls a chain needs before it breaks; 0 breaks only what runs past the width.",
-              "minimum": 0,
-              "type": "integer"
-            },
-            "style": {
-              "default": "preserve",
-              "description": "`method` breaks before each call past the first, `full` before every call, once the chain holds `min_calls` calls. `preserve` keeps the author's lines.",
-              "enum": [
-                "preserve",
-                "method",
-                "full"
-              ],
-              "type": "string"
-            }
-          },
-          "title": "[fmt.call_chains]",
-          "type": "object"
-        },
-        "call_parentheses": {
-          "default": "always",
-          "description": "The parentheses of a call with one string or one table argument: `f(\"x\")` and `f \"x\"`. `input` keeps what the author wrote.",
-          "enum": [
-            "always",
-            "no-single-string",
-            "no-single-table",
-            "none",
-            "input"
-          ],
-          "type": "string"
-        },
-        "collapse_simple_statement": {
-          "default": "never",
-          "description": "Whether `if c then return end` or a function with one statement may sit on one line.",
-          "enum": [
-            "never",
-            "function-only",
-            "conditional-only",
-            "always"
-          ],
-          "type": "string"
-        },
         "column_width": {
-          "default": 100,
+          "type": "integer",
+          "minimum": 0,
           "description": "The width a bracket group breaks past: a call, a table, or an array that does not fit goes one element per line.",
-          "minimum": 0,
-          "type": "integer"
-        },
-        "exclude": {
-          "default": [],
-          "description": "Paths the formatter leaves alone. A `*` matches any run of characters: `\"vendor/*\"`, `\"*.gen.aly\"`.",
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        },
-        "expand_imports": {
-          "default": false,
-          "description": "Alloy's own: an `import { }` or `export { }` list with more than one name breaks one name per line. Off, a trailing comma in the list asks for the same.",
-          "type": "boolean"
-        },
-        "indent_type": {
-          "default": "spaces",
-          "description": "What one indentation level is.",
-          "enum": [
-            "spaces",
-            "tabs"
-          ],
-          "type": "string"
-        },
-        "indent_width": {
-          "default": 4,
-          "description": "Spaces per level, when `indent_type` is spaces.",
-          "minimum": 0,
-          "type": "integer"
-        },
-        "leading_zero": {
-          "default": "add",
-          "description": "`.5` and `0.5`: add the zero, strip it, or leave the literal.",
-          "enum": [
-            "add",
-            "strip",
-            "preserve"
-          ],
-          "type": "string"
+          "default": 100
         },
         "line_endings": {
-          "default": "unix",
-          "description": "The line ending of the written file.",
+          "type": "string",
           "enum": [
             "unix",
             "windows"
           ],
-          "type": "string"
+          "description": "The line ending of the written file.",
+          "default": "unix"
         },
-        "magic_trailing_comma": {
-          "default": true,
-          "description": "A trailing comma in the source keeps its group expanded, one element per line, whatever the width.",
-          "type": "boolean"
+        "indent_type": {
+          "type": "string",
+          "enum": [
+            "spaces",
+            "tabs"
+          ],
+          "description": "What one indentation level is.",
+          "default": "spaces"
+        },
+        "indent_width": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Spaces per level, when `indent_type` is spaces.",
+          "default": 4
         },
         "quote_style": {
-          "default": "auto-prefer-double",
-          "description": "The quotes of a string literal. An `auto` style keeps the other quote for a string that holds the preferred one; `force` escapes instead.",
+          "type": "string",
           "enum": [
             "auto-prefer-double",
             "auto-prefer-single",
@@ -311,468 +464,323 @@
             "force-single",
             "preserve"
           ],
-          "type": "string"
+          "description": "The quotes of a string literal. An `auto` style keeps the other quote for a string that holds the preferred one; `force` escapes instead.",
+          "default": "auto-prefer-double"
         },
-        "sort_requires": {
-          "additionalProperties": false,
-          "description": "Sorting of the `import` lines at the top of a file.",
-          "properties": {
-            "enabled": {
-              "default": false,
-              "description": "Sort the run of `import` statements at the top of the file by path.",
-              "type": "boolean"
-            },
-            "grouping": {
-              "default": "flat",
-              "description": "`by-kind` orders `@alias` paths first, then absolute ones, then relative ones; `flat` sorts by path alone.",
-              "enum": [
-                "flat",
-                "by-kind"
-              ],
-              "type": "string"
-            }
-          },
-          "title": "[fmt.sort_requires]",
-          "type": "object"
+        "leading_zero": {
+          "type": "string",
+          "enum": [
+            "add",
+            "strip",
+            "preserve"
+          ],
+          "description": "`.5` and `0.5`: add the zero, strip it, or leave the literal.",
+          "default": "add"
+        },
+        "call_parentheses": {
+          "type": "string",
+          "enum": [
+            "always",
+            "no-single-string",
+            "no-single-table",
+            "none",
+            "input"
+          ],
+          "description": "The parentheses of a call with one string or one table argument: `f(\"x\")` and `f \"x\"`. `input` keeps what the author wrote.",
+          "default": "always"
         },
         "space_after_function_names": {
-          "default": "never",
-          "description": "Where a space goes before the `(` of a function: `function f ()` in definitions, `f ()` in calls.",
+          "type": "string",
           "enum": [
             "never",
             "definitions",
             "calls",
             "always"
           ],
-          "type": "string"
+          "description": "Where a space goes before the `(` of a function: `function f ()` in definitions, `f ()` in calls.",
+          "default": "never"
         },
-        "space_inside_array": {
-          "default": true,
-          "description": "Alloy's own: `[ 1, 2 ]` rather than `[1, 2]` in an array literal.",
-          "type": "boolean"
+        "collapse_simple_statement": {
+          "type": "string",
+          "enum": [
+            "never",
+            "function-only",
+            "conditional-only",
+            "always"
+          ],
+          "description": "Whether `if c then return end` or a function with one statement may sit on one line.",
+          "default": "never"
+        },
+        "block_newline_gaps": {
+          "type": "string",
+          "enum": [
+            "never",
+            "preserve"
+          ],
+          "description": "A blank line right after a block opener or right before its closer: dropped, or kept.",
+          "default": "never"
+        },
+        "magic_trailing_comma": {
+          "type": "boolean",
+          "description": "A trailing comma in the source keeps its group expanded, one element per line, whatever the width.",
+          "default": true
         },
         "space_inside_braces": {
-          "default": true,
+          "type": "boolean",
           "description": "`{ a = 1 }` rather than `{a = 1}`.",
-          "type": "boolean"
-        },
-        "space_inside_brackets": {
-          "default": false,
-          "description": "`t[ k ]` rather than `t[k]`.",
-          "type": "boolean"
+          "default": true
         },
         "space_inside_parens": {
-          "default": false,
+          "type": "boolean",
           "description": "`f( a )` rather than `f(a)`.",
-          "type": "boolean"
+          "default": false
+        },
+        "space_inside_brackets": {
+          "type": "boolean",
+          "description": "`t[ k ]` rather than `t[k]`.",
+          "default": false
         },
         "trailing_comma": {
-          "default": true,
+          "type": "boolean",
           "description": "An expanded table or array ends its last element with a comma.",
-          "type": "boolean"
+          "default": true
+        },
+        "space_inside_array": {
+          "type": "boolean",
+          "description": "Alloy's own: `[ 1, 2 ]` rather than `[1, 2]` in an array literal.",
+          "default": true
+        },
+        "align_struct_fields": {
+          "type": "boolean",
+          "description": "Alloy's own: the `:` of a struct's fields line up.",
+          "default": false
+        },
+        "expand_imports": {
+          "type": "boolean",
+          "description": "Alloy's own: an `import { }` or `export { }` list with more than one name breaks one name per line. Off, a trailing comma in the list asks for the same.",
+          "default": false
+        },
+        "exclude": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Paths the formatter leaves alone. A `*` matches any run of characters: `\"vendor/*\"`, `\"*.gen.aly\"`.",
+          "default": []
+        },
+        "call_chains": {
+          "type": "object",
+          "title": "[fmt.call_chains]",
+          "description": "How a chain of method calls breaks.",
+          "properties": {
+            "style": {
+              "type": "string",
+              "enum": [
+                "preserve",
+                "method",
+                "full"
+              ],
+              "description": "`method` breaks before each call past the first, `full` before every call, once the chain holds `min_calls` calls. `preserve` keeps the author's lines.",
+              "default": "preserve"
+            },
+            "min_calls": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "The number of calls a chain needs before it breaks; 0 breaks only what runs past the width.",
+              "default": 3
+            }
+          },
+          "additionalProperties": false
+        },
+        "sort_requires": {
+          "type": "object",
+          "title": "[fmt.sort_requires]",
+          "description": "Sorting of the `import` lines at the top of a file.",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Sort the run of `import` statements at the top of the file by path.",
+              "default": false
+            },
+            "grouping": {
+              "type": "string",
+              "enum": [
+                "flat",
+                "by-kind"
+              ],
+              "description": "`by-kind` orders `@alias` paths first, then absolute ones, then relative ones; `flat` sorts by path alone.",
+              "default": "flat"
+            }
+          },
+          "additionalProperties": false
+        },
+        "alx": {
+          "type": "object",
+          "title": "[fmt.alx]",
+          "description": "The markup of `.alx` files, after luaux-worm. The code around it formats like any `.aly` file.",
+          "properties": {
+            "attribute_quotes": {
+              "type": "string",
+              "enum": [
+                "double",
+                "single",
+                "preserve"
+              ],
+              "description": "The quotes of a string attribute: `Name=\"x\"`. `quote_style` does not govern it.",
+              "default": "double"
+            },
+            "bracket_same_line": {
+              "type": "boolean",
+              "description": "The `>` of a tag that broke its attributes sits on the last attribute's line rather than its own.",
+              "default": false
+            },
+            "attribute_per_line": {
+              "type": "boolean",
+              "description": "A tag that breaks its attributes puts every attribute on its own line, rather than as many as fit.",
+              "default": false
+            },
+            "self_closing_space": {
+              "type": "boolean",
+              "description": "`<Frame />` rather than `<Frame/>`.",
+              "default": true
+            },
+            "text_wrap": {
+              "type": "string",
+              "enum": [
+                "fill",
+                "preserve"
+              ],
+              "description": "`fill` reflows text children to the column width; `preserve` keeps the author's line breaks.",
+              "default": "fill"
+            },
+            "blank_lines": {
+              "type": "boolean",
+              "description": "A blank line between two children stays.",
+              "default": true
+            }
+          },
+          "additionalProperties": false
         }
       },
-      "title": "[fmt]",
-      "type": "object"
+      "additionalProperties": false
     },
-    "ingot": {
-      "additionalProperties": {
-        "additionalProperties": true,
-        "description": "The options of one ingot, over the defaults its manifest declares. The key is the ingot's name under `[ingots]`; a key the manifest does not declare is an error.",
-        "type": "object"
+    "project": {
+      "type": "object",
+      "title": "[project]",
+      "description": "The Rojo project the mounts describe.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name in `default.project.json` and `.alloy/build.project.json`.",
+          "default": "game"
+        },
+        "runtime": {
+          "type": "string",
+          "description": "Where `alloy.luau` mounts. Emitted code requires it by a relative instance path from each file's mount.",
+          "default": "@game/ReplicatedStorage/Alloy"
+        },
+        "sourcemap": {
+          "type": "boolean",
+          "description": "Write `.alloy/sourcemap.json` on every build. The language server reads it for `@game/` completion and instance types.",
+          "default": true
+        }
       },
-      "description": "One table per ingot, `[ingot.<name>]`: its options, over the defaults its manifest declares.",
+      "additionalProperties": false
+    },
+    "mount": {
+      "type": "object",
+      "title": "[mount]",
+      "description": "Where each folder lands in the DataModel: `alias = [path, mount]`. The folder at `path` lands at `mount`, `require(\"@alias/x\")` resolves through it, and with one or more mounts `alloy build` writes `default.project.json` over the sources and `.alloy/build.project.json` over the output.",
       "properties": {},
-      "title": "[ingot]",
-      "type": "object"
+      "additionalProperties": {
+        "type": "array",
+        "description": "The path on disk, relative to this file, and the DataModel location as `@game/Service/Folder`. A `.server.` or `.client.` file name picks the script class; `init` names its directory.",
+        "items": [
+          {
+            "type": "string",
+            "description": "The folder on disk, relative to this file."
+          },
+          {
+            "type": "string",
+            "description": "The DataModel location: `@game/Service/Folder`.",
+            "pattern": "^@game/"
+          }
+        ],
+        "minItems": 2,
+        "maxItems": 2,
+        "examples": [
+          [
+            "src/server",
+            "@game/ServerScriptService/Server"
+          ]
+        ]
+      }
     },
     "ingots": {
+      "type": "object",
+      "title": "[ingots]",
+      "description": "The extensions of the project, name to source. An ingot is an executable beside an `ingot.toml`; it edits source before the desugar, lints, formats, and answers the editor. `alloy doc ingots` explains them.",
+      "properties": {},
       "additionalProperties": {
         "description": "Where the ingot comes from: a path relative to this file that holds `ingot.toml` and the binary, or a GitHub release pinned by version.",
+        "oneOf": [
+          {
+            "type": "string",
+            "description": "A directory relative to this file."
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "A directory relative to this file."
+              },
+              "repo": {
+                "type": "string",
+                "description": "`owner/repo` on GitHub; the release `v<version>` holds the zip."
+              },
+              "version": {
+                "type": "string",
+                "description": "The release version to pin."
+              },
+              "asset": {
+                "type": "string",
+                "description": "The asset name in the release. Unset means `<name>-ingot-<target>.zip`, then `<name>-ingot.zip`."
+              },
+              "order": {
+                "type": "integer",
+                "description": "The pass the ingot's transform runs in, over the manifest's word. A lower number runs first."
+              },
+              "lints": {
+                "type": "object",
+                "description": "Lints of this ingot switched on or off by name, over the manifest's defaults.",
+                "additionalProperties": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        ],
         "examples": [
           "ingots/tailwind",
           {
             "repo": "alloy-luau/tailwind-ingot",
             "version": "0.1.0"
           }
-        ],
-        "oneOf": [
-          {
-            "description": "A directory relative to this file.",
-            "type": "string"
-          },
-          {
-            "additionalProperties": false,
-            "properties": {
-              "asset": {
-                "description": "The asset name in the release. Unset means `<name>-ingot-<target>.zip`, then `<name>-ingot.zip`.",
-                "type": "string"
-              },
-              "lints": {
-                "additionalProperties": {
-                  "type": "boolean"
-                },
-                "description": "Lints of this ingot switched on or off by name, over the manifest's defaults.",
-                "type": "object"
-              },
-              "order": {
-                "description": "The pass the ingot's transform runs in, over the manifest's word. A lower number runs first.",
-                "type": "integer"
-              },
-              "path": {
-                "description": "A directory relative to this file.",
-                "type": "string"
-              },
-              "repo": {
-                "description": "`owner/repo` on GitHub; the release `v<version>` holds the zip.",
-                "type": "string"
-              },
-              "version": {
-                "description": "The release version to pin.",
-                "type": "string"
-              }
-            },
-            "type": "object"
-          }
         ]
-      },
-      "description": "The extensions of the project, name to source. An ingot is an executable beside an `ingot.toml`; it edits source before the desugar, lints, formats, and answers the editor. `alloy doc ingots` explains them.",
+      }
+    },
+    "ingot": {
+      "type": "object",
+      "title": "[ingot]",
+      "description": "One table per ingot, `[ingot.<name>]`: its options, over the defaults its manifest declares.",
       "properties": {},
-      "title": "[ingots]",
-      "type": "object"
-    },
-    "lint": {
-      "additionalProperties": false,
-      "description": "The level of each lint under `alloy flux` and `alloy lint`. A list takes a lint name or a group name: correctness, suspicious, style, complexity, perf, roblox, pedantic, naming, or luau for the type checker's own. A name beats its group. `alloy doc lints` names them.",
-      "properties": {
-        "allow": {
-          "default": [],
-          "description": "Lints or groups that stay silent.",
-          "items": {
-            "anyOf": [
-              {
-                "enum": [
-                  "correctness",
-                  "suspicious",
-                  "style",
-                  "complexity",
-                  "perf",
-                  "roblox",
-                  "pedantic",
-                  "naming",
-                  "luau",
-                  "optional_access",
-                  "unreachable_default",
-                  "empty_default",
-                  "unused_import",
-                  "self_assignment",
-                  "unreachable_code",
-                  "constant_condition",
-                  "duplicate_key",
-                  "misplaced_not",
-                  "identical_branches",
-                  "private_access",
-                  "circular_import",
-                  "and_or_ternary",
-                  "unused_variable",
-                  "empty_block",
-                  "bool_comparison",
-                  "needless_bool",
-                  "manual_safe_access",
-                  "manual_coalesce",
-                  "nil_check_call",
-                  "manual_type_test",
-                  "legacy_iterator",
-                  "manual_floor_div",
-                  "manual_push",
-                  "concat_interpolation",
-                  "raw_pcall",
-                  "raw_require",
-                  "manual_class",
-                  "manual_ternary_return",
-                  "redundant_return",
-                  "local_then_return",
-                  "numeric_for_index",
-                  "too_many_arguments",
-                  "too_many_lines",
-                  "deep_nesting",
-                  "cognitive_complexity",
-                  "collapsible_if",
-                  "collapsible_else_if",
-                  "concat_in_loop",
-                  "service_in_loop",
-                  "table_insert_position",
-                  "deprecated_global",
-                  "manual_child_lookup",
-                  "deprecated_method",
-                  "instance_new_parent",
-                  "deprecated_body_mover",
-                  "explicit_any",
-                  "implicit_any",
-                  "missing_return_type",
-                  "todo_comment",
-                  "print_debug",
-                  "missing_doc",
-                  "camel_case_name",
-                  "type_case",
-                  "pascal_case_function"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "type": "array"
-        },
-        "deny": {
-          "default": [],
-          "description": "Lints or groups that fail the run.",
-          "items": {
-            "anyOf": [
-              {
-                "enum": [
-                  "correctness",
-                  "suspicious",
-                  "style",
-                  "complexity",
-                  "perf",
-                  "roblox",
-                  "pedantic",
-                  "naming",
-                  "luau",
-                  "optional_access",
-                  "unreachable_default",
-                  "empty_default",
-                  "unused_import",
-                  "self_assignment",
-                  "unreachable_code",
-                  "constant_condition",
-                  "duplicate_key",
-                  "misplaced_not",
-                  "identical_branches",
-                  "private_access",
-                  "circular_import",
-                  "and_or_ternary",
-                  "unused_variable",
-                  "empty_block",
-                  "bool_comparison",
-                  "needless_bool",
-                  "manual_safe_access",
-                  "manual_coalesce",
-                  "nil_check_call",
-                  "manual_type_test",
-                  "legacy_iterator",
-                  "manual_floor_div",
-                  "manual_push",
-                  "concat_interpolation",
-                  "raw_pcall",
-                  "raw_require",
-                  "manual_class",
-                  "manual_ternary_return",
-                  "redundant_return",
-                  "local_then_return",
-                  "numeric_for_index",
-                  "too_many_arguments",
-                  "too_many_lines",
-                  "deep_nesting",
-                  "cognitive_complexity",
-                  "collapsible_if",
-                  "collapsible_else_if",
-                  "concat_in_loop",
-                  "service_in_loop",
-                  "table_insert_position",
-                  "deprecated_global",
-                  "manual_child_lookup",
-                  "deprecated_method",
-                  "instance_new_parent",
-                  "deprecated_body_mover",
-                  "explicit_any",
-                  "implicit_any",
-                  "missing_return_type",
-                  "todo_comment",
-                  "print_debug",
-                  "missing_doc",
-                  "camel_case_name",
-                  "type_case",
-                  "pascal_case_function"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "type": "array"
-        },
-        "strict": {
-          "default": false,
-          "description": "Turns the pedantic group on, at warn: `implicit_any`, `missing_return_type`, `explicit_any`, `todo_comment`, `print_debug`, `missing_doc`.",
-          "type": "boolean"
-        },
-        "warn": {
-          "default": [],
-          "description": "Lints or groups that print and pass.",
-          "items": {
-            "anyOf": [
-              {
-                "enum": [
-                  "correctness",
-                  "suspicious",
-                  "style",
-                  "complexity",
-                  "perf",
-                  "roblox",
-                  "pedantic",
-                  "naming",
-                  "luau",
-                  "optional_access",
-                  "unreachable_default",
-                  "empty_default",
-                  "unused_import",
-                  "self_assignment",
-                  "unreachable_code",
-                  "constant_condition",
-                  "duplicate_key",
-                  "misplaced_not",
-                  "identical_branches",
-                  "private_access",
-                  "circular_import",
-                  "and_or_ternary",
-                  "unused_variable",
-                  "empty_block",
-                  "bool_comparison",
-                  "needless_bool",
-                  "manual_safe_access",
-                  "manual_coalesce",
-                  "nil_check_call",
-                  "manual_type_test",
-                  "legacy_iterator",
-                  "manual_floor_div",
-                  "manual_push",
-                  "concat_interpolation",
-                  "raw_pcall",
-                  "raw_require",
-                  "manual_class",
-                  "manual_ternary_return",
-                  "redundant_return",
-                  "local_then_return",
-                  "numeric_for_index",
-                  "too_many_arguments",
-                  "too_many_lines",
-                  "deep_nesting",
-                  "cognitive_complexity",
-                  "collapsible_if",
-                  "collapsible_else_if",
-                  "concat_in_loop",
-                  "service_in_loop",
-                  "table_insert_position",
-                  "deprecated_global",
-                  "manual_child_lookup",
-                  "deprecated_method",
-                  "instance_new_parent",
-                  "deprecated_body_mover",
-                  "explicit_any",
-                  "implicit_any",
-                  "missing_return_type",
-                  "todo_comment",
-                  "print_debug",
-                  "missing_doc",
-                  "camel_case_name",
-                  "type_case",
-                  "pascal_case_function"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "string"
-              }
-            ]
-          },
-          "type": "array"
-        }
-      },
-      "title": "[lint]",
-      "type": "object"
-    },
-    "mount": {
       "additionalProperties": {
-        "description": "The path on disk, relative to this file, and the DataModel location as `@game/Service/Folder`. A `.server.` or `.client.` file name picks the script class; `init` names its directory.",
-        "examples": [
-          [
-            "src/server",
-            "@game/ServerScriptService/Server"
-          ]
-        ],
-        "items": [
-          {
-            "description": "The folder on disk, relative to this file.",
-            "type": "string"
-          },
-          {
-            "description": "The DataModel location: `@game/Service/Folder`.",
-            "pattern": "^@game/",
-            "type": "string"
-          }
-        ],
-        "maxItems": 2,
-        "minItems": 2,
-        "type": "array"
-      },
-      "description": "Where each folder lands in the DataModel: `alias = [path, mount]`. The folder at `path` lands at `mount`, `require(\"@alias/x\")` resolves through it, and with one or more mounts `alloy build` writes `default.project.json` over the sources and `.alloy/build.project.json` over the output.",
-      "properties": {},
-      "title": "[mount]",
-      "type": "object"
-    },
-    "project": {
-      "additionalProperties": false,
-      "description": "The Rojo project the mounts describe.",
-      "properties": {
-        "name": {
-          "default": "game",
-          "description": "The name in `default.project.json` and `.alloy/build.project.json`.",
-          "type": "string"
-        },
-        "runtime": {
-          "default": "@game/ReplicatedStorage/Alloy",
-          "description": "Where `alloy.luau` mounts. Emitted code requires it by a relative instance path from each file's mount.",
-          "type": "string"
-        },
-        "sourcemap": {
-          "default": true,
-          "description": "Write `.alloy/sourcemap.json` on every build. The language server reads it for `@game/` completion and instance types.",
-          "type": "boolean"
-        }
-      },
-      "title": "[project]",
-      "type": "object"
-    },
-    "test": {
-      "additionalProperties": false,
-      "description": "Where `alloy test` writes the specs: one lest spec per source with a `@test`, with everything the tests reach. `alloy doc test` explains it.",
-      "properties": {
-        "lest": {
-          "default": true,
-          "description": "Write `lest.toml` and the `@lest` alias of `.luaurc` when the root has none.",
-          "type": "boolean"
-        },
-        "out": {
-          "default": "tests",
-          "description": "The folder the specs land in, relative to this file. Each source with a `@test` writes `<out>/<path>.spec.luau`.",
-          "type": "string"
-        },
-        "suite": {
-          "default": "alloy",
-          "description": "The suite name in `lest.toml`.",
-          "type": "string"
-        }
-      },
-      "title": "[test]",
-      "type": "object"
+        "type": "object",
+        "description": "The options of one ingot, over the defaults its manifest declares. The key is the ingot's name under `[ingots]`; a key the manifest does not declare is an error.",
+        "additionalProperties": true
+      }
     }
-  },
-  "title": "alloy.toml",
-  "type": "object"
+  }
 }

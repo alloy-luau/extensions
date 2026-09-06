@@ -289,7 +289,7 @@
 				},
 				{
 					"name": "storage.type.aly",
-					"match": "\\b(?:local|const|function|async|macro|struct|trait|impl|enum|interface|extends|type|export|import|from|remote|declare|attribute)\\b"
+					"match": "\\b(?:local|const|function|async|macro|struct|trait|impl|enum|interface|extends|type|export|import|from|remote|declare|extern|class|attribute)\\b"
 				},
 				{
 					"name": "keyword.operator.wordlike.aly",
