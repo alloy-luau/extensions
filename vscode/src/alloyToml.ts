@@ -471,6 +471,13 @@ export const TABLES: Table[] = [
 				values: ['true', 'false'],
 			},
 			{
+				name: 'expand_imports',
+				type: 'bool',
+				default: 'false',
+				doc: "Alloy's own: an `import { }` or `export { }` list with more than one name breaks one name per line. Off, a trailing comma in the list asks for the same.",
+				values: ['true', 'false'],
+			},
+			{
 				name: 'exclude',
 				type: 'string[]',
 				default: '[]',
