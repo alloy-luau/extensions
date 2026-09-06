@@ -375,6 +375,72 @@
       "title": "[fmt]",
       "type": "object"
     },
+    "ingot": {
+      "additionalProperties": {
+        "additionalProperties": true,
+        "description": "The options of one ingot, over the defaults its manifest declares. The key is the ingot's name under `[ingots]`; a key the manifest does not declare is an error.",
+        "type": "object"
+      },
+      "description": "One table per ingot, `[ingot.<name>]`: its options, over the defaults its manifest declares.",
+      "properties": {},
+      "title": "[ingot]",
+      "type": "object"
+    },
+    "ingots": {
+      "additionalProperties": {
+        "description": "Where the ingot comes from: a path relative to this file that holds `ingot.toml` and the binary, or a GitHub release pinned by version.",
+        "examples": [
+          "ingots/tailwind",
+          {
+            "repo": "alloy-luau/tailwind-ingot",
+            "version": "0.1.0"
+          }
+        ],
+        "oneOf": [
+          {
+            "description": "A directory relative to this file.",
+            "type": "string"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "asset": {
+                "description": "The asset name in the release. Unset means `<name>-ingot-<target>.zip`, then `<name>-ingot.zip`.",
+                "type": "string"
+              },
+              "lints": {
+                "additionalProperties": {
+                  "type": "boolean"
+                },
+                "description": "Lints of this ingot switched on or off by name, over the manifest's defaults.",
+                "type": "object"
+              },
+              "order": {
+                "description": "The pass the ingot's transform runs in, over the manifest's word. A lower number runs first.",
+                "type": "integer"
+              },
+              "path": {
+                "description": "A directory relative to this file.",
+                "type": "string"
+              },
+              "repo": {
+                "description": "`owner/repo` on GitHub; the release `v<version>` holds the zip.",
+                "type": "string"
+              },
+              "version": {
+                "description": "The release version to pin.",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ]
+      },
+      "description": "The extensions of the project, name to source. An ingot is an executable beside an `ingot.toml`; it edits source before the desugar, lints, formats, and answers the editor. `alloy doc ingots` explains them.",
+      "properties": {},
+      "title": "[ingots]",
+      "type": "object"
+    },
     "lint": {
       "additionalProperties": false,
       "description": "The level of each lint under `alloy flux` and `alloy lint`. A list takes a lint name or a group name: correctness, suspicious, style, complexity, perf, roblox, pedantic, naming, or luau for the type checker's own. A name beats its group. `alloy doc lints` names them.",
