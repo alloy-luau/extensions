@@ -69,11 +69,11 @@
 		"attributes": {
 			"patterns": [
 				{
-					"comment": "name={expr}, name=\"text\", name='text', name=`text`",
-					"name": "meta.attribute.alx",
+					"comment": "name={expr}, name=\"text\", name='text', name=`text`. A prop is a property of the element, and scopes as one: themes color an attribute name with their strings.",
+					"name": "meta.property.alx",
 					"begin": "([A-Za-z_][A-Za-z0-9_.:-]*)\\s*(=)",
 					"beginCaptures": {
-						"1": { "name": "entity.other.attribute-name.alx" },
+						"1": { "name": "variable.other.property.alx" },
 						"2": { "name": "keyword.operator.assignment.alx" }
 					},
 					"end": "(?<=[}\"'`])|(?=\\s|/>|>)",
@@ -88,7 +88,7 @@
 				},
 				{ "include": "#comment" },
 				{
-					"name": "entity.other.attribute-name.alx",
+					"name": "variable.other.property.alx",
 					"match": "[A-Za-z_][A-Za-z0-9_.:-]*"
 				}
 			]
