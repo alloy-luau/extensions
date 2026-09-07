@@ -636,8 +636,8 @@
             },
             "attribute_per_line": {
               "type": "boolean",
-              "description": "A tag that breaks its attributes puts every attribute on its own line, rather than as many as fit.",
-              "default": false
+              "description": "A tag that breaks its attributes puts every attribute on its own line, the way Prettier lays JSX out; `false` packs as many as fit.",
+              "default": true
             },
             "self_closing_space": {
               "type": "boolean",
