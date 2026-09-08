@@ -110,8 +110,9 @@
 					]
 				},
 				{
+					"comment": "A long string keeps the leveled form; `[[` opens a nested array in Alloy.",
 					"name": "string.quoted.other.multiline.aly",
-					"begin": "\\[(=*)\\[",
+					"begin": "\\[(=+)\\[",
 					"end": "\\]\\1\\]"
 				}
 			]
@@ -380,7 +381,7 @@
 				},
 				{
 					"name": "punctuation.definition.array.aly",
-					"match": "\\[(?![\\[=])|\\]"
+					"match": "\\[(?!=+\\[)|\\]"
 				}
 			]
 		},
