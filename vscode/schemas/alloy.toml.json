@@ -58,7 +58,7 @@
         },
         "std_require": {
           "type": "string",
-          "description": "The string emitted code passes to `require` for the runtime. Unset means a relative path to the `alloy.luau` the build writes, or the instance path through the mounts."
+          "description": "The string emitted code passes to `require` for the runtime. Unset means a relative path to the `alloy.luau` the build writes, or the runtime's instance path when the tree holds the file."
         },
         "erase_type_imports": {
           "type": "boolean",
@@ -95,6 +95,9 @@
                   "naming",
                   "luau",
                   "optional_access",
+                  "dropped_result",
+                  "static_call",
+                  "argument_count",
                   "unreachable_default",
                   "empty_default",
                   "unused_import",
@@ -105,6 +108,7 @@
                   "misplaced_not",
                   "identical_branches",
                   "private_access",
+                  "duplicate_function",
                   "circular_import",
                   "and_or_ternary",
                   "unused_variable",
@@ -147,6 +151,7 @@
                   "missing_return_type",
                   "todo_comment",
                   "print_debug",
+                  "const_mutation",
                   "missing_doc",
                   "camel_case_name",
                   "type_case",
@@ -178,6 +183,9 @@
                   "naming",
                   "luau",
                   "optional_access",
+                  "dropped_result",
+                  "static_call",
+                  "argument_count",
                   "unreachable_default",
                   "empty_default",
                   "unused_import",
@@ -188,6 +196,7 @@
                   "misplaced_not",
                   "identical_branches",
                   "private_access",
+                  "duplicate_function",
                   "circular_import",
                   "and_or_ternary",
                   "unused_variable",
@@ -230,6 +239,7 @@
                   "missing_return_type",
                   "todo_comment",
                   "print_debug",
+                  "const_mutation",
                   "missing_doc",
                   "camel_case_name",
                   "type_case",
@@ -261,6 +271,9 @@
                   "naming",
                   "luau",
                   "optional_access",
+                  "dropped_result",
+                  "static_call",
+                  "argument_count",
                   "unreachable_default",
                   "empty_default",
                   "unused_import",
@@ -271,6 +284,7 @@
                   "misplaced_not",
                   "identical_branches",
                   "private_access",
+                  "duplicate_function",
                   "circular_import",
                   "and_or_ternary",
                   "unused_variable",
@@ -313,6 +327,7 @@
                   "missing_return_type",
                   "todo_comment",
                   "print_debug",
+                  "const_mutation",
                   "missing_doc",
                   "camel_case_name",
                   "type_case",
@@ -670,17 +685,30 @@
     "project": {
       "type": "object",
       "title": "[project]",
-      "description": "The Rojo project the mounts describe.",
+      "description": "The DataModel tree: which project file describes it, and what `alloy build` writes from it.",
       "properties": {
         "name": {
           "type": "string",
-          "description": "The name in `default.project.json` and `.alloy/build.project.json`.",
+          "description": "The name in the project files Alloy writes. A project file at the root carries its own name, which wins.",
           "default": "game"
+        },
+        "file": {
+          "type": "string",
+          "description": "The Rojo or Argon project file to read, relative to this file. Unset means `default.project.json`, then the one `*.project.json` at the root. Its tree says where each folder lands; a `[mount]` table here wins over it."
         },
         "runtime": {
           "type": "string",
-          "description": "Where `alloy.luau` mounts. Emitted code requires it by a relative instance path from each file's mount.",
-          "default": "@game/ReplicatedStorage/Alloy"
+          "description": "Where `alloy.luau` lands, as `@game/Service/Folder`. Emitted code requires it by an instance path. Unset means the place the project file already gives it, then the node that mounts `[build] out`, then `@game/ReplicatedStorage/Alloy`."
+        },
+        "source_of_truth": {
+          "type": "boolean",
+          "description": "The `[mount]` table is the tree: `alloy build` writes `default.project.json` and `.alloy/build.project.json` from it. Off, Alloy writes neither file, and the table only rewrites an `@alias` require into an instance path in the ship artifact, for a sync tool that owns the tree itself.",
+          "default": true
+        },
+        "mount_aliases": {
+          "type": "boolean",
+          "description": "The `[mount]` table names aliases too: the compiler and the language server serve them beside the ones `.config.luau` or `.luaurc` declares, so `@shared/x` completes and resolves. A name in the Luau configuration wins. Off, only the Luau configuration names aliases.",
+          "default": true
         },
         "sourcemap": {
           "type": "boolean",
@@ -693,7 +721,7 @@
     "mount": {
       "type": "object",
       "title": "[mount]",
-      "description": "Where each folder lands in the DataModel: `alias = [path, mount]`. The folder at `path` lands at `mount`, `require(\"@alias/x\")` resolves through it, and with one or more mounts `alloy build` writes `default.project.json` over the sources and `.alloy/build.project.json` over the output.",
+      "description": "Where each folder lands in the DataModel: `alias = [path, mount]`. A tool that reads a Rojo or Argon project file needs no table here; Alloy reads `default.project.json`. A tool with its own format describes the tree here, and this table then wins over any project file. With it, `alloy build` also writes `default.project.json` over the sources.",
       "properties": {},
       "additionalProperties": {
         "type": "array",
