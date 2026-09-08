@@ -778,7 +778,7 @@
 			"match": "\\b(?:table|string|math|os|task|coroutine|bit32|utf8|buffer|debug|vector|game|workspace|script|plugin)\\b(?=\\s*[.:])"
 		},
 		"enum-body": {
-			"comment": "enum Name as ... end: a variant is a name, a payload is a type list, a value variant takes an expression",
+			"comment": "enum Name as ... end: a variant is a name, a payload is a type list, a value variant takes an expression; the end may sit on the as line",
 			"begin": "^\\s*(?:(export)\\s+)?(enum)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+(as)\\b",
 			"beginCaptures": {
 				"1": {
@@ -794,7 +794,7 @@
 					"name": "keyword.control.aly"
 				}
 			},
-			"end": "^\\s*(end)\\b",
+			"end": "\\b(end)\\b",
 			"endCaptures": {
 				"1": {
 					"name": "keyword.control.aly"
