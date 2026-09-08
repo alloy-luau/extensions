@@ -331,10 +331,10 @@
 			]
 		},
 		"macro-call": {
-			"comment": "$name( and $Module.name( are macro calls; intrinsics carry a .intrinsic suffix on the same scope so they color alike by default",
+			"comment": "$name( and $Module.name( are macro calls, and $set[ is the bracket form; intrinsics carry a .intrinsic suffix on the same scope so they color alike by default",
 			"patterns": [
 				{
-					"match": "(\\$)(dbg|todo|unreachable|assert|assert_eq|nameof|stringify|matches|bnot)\\b(?=\\()",
+					"match": "(\\$)(dbg|todo|unreachable|assert|assert_eq|nameof|stringify|matches|bnot|set|map)\\b(?=[\\(\\[])",
 					"captures": {
 						"1": {
 							"name": "punctuation.definition.macro.aly"
@@ -345,7 +345,7 @@
 					}
 				},
 				{
-					"match": "(\\$)([A-Za-z_][A-Za-z0-9_.]*)(?=\\()",
+					"match": "(\\$)([A-Za-z_][A-Za-z0-9_.]*)(?=[\\(\\[])",
 					"captures": {
 						"1": {
 							"name": "punctuation.definition.macro.aly"
