@@ -757,14 +757,14 @@
 					]
 				},
 				{
-					"comment": "impl Trait for Type and impl Type",
+					"comment": "impl Trait for Type as and impl Type as: the header stops at `as`, so the `as` and the `end` of a one-line body stay keywords",
 					"begin": "\\b(impl)\\s+",
 					"beginCaptures": {
 						"1": {
 							"name": "storage.type.aly"
 						}
 					},
-					"end": "$",
+					"end": "(?=\\b(?:as|end)\\b)|$",
 					"name": "meta.type.impl.aly",
 					"patterns": [
 						{

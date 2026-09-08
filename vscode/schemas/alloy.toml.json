@@ -71,12 +71,17 @@
     "lint": {
       "type": "object",
       "title": "[lint]",
-      "description": "The level of each lint under `alloy flux` and `alloy lint`. A list takes a lint name or a group name: correctness, suspicious, style, complexity, perf, roblox, pedantic, naming, or luau for the type checker's own. A name beats its group. `alloy doc lints` names them.",
+      "description": "Where every lint starts under `alloy flux` and `alloy lint`. `[lint.rules]` then sets one lint or one group. `alloy doc lints` names them.",
       "properties": {
+        "recommended": {
+          "type": "boolean",
+          "description": "Apply the level each lint declares. Off, every lint starts at `allow`, and `[lint.rules]` alone turns one on.",
+          "default": true
+        },
         "strict": {
           "type": "boolean",
           "description": "Turns the pedantic group on, at warn: `implicit_any`, `missing_return_type`, `explicit_any`, `todo_comment`, `print_debug`, `missing_doc`.",
-          "default": false
+          "default": true
         },
         "deny": {
           "type": "array",
@@ -163,7 +168,7 @@
               }
             ]
           },
-          "description": "Lints or groups that fail the run.",
+          "description": "Deprecated: lints or groups that fail the run. Write `[lint.rules] <name> = \"deny\"`.",
           "default": []
         },
         "warn": {
@@ -251,7 +256,7 @@
               }
             ]
           },
-          "description": "Lints or groups that print and pass.",
+          "description": "Deprecated: lints or groups that print and pass. Write `[lint.rules] <name> = \"warn\"`.",
           "default": []
         },
         "allow": {
@@ -339,8 +344,125 @@
               }
             ]
           },
-          "description": "Lints or groups that stay silent.",
+          "description": "Deprecated: lints or groups that stay silent. Write `[lint.rules] <name> = \"allow\"`.",
           "default": []
+        },
+        "rules": {
+          "type": "object",
+          "title": "[lint.rules]",
+          "description": "The level of one lint: a lint name, a group name (correctness, suspicious, style, complexity, perf, roblox, pedantic, naming, or luau for the type checker's own), an ingot's `<ingot>/<lint>`, or `alx.<name>` for a markup lint. A name beats its group.",
+          "properties": {},
+          "additionalProperties": {
+            "description": "The level of one lint, one group, or a table of them under a prefix: `alx.static_conditional_child = \"warn\"`.",
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "allow",
+                  "warn",
+                  "deny"
+                ],
+                "description": "What the lint does when it fires: `allow` is silent, `warn` prints and passes, `deny` prints and fails the run."
+              },
+              {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "warn",
+                    "deny"
+                  ],
+                  "description": "What the lint does when it fires: `allow` is silent, `warn` prints and passes, `deny` prints and fails the run."
+                }
+              }
+            ]
+          },
+          "propertyNames": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "correctness",
+                  "suspicious",
+                  "style",
+                  "complexity",
+                  "perf",
+                  "roblox",
+                  "pedantic",
+                  "naming",
+                  "luau",
+                  "optional_access",
+                  "dropped_result",
+                  "static_call",
+                  "argument_count",
+                  "unreachable_default",
+                  "empty_default",
+                  "unused_import",
+                  "self_assignment",
+                  "unreachable_code",
+                  "constant_condition",
+                  "duplicate_key",
+                  "misplaced_not",
+                  "identical_branches",
+                  "private_access",
+                  "duplicate_function",
+                  "circular_import",
+                  "and_or_ternary",
+                  "unused_variable",
+                  "unused_function",
+                  "empty_block",
+                  "bool_comparison",
+                  "needless_bool",
+                  "manual_safe_access",
+                  "manual_coalesce",
+                  "nil_check_call",
+                  "manual_type_test",
+                  "legacy_iterator",
+                  "manual_floor_div",
+                  "manual_push",
+                  "concat_interpolation",
+                  "raw_pcall",
+                  "raw_require",
+                  "manual_class",
+                  "manual_ternary_return",
+                  "redundant_return",
+                  "local_then_return",
+                  "numeric_for_index",
+                  "missing_reason",
+                  "too_many_arguments",
+                  "too_many_lines",
+                  "deep_nesting",
+                  "cognitive_complexity",
+                  "collapsible_if",
+                  "collapsible_else_if",
+                  "concat_in_loop",
+                  "service_in_loop",
+                  "table_insert_position",
+                  "deprecated_global",
+                  "manual_child_lookup",
+                  "deprecated_method",
+                  "instance_new_parent",
+                  "deprecated_body_mover",
+                  "explicit_any",
+                  "implicit_any",
+                  "missing_return_type",
+                  "todo_comment",
+                  "print_debug",
+                  "const_mutation",
+                  "missing_doc",
+                  "camel_case_name",
+                  "type_case",
+                  "pascal_case_function",
+                  "alx.static_conditional_child",
+                  "alx"
+                ]
+              },
+              {
+                "type": "string"
+              }
+            ]
+          }
         }
       },
       "additionalProperties": false
@@ -443,6 +565,11 @@
       "title": "[fmt]",
       "description": "How Anneal, `alloy fmt`, lays code out. The names follow larvae and stylua where the option is theirs; `alloy doc fmt` explains each.",
       "properties": {
+        "recommended": {
+          "type": "boolean",
+          "description": "Apply the recommended layout, the defaults below. Off, the formatter preserves what the file does: no line is reflowed, quotes and blank lines stay as written, and the indent comes from the file. The keys set here still apply over that.",
+          "default": true
+        },
         "column_width": {
           "type": "integer",
           "minimum": 0,
@@ -452,11 +579,12 @@
         "line_endings": {
           "type": "string",
           "enum": [
+            "input",
             "unix",
             "windows"
           ],
-          "description": "The line ending of the written file.",
-          "default": "unix"
+          "description": "The line ending of the written file. `input` keeps the endings the file already uses.",
+          "default": "input"
         },
         "indent_type": {
           "type": "string",
@@ -903,7 +1031,7 @@
         "lints": {
           "type": "object",
           "title": "[alx.lints]",
-          "description": "The levels of the markup lints.",
+          "description": "Deprecated: the levels of the markup lints. Write `[lint.rules] alx.<name> = \"allow\" | \"warn\" | \"deny\"`.",
           "properties": {
             "static_conditional_child": {
               "type": "string",
@@ -912,7 +1040,7 @@
                 "warn",
                 "error"
               ],
-              "description": "Markup in a child expression that no function encloses: it is built once, not on each render."
+              "description": "Deprecated: write `[lint.rules] alx.static_conditional_child`. Markup in a child expression that no function encloses: it is built once, not on each render."
             }
           },
           "additionalProperties": false
