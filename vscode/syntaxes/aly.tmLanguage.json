@@ -53,8 +53,14 @@
 		"comment": {
 			"patterns": [
 				{
+					"comment": "--!strict and the --@alloy- directives: the name reads as a keyword, the rest as a comment",
 					"name": "comment.line.directive.aly",
-					"match": "--!\\w+.*$"
+					"match": "(--(?:!\\w+|@alloy-[a-z-]+))(.*)$",
+					"captures": {
+						"1": {
+							"name": "keyword.control.directive.aly"
+						}
+					}
 				},
 				{
 					"name": "comment.block.aly",
