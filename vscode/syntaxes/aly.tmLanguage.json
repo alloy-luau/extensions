@@ -166,14 +166,22 @@
 					}
 				},
 				{
-					"comment": "struct Name as, enum Name as, trait Name, interface Name [extends A, B] as",
-					"match": "\\b(struct|enum|trait|interface)\\s+([A-Za-z_][A-Za-z0-9_]*)(?:\\s*<[^>]*>)?",
+					"comment": "struct Name<T> as, enum Name as, trait Name, interface Name [extends A, B] as",
+					"match": "\\b(struct|enum|trait|interface)\\s+([A-Za-z_][A-Za-z0-9_]*)(\\s*<[^>]*>)?",
 					"captures": {
 						"1": {
 							"name": "storage.type.aly"
 						},
 						"2": {
 							"name": "entity.name.type.aly"
+						},
+						"3": {
+							"name": "meta.type.generics.aly",
+							"patterns": [
+								{
+									"include": "#type-content"
+								}
+							]
 						}
 					}
 				},
