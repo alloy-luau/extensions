@@ -8,7 +8,6 @@ import {
 	type ExtensionContext,
 	extensions,
 	type OutputChannel,
-	type TextDocumentChangeEvent,
 	window,
 	workspace,
 } from 'vscode'
@@ -245,9 +244,12 @@ async function serverSettings(): Promise<Record<string, unknown>> {
 	const hints = workspace.getConfiguration('alloy-luau.inlayHints')
 	const plugin = workspace.getConfiguration('alloy-luau.studioPlugin')
 	const sourcemap = workspace.getConfiguration('alloy-luau.sourcemap')
+	const alloy = workspace.getConfiguration('alloy-luau')
 	return {
 		luauLsp: JSON.parse(JSON.stringify(luauLsp)),
 		fflags: await fflagsSection(),
+		autoCloseTags: alloy.get<boolean>('autoCloseTags', true),
+		autoEnd: alloy.get<boolean>('autoEnd', true),
 		inlayHints: {
 			variableTypes: hints.get<boolean>('variableTypes', true),
 			parameterTypes: hints.get<boolean>('parameterTypes', true),
@@ -368,65 +370,9 @@ async function stopClient(): Promise<void> {
 	await running.stop()
 }
 
-const ALLOY_LANGUAGES = new Set([
-	'alloy-luau',
-	'alloy-luau-jsx',
-	'alloy-luau-declaration',
-])
-
-/**
- * After Enter on a line that opens a block, the server says whether the
- * block still lacks its `end`, and the `end` lands a line below the
- * cursor with the opener's indentation. The inserted text starts with a
- * newline too, so an edit that ends in `end` is skipped.
- */
-async function maybeInsertEnd(event: TextDocumentChangeEvent): Promise<void> {
-	if (client === undefined || !ALLOY_LANGUAGES.has(event.document.languageId)) {
-		return
-	}
-	const on = workspace
-		.getConfiguration('alloy-luau.completion')
-		.get<boolean>('autocompleteEnd', true)
-	if (!on || event.contentChanges.length !== 1) {
-		return
-	}
-	const change = event.contentChanges[0]
-	if (
-		!change.text.startsWith('\n') ||
-		change.text.trimEnd().endsWith('end') ||
-		change.rangeLength !== 0
-	) {
-		return
-	}
-	const line = change.range.start.line
-	const answer = await client.sendRequest<{ indent: string } | null>(
-		'alloy/blockEnd',
-		{ textDocument: { uri: event.document.uri.toString() }, line },
-	)
-	if (answer === null || answer === undefined) {
-		return
-	}
-	const editor = window.activeTextEditor
-	if (editor === undefined || editor.document !== event.document) {
-		return
-	}
-	const newLine = line + 1
-	if (newLine >= editor.document.lineCount) {
-		return
-	}
-	const at = editor.document.lineAt(newLine).range.end
-	await editor.edit((builder) => builder.insert(at, `\n${answer.indent}end`), {
-		undoStopBefore: false,
-		undoStopAfter: true,
-	})
-}
-
 export async function activate(context: ExtensionContext): Promise<void> {
 	storage = context.globalStorageUri.fsPath
 	context.subscriptions.push(
-		workspace.onDidChangeTextDocument((event) => {
-			void maybeInsertEnd(event)
-		}),
 		commands.registerCommand('alloy-luau.restartServer', async () => {
 			await stopClient()
 			await startClient()
@@ -465,10 +411,12 @@ export async function activate(context: ExtensionContext): Promise<void> {
 				(event.affectsConfiguration('alloy-luau.inlayHints') ||
 					event.affectsConfiguration('alloy-luau.studioPlugin') ||
 					event.affectsConfiguration('alloy-luau.sourcemap.file') ||
+					event.affectsConfiguration('alloy-luau.autoCloseTags') ||
+					event.affectsConfiguration('alloy-luau.autoEnd') ||
 					event.affectsConfiguration('luau-lsp'))
 			) {
 				await client.sendNotification('workspace/didChangeConfiguration', {
-					settings: serverSettings(),
+					settings: await serverSettings(),
 				})
 			}
 		}),

@@ -31,6 +31,24 @@ Studio (default true), `enableNewSolver` keeps the new type solver on
 (default true; Alloy's emitted code needs it), and `override` sets
 single flags last. A change restarts the server.
 
+## Typing helpers
+
+Two settings write the closing half of a pair while you type. Both are on
+by default.
+
+`alloy-luau.autoEnd` offers the `end` of a block after Enter. The line
+that opens the block decides the indentation, and the cursor lands on the
+empty line between the two: `function`, `if`, `for`, `while`, `do`,
+`repeat`, `struct`, `enum`, `interface`, `trait`, `impl`, `macro`, and
+`match`.
+
+`alloy-luau.autoCloseTags` writes the closing tag of a `.alx` element
+after the `>` that ends the opening tag, and leaves the cursor between
+the two. A self-closing tag, a closing tag, a `>` in a string or a `{ }`
+hole, and an element that already closes get nothing. VS Code sends the
+request only with `editor.formatOnType` on, which this extension turns on
+for Alloy files.
+
 ## Commands
 
 - `Alloy: Restart Language Server`
