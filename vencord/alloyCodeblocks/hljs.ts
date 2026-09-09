@@ -13,12 +13,13 @@ import type { HLJSApi, Language, Mode } from "highlight.js";
 
 const IDENT = /[A-Za-z_][A-Za-z0-9_]*/;
 
-const CONTROL = "if then elseif else end for in while do repeat until return break continue match with as case default try await where";
+const CONTROL = "if then elseif else end for in while do repeat until return break continue match with as case default try await where after";
 const STORAGE = "local const function async macro struct trait impl enum interface extends type export import from remote declare extern class attribute on";
 const WORD_OPERATORS = "and or not band bor bxor bnot shl shr satisfies is";
 
-// `new` and `delete` are contextual: `Vector3.new` is a field. A mode
-// with a lookahead handles them, so they stay out of this table.
+// `new`, `delete`, and `destroy` are contextual: `Vector3.new` is a
+// field. A mode with a lookahead handles them, so they stay out of
+// this table.
 const KEYWORDS = {
     $pattern: "[A-Za-z_][A-Za-z0-9_]*",
     keyword: `${CONTROL} ${STORAGE} ${WORD_OPERATORS}`,
@@ -33,7 +34,7 @@ const KEYWORDS = {
     ].join(" "),
 };
 
-const ALL_KEYWORDS = `${CONTROL} ${STORAGE} ${WORD_OPERATORS} new delete`.split(" ").join("|");
+const ALL_KEYWORDS = `${CONTROL} ${STORAGE} ${WORD_OPERATORS} new delete destroy`.split(" ").join("|");
 
 export function alloy(hljs: HLJSApi): Language {
     const COMMENTS: Mode[] = [
@@ -165,7 +166,7 @@ export function alloy(hljs: HLJSApi): Language {
         variants: [
             { begin: /\b(?:read|write)\b(?=\s+[A-Za-z_({[])/ },
             { begin: /\b(?:private|public)\b(?=\s+(?:function|async|read|write|[A-Za-z_]))/ },
-            { begin: /\b(?:new|delete)\b(?=\s+[A-Za-z_])/ },
+            { begin: /\b(?:new|delete|destroy)\b(?=\s+[A-Za-z_])/ },
         ],
     };
 

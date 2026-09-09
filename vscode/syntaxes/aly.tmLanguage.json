@@ -336,7 +336,12 @@
 				},
 				{
 					"name": "keyword.operator.expression.delete.aly",
-					"match": "^\\s*\\bdelete\\b(?=\\s+[A-Za-z_])|(?<=\\bend\\s|\\bthen\\s|\\bdo\\s|\\belse\\s)\\bdelete\\b(?=\\s+[A-Za-z_])"
+					"match": "^\\s*\\b(?:delete|destroy)\\b(?=\\s+[A-Za-z_])|(?<=\\bend\\s|\\bthen\\s|\\bdo\\s|\\belse\\s)\\b(?:delete|destroy)\\b(?=\\s+[A-Za-z_])"
+				},
+				{
+					"comment": "after opens a timed block, and follows the operand of a destroy",
+					"name": "keyword.control.after.aly",
+					"match": "\\bafter\\b"
 				},
 				{
 					"name": "keyword.operator.type.aly",
