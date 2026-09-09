@@ -161,7 +161,7 @@
 					}
 				},
 				{
-					"match": "\\b(on)\\s+((?:function|struct|enum|variant|field|param|remote|interface|type)(?:\\s*,\\s*(?:function|struct|enum|variant|field|param|remote|interface|type))*)\\b",
+					"match": "\\b(on)\\s+((?:function|struct|enum|variant|field|param|remote|interface|type|local|namespace)(?:\\s*,\\s*(?:function|struct|enum|variant|field|param|remote|interface|type|local|namespace))*)\\b",
 					"captures": {
 						"1": {
 							"name": "keyword.control.aly"
@@ -188,6 +188,18 @@
 									"include": "#type-content"
 								}
 							]
+						}
+					}
+				},
+				{
+					"comment": "namespace Name as",
+					"match": "\\b(namespace)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+					"captures": {
+						"1": {
+							"name": "storage.type.aly"
+						},
+						"2": {
+							"name": "entity.name.namespace.aly"
 						}
 					}
 				},
@@ -304,7 +316,7 @@
 				},
 				{
 					"name": "storage.type.aly",
-					"match": "\\b(?:local|const|function|async|macro|struct|trait|impl|enum|interface|extends|type|export|global|import|from|remote|declare|extern|class|attribute)\\b"
+					"match": "\\b(?:local|const|function|async|macro|namespace|struct|trait|impl|enum|interface|extends|type|export|global|import|from|remote|declare|extern|class|attribute)\\b"
 				},
 				{
 					"name": "keyword.operator.wordlike.aly",
