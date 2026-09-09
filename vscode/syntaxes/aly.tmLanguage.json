@@ -147,7 +147,7 @@
 			"patterns": [
 				{
 					"comment": "attribute name(...) on target, target",
-					"match": "\\b(?:(export)\\s+)?(attribute)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+					"match": "\\b(?:(export|global)\\s+)?(attribute)\\s+([A-Za-z_][A-Za-z0-9_]*)",
 					"captures": {
 						"1": {
 							"name": "storage.type.aly"
@@ -304,7 +304,7 @@
 				},
 				{
 					"name": "storage.type.aly",
-					"match": "\\b(?:local|const|function|async|macro|struct|trait|impl|enum|interface|extends|type|export|import|from|remote|declare|extern|class|attribute)\\b"
+					"match": "\\b(?:local|const|function|async|macro|struct|trait|impl|enum|interface|extends|type|export|global|import|from|remote|declare|extern|class|attribute)\\b"
 				},
 				{
 					"name": "keyword.operator.wordlike.aly",
@@ -785,7 +785,7 @@
 		},
 		"enum-body": {
 			"comment": "enum Name as ... end: a variant is a name, a payload is a type list, a value variant takes an expression; the end may sit on the as line",
-			"begin": "^\\s*(?:(export)\\s+)?(enum)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+(as)\\b",
+			"begin": "^\\s*(?:(export|global)\\s+)?(enum)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+(as)\\b",
 			"beginCaptures": {
 				"1": {
 					"name": "storage.type.aly"
