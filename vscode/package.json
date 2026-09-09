@@ -224,12 +224,12 @@
 				"alloy-luau.autoEnd": {
 					"type": "boolean",
 					"default": true,
-					"description": "After Enter on a line that opens a block, offer its `end`, with the cursor on the empty line between the two: functions, if, loops, do, repeat, struct, enum, interface, trait, impl, macro, and match."
+					"description": "After Enter on a line that opens a block, write its `end` a line below, at the opener's indentation, and leave the cursor on the line between the two: functions, if, loops, do, repeat, struct, enum, interface, trait, impl, macro, and match. Needs editor.formatOnType, which this extension turns on for Alloy files."
 				},
 				"alloy-luau.autoCloseTags": {
 					"type": "boolean",
 					"default": true,
-					"description": "In a .alx file, write the closing tag after the `>` that ends an opening tag, with the cursor between the two. Needs editor.formatOnType, which this extension turns on for Alloy files."
+					"description": "In a .alx file, write the closing tag after the `>` that ends an opening tag, with the cursor between the two."
 				},
 				"alloy-luau.sourcemap.file": {
 					"type": "string",

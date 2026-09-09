@@ -5,9 +5,14 @@ import { homedir } from 'node:os'
 import { delimiter, dirname, join } from 'node:path'
 import {
 	commands,
+	type Disposable,
 	type ExtensionContext,
 	extensions,
+	IndentAction,
+	languages,
 	type OutputChannel,
+	SnippetString,
+	type TextDocumentChangeEvent,
 	window,
 	workspace,
 } from 'vscode'
@@ -267,6 +272,80 @@ async function serverSettings(): Promise<Record<string, unknown>> {
 	}
 }
 
+/** The language of a `.alx` file, the only one that holds markup. */
+const ALX = 'alloy-luau-jsx'
+
+/**
+ * Writes the closing tag after the `>` that ends an opening tag. The
+ * server names the element; the client inserts, because a snippet's
+ * `$0` puts the caret between the two tags and a text edit carries no
+ * caret.
+ */
+async function closeTag(event: TextDocumentChangeEvent): Promise<void> {
+	const document = event.document
+	const change = event.contentChanges[0]
+	if (
+		client === undefined ||
+		document.languageId !== ALX ||
+		event.reason !== undefined ||
+		event.contentChanges.length !== 1 ||
+		change.text !== '>' ||
+		!workspace
+			.getConfiguration('alloy-luau')
+			.get<boolean>('autoCloseTags', true)
+	) {
+		return
+	}
+	const editor = window.activeTextEditor
+	if (editor === undefined || editor.document !== document) {
+		return
+	}
+	const at = document.positionAt(change.rangeOffset + change.text.length)
+	const version = document.version
+	let name: string | undefined
+	try {
+		const answer = await client.sendRequest<{ name?: string } | null>(
+			'alloy/closeTag',
+			{
+				uri: document.uri.toString(),
+				position: { line: at.line, character: at.character },
+			},
+		)
+		name = answer?.name
+	} catch (error) {
+		output?.appendLine(`closeTag: ${String(error)}`)
+		return
+	}
+	// The reader types on while the server answers. An edit then lands
+	// on text the answer never saw, so it is dropped.
+	if (
+		name === undefined ||
+		document.version !== version ||
+		!editor.selection.isEmpty ||
+		!editor.selection.active.isEqual(at)
+	) {
+		return
+	}
+	await editor.insertSnippet(new SnippetString(`$0</${name}>`), at)
+}
+
+/**
+ * Enter between an opening and a closing tag puts each tag on its own
+ * line, with the caret on an indented line between them. VS Code owns
+ * the rule, so the server never sees the keystroke.
+ */
+function markupEnterRule(): Disposable {
+	return languages.setLanguageConfiguration(ALX, {
+		onEnterRules: [
+			{
+				beforeText: /<[A-Za-z_][\w.]*(?:\s[^<>]*)?>$/,
+				afterText: /^<\/[A-Za-z_][\w.]*>/,
+				action: { indentAction: IndentAction.IndentOutdent },
+			},
+		],
+	})
+}
+
 let generating = false
 let generateAgain = false
 
@@ -378,6 +457,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
 			await startClient()
 		}),
 		commands.registerCommand('alloy-luau.generateSourcemap', generateSourcemap),
+		markupEnterRule(),
+		workspace.onDidChangeTextDocument(closeTag),
 		workspace.onDidSaveTextDocument(async (document) => {
 			const config = workspace.getConfiguration('alloy-luau.sourcemap')
 			const scripts = [

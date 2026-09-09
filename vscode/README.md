@@ -34,20 +34,21 @@ single flags last. A change restarts the server.
 ## Typing helpers
 
 Two settings write the closing half of a pair while you type. Both are on
-by default.
+by default. Neither opens a suggestion popup.
 
-`alloy-luau.autoEnd` offers the `end` of a block after Enter. The line
-that opens the block decides the indentation, and the cursor lands on the
-empty line between the two: `function`, `if`, `for`, `while`, `do`,
-`repeat`, `struct`, `enum`, `interface`, `trait`, `impl`, `macro`, and
-`match`.
+`alloy-luau.autoEnd` writes the `end` of a block after Enter. The line
+that opens the block decides the indentation, and the cursor stays on the
+line between the two: `function`, `if`, `for`, `while`, `do`, `repeat`,
+`struct`, `enum`, `interface`, `trait`, `impl`, `macro`, and `match`. The
+server answers the Enter as an on-type format, so it needs
+`editor.formatOnType`, which this extension turns on for Alloy files.
 
 `alloy-luau.autoCloseTags` writes the closing tag of a `.alx` element
 after the `>` that ends the opening tag, and leaves the cursor between
 the two. A self-closing tag, a closing tag, a `>` in a string or a `{ }`
-hole, and an element that already closes get nothing. VS Code sends the
-request only with `editor.formatOnType` on, which this extension turns on
-for Alloy files.
+hole, and an element that already closes get nothing. Enter between the
+two tags then gives each tag its own line, with the cursor indented
+between them.
 
 ## Commands
 
