@@ -505,6 +505,11 @@
           "type": "string",
           "description": "The luau-lsp binary. Unset means `luau-lsp` on the PATH, then `~/.alloy/bin` and `~/.ember/bin`."
         },
+        "new_solver": {
+          "type": "boolean",
+          "description": "Run the checker's new solver. `false` runs the old one, which evaluates no type function, the way an editor on the old solver does.",
+          "default": true
+        },
         "too_many_arguments": {
           "type": "integer",
           "minimum": 0,
