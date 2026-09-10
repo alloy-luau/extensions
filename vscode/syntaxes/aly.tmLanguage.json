@@ -545,6 +545,18 @@
 					"name": "meta.type.parens.aly",
 					"patterns": [
 						{
+							"comment": "self in a function type keeps the word's own color",
+							"match": "\\b(self)\\s*(:)(?!:)",
+							"captures": {
+								"1": {
+									"name": "variable.language.self.aly"
+								},
+								"2": {
+									"name": "punctuation.separator.type.aly"
+								}
+							}
+						},
+						{
 							"match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(:)(?!:)",
 							"captures": {
 								"1": {
