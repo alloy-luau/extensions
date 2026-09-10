@@ -255,6 +255,8 @@ async function serverSettings(): Promise<Record<string, unknown>> {
 		fflags: await fflagsSection(),
 		autoCloseTags: alloy.get<boolean>('autoCloseTags', true),
 		autoEnd: alloy.get<boolean>('autoEnd', true),
+		hideRobloxDeprecated: alloy.get<boolean>('hideRobloxDeprecated', false),
+		hideAllDeprecated: alloy.get<boolean>('hideAllDeprecated', false),
 		inlayHints: {
 			variableTypes: hints.get<boolean>('variableTypes', true),
 			parameterTypes: hints.get<boolean>('parameterTypes', true),
@@ -494,6 +496,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
 					event.affectsConfiguration('alloy-luau.sourcemap.file') ||
 					event.affectsConfiguration('alloy-luau.autoCloseTags') ||
 					event.affectsConfiguration('alloy-luau.autoEnd') ||
+					event.affectsConfiguration('alloy-luau.hideRobloxDeprecated') ||
+					event.affectsConfiguration('alloy-luau.hideAllDeprecated') ||
 					event.affectsConfiguration('luau-lsp'))
 			) {
 				await client.sendNotification('workspace/didChangeConfiguration', {

@@ -50,6 +50,26 @@ hole, and an element that already closes get nothing. Enter between the
 two tags then gives each tag its own line, with the cursor indented
 between them.
 
+## Deprecated members
+
+The engine keeps an old name beside the current one, and the completion
+row says so: `brickColor` stands beside `BrickColor` with a line through
+it, and its text opens with the deprecation note. The rows the server
+builds itself, such as the properties of `new Instance("Part") { }`,
+carry the same mark as the rows luau-lsp sends.
+
+Two settings leave those rows out. Both are off by default.
+
+`alloy-luau.hideRobloxDeprecated` drops a member the Roblox API marks
+deprecated from every list. A method the project declares on a foreign
+type keeps its place: `impl BasePart as function destroy(self)` is the
+author's own name, whatever the engine calls it.
+
+`alloy-luau.hideAllDeprecated` drops what the source marks
+`@deprecated` as well: functions, methods, namespaces, and the members
+of a namespace. Hover and go to definition still answer on a name
+written by hand, so old code still reads.
+
 ## Commands
 
 - `Alloy: Restart Language Server`

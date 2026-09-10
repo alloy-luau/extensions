@@ -231,6 +231,16 @@
 					"default": true,
 					"description": "In a .alx file, write the closing tag after the `>` that ends an opening tag, with the cursor between the two."
 				},
+				"alloy-luau.hideRobloxDeprecated": {
+					"type": "boolean",
+					"default": false,
+					"description": "Leave a member the Roblox API marks deprecated out of every completion list, such as `brickColor` beside `BrickColor`. A method the project declares itself on a foreign type keeps its place."
+				},
+				"alloy-luau.hideAllDeprecated": {
+					"type": "boolean",
+					"default": false,
+					"description": "Leave out what the source marks `@deprecated` as well: functions, methods, namespaces, and their members. Hover and go to definition still answer on a name written by hand."
+				},
 				"alloy-luau.sourcemap.file": {
 					"type": "string",
 					"default": "sourcemap.json",
