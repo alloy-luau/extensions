@@ -2,7 +2,7 @@ import { exec } from 'node:child_process'
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
-import { delimiter, dirname, join } from 'node:path'
+import { basename, delimiter, dirname, join } from 'node:path'
 import {
 	commands,
 	type Disposable,
@@ -442,7 +442,40 @@ async function startClient(): Promise<void> {
 	}
 }
 
+/** One restart per burst of saves. */
+const CONFIG_RESTART_DELAY = 500
+
+let configRestart: NodeJS.Timeout | undefined
+
+/**
+ * Restarts the server after a save of `alloy.toml`. The child luau-lsp
+ * takes the mount aliases, the solver flag, and the definitions as
+ * command line arguments, so only a new process reads the new file.
+ * The restart stays quiet: one line in the output channel, no popup.
+ */
+function restartForConfig(): void {
+	if (configRestart !== undefined) {
+		clearTimeout(configRestart)
+	}
+	configRestart = setTimeout(() => {
+		configRestart = undefined
+		const running = client
+		if (running === undefined) {
+			return
+		}
+		output?.appendLine('alloy.toml changed: restarting the server')
+		running.restart().catch((error: unknown) => {
+			const detail = error instanceof Error ? error.message : String(error)
+			output?.appendLine(`cannot restart the server: ${detail}`)
+		})
+	}, CONFIG_RESTART_DELAY)
+}
+
 async function stopClient(): Promise<void> {
+	if (configRestart !== undefined) {
+		clearTimeout(configRestart)
+		configRestart = undefined
+	}
 	if (client === undefined) {
 		return
 	}
@@ -462,6 +495,12 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		markupEnterRule(),
 		workspace.onDidChangeTextDocument(closeTag),
 		workspace.onDidSaveTextDocument(async (document) => {
+			if (
+				basename(document.uri.fsPath) === 'alloy.toml' &&
+				workspace.getWorkspaceFolder(document.uri) !== undefined
+			) {
+				restartForConfig()
+			}
 			const config = workspace.getConfiguration('alloy-luau.sourcemap')
 			const scripts = [
 				'alloy-luau',
