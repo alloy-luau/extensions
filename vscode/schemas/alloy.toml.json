@@ -911,10 +911,10 @@
     "ingots": {
       "type": "object",
       "title": "[ingots]",
-      "description": "The extensions of the project, name to source. An ingot is an executable beside an `ingot.toml`; it edits source before the desugar, lints, formats, and answers the editor. `alloy doc ingots` explains them.",
+      "description": "The extensions of the project, name to source. An ingot is an executable beside an `ingot.toml`; it edits source before the desugar, lints, formats, and answers the editor. A path is read where it is; a repo is fetched by `alloy ingot install` into `.alloy/ingots` and recorded in `.alloy/ingots.lock`. `alloy doc ingots` explains them.",
       "properties": {},
       "additionalProperties": {
-        "description": "Where the ingot comes from: a path relative to this file that holds `ingot.toml` and the binary, or a GitHub release pinned by version.",
+        "description": "Where the ingot comes from: a path relative to this file that holds `ingot.toml` and the binary, or a GitHub release. `alloy ingot install` fetches it; a build never does.",
         "oneOf": [
           {
             "type": "string",
@@ -934,7 +934,8 @@
               },
               "version": {
                 "type": "string",
-                "description": "The release version to pin."
+                "description": "The release to install. `^`, the default, is the latest release at install time, and `.alloy/ingots.lock` records what it resolved to. A version, `1.2.3` or `v1.2.3`, pins that release, and `alloy ingot update` leaves it alone.",
+                "default": "^"
               },
               "asset": {
                 "type": "string",
@@ -956,6 +957,9 @@
         ],
         "examples": [
           "ingots/tailwind",
+          {
+            "repo": "alloy-luau/tailwind-ingot"
+          },
           {
             "repo": "alloy-luau/tailwind-ingot",
             "version": "0.1.0"
