@@ -303,7 +303,7 @@
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run schema && npm run compile",
-		"schema": "cargo run -q --manifest-path ../../crates/Cargo.toml -- self schema > schemas/alloy.toml.json",
+		"schema": "node scripts/schema.mjs",
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
 		"lint": "biome ci .",
