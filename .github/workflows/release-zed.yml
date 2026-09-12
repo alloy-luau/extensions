@@ -1,0 +1,51 @@
+# Releases the Zed extension on a tag like zed-v1.2.3.
+# The job fails when the tag version and extension.toml differ.
+#
+# Zed installs an extension from source, not from an archive: the
+# registry at zed-industries/extensions names this repository and a
+# version, and Zed builds the wasm itself. So the release is the marker
+# that version points at, and it carries the extension tree for anyone
+# installing it as a dev extension.
+name: Release Zed extension
+
+on:
+  push:
+    tags:
+      - "zed-v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip1
+      - name: Check version
+        run: |
+          version="${GITHUB_REF_NAME#zed-v}"
+          found=$(sed -n 's/^version = "\(.*\)"/\1/p' zed/extension.toml | head -1)
+          if [ "$found" != "$version" ]; then
+            echo "tag says $version but zed/extension.toml says $found"
+            exit 1
+          fi
+      - name: Build
+        working-directory: zed
+        run: cargo build --release --locked --target wasm32-wasip1
+      - name: Pack the extension
+        run: |
+          version="${GITHUB_REF_NAME#zed-v}"
+          # The tree Zed needs, without the build output.
+          zip -qr "alloy-zed-$version.zip" zed \
+            -x 'zed/target/*' 'zed/.gitignore'
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "v${GITHUB_REF_NAME#zed-v}" \
+            --generate-notes \
+            ./*.zip
