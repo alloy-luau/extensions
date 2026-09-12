@@ -39,8 +39,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # The title is the version the tag carries, `v0.1.0`. The
+          # tag keeps its `vscode-` prefix so it fires this workflow
+          # and not the compiler's.
           gh release create "$GITHUB_REF_NAME" \
-            --title "vscode ${GITHUB_REF_NAME#vscode-v}" \
+            --title "v${GITHUB_REF_NAME#vscode-v}" \
             --generate-notes \
             ./*.vsix
       - name: Publish to Marketplace
