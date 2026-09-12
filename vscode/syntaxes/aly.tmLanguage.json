@@ -312,11 +312,11 @@
 				},
 				{
 					"name": "keyword.control.aly",
-					"match": "\\b(?:if|then|elseif|else|end|for|in|while|do|repeat|until|return|break|continue|match|with|as|case|default|try|await|where)\\b"
+					"match": "\\b(?:if|then|elseif|else|end|for|in|while|do|repeat|until|return|break|continue|with|as|case|default|await|where)\\b"
 				},
 				{
 					"name": "storage.type.aly",
-					"match": "\\b(?:local|const|function|async|macro|namespace|struct|trait|impl|enum|interface|extends|type|export|global|import|from|remote|declare|extern|class|attribute)\\b"
+					"match": "\\b(?:local|function|async|macro|namespace|struct|trait|impl|enum|interface|extends|type|global|import|from|remote|declare|extern|class|attribute)\\b"
 				},
 				{
 					"name": "keyword.operator.wordlike.aly",
@@ -331,8 +331,29 @@
 					"match": "\\bsatisfies\\b"
 				},
 				{
+					"comment": "new is a constructor before a type name; `new(x)`, `new.f`, `new = 1`, and `new \"s\"` are a local named new",
 					"name": "keyword.operator.new.aly",
-					"match": "\\bnew\\b(?=\\s+[A-Za-z_])"
+					"match": "(?<![.:])\\bnew\\b(?=[ \\t]+(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue)\\b)[A-Za-z_])"
+				},
+				{
+					"comment": "try takes an operand or a do block; `try(f)`, `try = 1`, and `try.f` are a local named try",
+					"name": "keyword.control.aly",
+					"match": "(?<![.:])\\btry\\b(?=[ \\t]+(?:do\\b|(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue)\\b)[A-Za-z_$#]|[0-9]|-[^-]))"
+				},
+				{
+					"comment": "match opens a match; `match(s, p)`, `match[k]`, `match = 1`, and `match.f` are a local named match",
+					"name": "keyword.control.aly",
+					"match": "(?<![.:])\\bmatch\\b(?=[ \\t]+(?:(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue)\\b)[A-Za-z_${\\[]|[0-9]|#|-[^-]))"
+				},
+				{
+					"comment": "const declares; `const = 1`, `const(x)`, `const[k]`, and `const.f` are a local named const",
+					"name": "storage.type.aly",
+					"match": "(?<![.:])\\bconst\\b(?=[ \\t]+(?:function\\b|async[ \\t]+function\\b|@|[A-Za-z_]|\\[|\\{))"
+				},
+				{
+					"comment": "export opens a declaration or an export list; `export = t`, `export(x)`, and `export.f` are a local named export",
+					"name": "storage.type.aly",
+					"match": "(?<![.:])\\bexport\\b(?=[ \\t]*\\{|[ \\t]+(?:type|default|local|const|function|class|open|async|global|enum|struct|trait|interface|remote|attribute|macro|namespace|impl)\\b)"
 				},
 				{
 					"name": "keyword.operator.expression.delete.aly",

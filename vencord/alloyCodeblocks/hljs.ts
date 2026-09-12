@@ -13,13 +13,14 @@ import type { HLJSApi, Language, Mode } from "highlight.js";
 
 const IDENT = /[A-Za-z_][A-Za-z0-9_]*/;
 
-const CONTROL = "if then elseif else end for in while do repeat until return break continue match with as case default try await where after";
-const STORAGE = "local const function async macro struct trait impl enum interface extends type export import from remote declare extern class attribute on";
+const CONTROL = "if then elseif else end for in while do repeat until return break continue with as case default await where after";
+const STORAGE = "local function async macro struct trait impl enum interface extends type import from remote declare extern class attribute on";
 const WORD_OPERATORS = "and or not band bor bxor bnot shl shr satisfies is";
 
-// `new`, `delete`, and `destroy` are contextual: `Vector3.new` is a
-// field. A mode with a lookahead handles them, so they stay out of
-// this table.
+// `new`, `delete`, `destroy`, and the five words Luau also allows as a
+// name, `export`, `try`, `match`, `const`, are contextual: `Vector3.new`
+// is a field and `local try = pcall` is a local. A mode with a lookahead
+// handles them, so they stay out of this table.
 const KEYWORDS = {
     $pattern: "[A-Za-z_][A-Za-z0-9_]*",
     keyword: `${CONTROL} ${STORAGE} ${WORD_OPERATORS}`,
@@ -34,7 +35,9 @@ const KEYWORDS = {
     ].join(" "),
 };
 
-const ALL_KEYWORDS = `${CONTROL} ${STORAGE} ${WORD_OPERATORS} new delete destroy`.split(" ").join("|");
+// The words a call shape never names. A contextual word is absent: it is
+// the name in `match(s, p)`, so that line colours as the call it is.
+const ALL_KEYWORDS = `${CONTROL} ${STORAGE} ${WORD_OPERATORS} delete destroy`.split(" ").join("|");
 
 export function alloy(hljs: HLJSApi): Language {
     const COMMENTS: Mode[] = [
@@ -166,7 +169,17 @@ export function alloy(hljs: HLJSApi): Language {
         variants: [
             { begin: /\b(?:read|write)\b(?=\s+[A-Za-z_({[])/ },
             { begin: /\b(?:private|public)\b(?=\s+(?:function|async|read|write|[A-Za-z_]))/ },
-            { begin: /\b(?:new|delete|destroy)\b(?=\s+[A-Za-z_])/ },
+            { begin: /\b(?:delete|destroy)\b(?=\s+[A-Za-z_])/ },
+            // `new Thing()` constructs; `new(x)` and `new = 1` are a local.
+            { begin: /(?<![.:])\bnew\b(?=[ \t]+(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue)\b)[A-Za-z_])/ },
+            // `try f()` and `try do`; `try(f)` and `try = 1` are a local.
+            { begin: /(?<![.:])\btry\b(?=[ \t]+(?:do\b|(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue)\b)[A-Za-z_$#]|[0-9]|-[^-]))/ },
+            // `match x with`; `match(s, p)` and `match[k]` are a local.
+            { begin: /(?<![.:])\bmatch\b(?=[ \t]+(?:(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue)\b)[A-Za-z_${[]|[0-9]|#|-[^-]))/ },
+            // `const LIMIT = 5`; `const = 1` and `const(x)` are a local.
+            { begin: /(?<![.:])\bconst\b(?=[ \t]+(?:function\b|async[ \t]+function\b|@|[A-Za-z_]|\[|\{))/ },
+            // `export type T`; `export = t` and `export.f` are a local.
+            { begin: /(?<![.:])\bexport\b(?=[ \t]*\{|[ \t]+(?:type|default|local|const|function|class|open|async|global|enum|struct|trait|interface|remote|attribute|macro|namespace|impl)\b)/ },
         ],
     };
 
