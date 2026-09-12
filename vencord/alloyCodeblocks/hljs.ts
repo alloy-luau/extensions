@@ -193,6 +193,12 @@ export function alloy(hljs: HLJSApi): Language {
             // `import { a } from "m"` and the `import("m")` expression;
             // `local import = {}` and `import.cache` are the name.
             { begin: /(?<![.:])\bimport\b(?=[ \t]*(?:\(|<<|\*|\{)|[ \t]+(?:type[ \t]*\{|(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue)\b)[A-Za-z_]))/ },
+            // `requires public function Start(self)`: one clause of an
+            // attribute contract. `local requires = 1` is the name.
+            { begin: /(?<![.:])\brequires\b(?=[ \t]+(?:public[ \t]+|private[ \t]+)?(?:function|field)\b)/ },
+            // The `field` of a clause, and the `each` that expands one.
+            { begin: /(?<=\brequires[ \t]+(?:public[ \t]+|private[ \t]+)?)field\b/ },
+            { begin: /(?<=\b(?:function|field)[ \t])each\b(?=[ \t]+[A-Za-z_])/ },
             // `after 2 do` and `destroy x after n`; `after = 1` and
             // `after(x)` are the name.
             { begin: /(?<![.:])\bafter\b(?=[ \t]+(?:(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue)\b)[A-Za-z_(#]|[0-9]))/ },
