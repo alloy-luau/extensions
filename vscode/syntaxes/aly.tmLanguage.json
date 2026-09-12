@@ -173,7 +173,7 @@
 				},
 				{
 					"comment": "struct Name<T> as, enum Name as, trait Name, interface Name [extends A, B] as",
-					"match": "\\b(struct|enum|trait|interface)\\s+([A-Za-z_][A-Za-z0-9_]*)(\\s*<[^>]*>)?",
+					"match": "(?<![.:])\\b(struct|enum|trait|interface)[ \\t]+(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue)\\b)([A-Za-z_][A-Za-z0-9_]*)(\\s*<[^>]*>)?",
 					"captures": {
 						"1": {
 							"name": "storage.type.aly"
@@ -312,11 +312,11 @@
 				},
 				{
 					"name": "keyword.control.aly",
-					"match": "\\b(?:if|then|elseif|else|end|for|in|while|do|repeat|until|return|break|continue|with|as|case|default|await|where)\\b"
+					"match": "\\b(?:if|then|elseif|else|end|for|in|while|do|repeat|until|return|break|continue|with|as|case|default|where)\\b"
 				},
 				{
 					"name": "storage.type.aly",
-					"match": "\\b(?:local|function|async|macro|namespace|struct|trait|impl|enum|interface|extends|type|global|import|from|remote|declare|extern|class|attribute)\\b"
+					"match": "\\b(?:local|function|macro|namespace|trait|impl|extends|type|global|from|remote|declare|extern|class|attribute)\\b"
 				},
 				{
 					"name": "keyword.operator.wordlike.aly",
@@ -356,13 +356,28 @@
 					"match": "(?<![.:])\\bexport\\b(?=[ \\t]*\\{|[ \\t]+(?:type|default|local|const|function|class|open|async|global|enum|struct|trait|interface|remote|attribute|macro|namespace|impl)\\b)"
 				},
 				{
+					"comment": "async is the modifier before function or do; `local async = false` and `async(x)` are a local named async",
+					"name": "storage.type.aly",
+					"match": "(?<![.:])\\basync\\b(?=[ \\t]+(?:function|do)\\b)"
+				},
+				{
+					"comment": "await takes an operand; `await(p)`, `await = f`, and `await.f` are a local named await",
+					"name": "keyword.control.aly",
+					"match": "(?<![.:])\\bawait\\b(?=[ \\t]+(?:(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue)\\b)[A-Za-z_$#]|[0-9]|-[^-]))"
+				},
+				{
+					"comment": "import opens the statement, and import(...) is its expression form; `local import = {}` and `import.cache` are a local named import",
+					"name": "storage.type.aly",
+					"match": "(?<![.:])\\bimport\\b(?=[ \\t]*(?:\\(|<<|\\*|\\{)|[ \\t]+(?:type[ \\t]*\\{|(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue)\\b)[A-Za-z_]))"
+				},
+				{
 					"name": "keyword.operator.expression.delete.aly",
 					"match": "^\\s*\\b(?:delete|destroy)\\b(?=\\s+[A-Za-z_])|(?<=\\bend\\s|\\bthen\\s|\\bdo\\s|\\belse\\s)\\b(?:delete|destroy)\\b(?=\\s+[A-Za-z_])"
 				},
 				{
-					"comment": "after opens a timed block, and follows the operand of a destroy",
+					"comment": "after opens a timed block and follows the operand of a destroy, both before a delay; `after = 1`, `after(x)`, and `after.f` are a local named after",
 					"name": "keyword.control.after.aly",
-					"match": "\\bafter\\b"
+					"match": "(?<![.:])\\bafter\\b(?=[ \\t]+(?:(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue)\\b)[A-Za-z_(#]|[0-9]))"
 				},
 				{
 					"name": "keyword.operator.type.aly",
