@@ -16,6 +16,19 @@ import {
 	window,
 	workspace,
 } from 'vscode'
+
+/** A list setting, or nothing. A value that is not an array (a string a
+ *  user typed by hand) made the spread of it throw "is not iterable" on
+ *  every server restart. */
+function list(
+	config: ReturnType<typeof workspace.getConfiguration>,
+	key: string,
+): string[] {
+	const value = config.get<unknown>(key)
+	return Array.isArray(value)
+		? value.filter((v): v is string => typeof v === 'string')
+		: []
+}
 import {
 	LanguageClient,
 	type LanguageClientOptions,
@@ -172,10 +185,8 @@ async function serverCommand(): Promise<{ command: string; args: string[] }> {
 	const roblox = await robloxDefinitions()
 	const definitions = [
 		...roblox.definitions,
-		...workspace
-			.getConfiguration('luau-lsp')
-			.get<string[]>('types.definitionFiles', []),
-		...config.get<string[]>('types.definitionFiles', []),
+		...list(workspace.getConfiguration('luau-lsp'), 'types.definitionFiles'),
+		...list(config, 'types.definitionFiles'),
 	]
 	const args: string[] = []
 	if (luauLsp !== undefined && luauLsp.length > 0) {
@@ -188,7 +199,7 @@ async function serverCommand(): Promise<{ command: string; args: string[] }> {
 		args.push('--docs', roblox.docs)
 	}
 	args.push('--log-level', config.get<string>('server.logLevel', 'warn'))
-	args.push(...config.get<string[]>('server.args', []))
+	args.push(...list(config, 'server.args'))
 	const command =
 		configured.length > 0 ? configured : (installedServer() ?? 'alloy-lsp')
 	return { command, args }
