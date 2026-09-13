@@ -266,7 +266,7 @@ async function serverSettings(): Promise<Record<string, unknown>> {
 		},
 		studioPlugin: {
 			enabled: plugin.get<boolean>('enabled', false),
-			port: plugin.get<number>('port', 3667),
+			port: plugin.get<number>('port', 3668),
 		},
 		sourcemap: {
 			file: sourcemap.get<string>('file', 'sourcemap.json'),

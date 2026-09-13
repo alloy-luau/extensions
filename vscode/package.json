@@ -263,7 +263,7 @@
 				},
 				"alloy-luau.studioPlugin.port": {
 					"type": "number",
-					"default": 3667,
+					"default": 3668,
 					"description": "The port the Studio companion plugin connects to. Pick another one when the luau-lsp extension also listens on 3667."
 				},
 				"alloy-luau.fflags.enableByDefault": {
