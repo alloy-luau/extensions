@@ -123,7 +123,6 @@
                   "empty_block",
                   "bool_comparison",
                   "needless_bool",
-                  "export_impl",
                   "prefer_destroy",
                   "manual_safe_access",
                   "manual_coalesce",
@@ -156,7 +155,6 @@
                   "deprecated_method",
                   "instance_new_parent",
                   "deprecated_body_mover",
-                  "shadowed_global",
                   "explicit_any",
                   "implicit_any",
                   "missing_return_type",
@@ -218,7 +216,6 @@
                   "empty_block",
                   "bool_comparison",
                   "needless_bool",
-                  "export_impl",
                   "prefer_destroy",
                   "manual_safe_access",
                   "manual_coalesce",
@@ -251,7 +248,6 @@
                   "deprecated_method",
                   "instance_new_parent",
                   "deprecated_body_mover",
-                  "shadowed_global",
                   "explicit_any",
                   "implicit_any",
                   "missing_return_type",
@@ -313,7 +309,6 @@
                   "empty_block",
                   "bool_comparison",
                   "needless_bool",
-                  "export_impl",
                   "prefer_destroy",
                   "manual_safe_access",
                   "manual_coalesce",
@@ -346,7 +341,6 @@
                   "deprecated_method",
                   "instance_new_parent",
                   "deprecated_body_mover",
-                  "shadowed_global",
                   "explicit_any",
                   "implicit_any",
                   "missing_return_type",
@@ -437,7 +431,6 @@
                   "empty_block",
                   "bool_comparison",
                   "needless_bool",
-                  "export_impl",
                   "prefer_destroy",
                   "manual_safe_access",
                   "manual_coalesce",
@@ -470,7 +463,6 @@
                   "deprecated_method",
                   "instance_new_parent",
                   "deprecated_body_mover",
-                  "shadowed_global",
                   "explicit_any",
                   "implicit_any",
                   "missing_return_type",
@@ -977,38 +969,6 @@
         "description": "The options of one ingot, over the defaults its manifest declares. The key is the ingot's name under `[ingots]`; a key the manifest does not declare is an error.",
         "additionalProperties": true
       }
-    },
-    "contexts": {
-      "type": "object",
-      "title": "[contexts]",
-      "description": "Which folders hold client code, server code, and shared code. A file's side follows: it decides which half of a `remote` the file sees, and which `global` names it reaches. An entry is a folder name, matched against every segment of the file's path under `[build] in`, so `client` matches `src/client/x.aly` and `src/features/client/x.aly`; an entry with a `/` is a path from the project root. A `.client` or `.server` name, and `--@alloy-file-side`, both win over this table; the DataModel service the file lands under is read only when this table says nothing.",
-      "properties": {
-        "client": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "The folders that hold client code.",
-          "default": []
-        },
-        "server": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "The folders that hold server code.",
-          "default": []
-        },
-        "shared": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "The folders that hold code both sides run.",
-          "default": []
-        }
-      },
-      "additionalProperties": false
     },
     "alx": {
       "type": "object",

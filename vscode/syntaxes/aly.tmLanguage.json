@@ -147,7 +147,7 @@
 			"patterns": [
 				{
 					"comment": "attribute name(...) on target, target",
-					"match": "\\b(?:(export|global)\\s+)?(attribute)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+					"match": "\\b(?:(export)\\s+)?(attribute)\\s+([A-Za-z_][A-Za-z0-9_]*)",
 					"captures": {
 						"1": {
 							"name": "storage.type.aly"
@@ -337,7 +337,7 @@
 				},
 				{
 					"name": "storage.type.aly",
-					"match": "\\b(?:local|function|macro|namespace|trait|impl|extends|type|global|from|remote|declare|extern|class|attribute)\\b"
+					"match": "\\b(?:local|function|macro|namespace|trait|impl|extends|type|from|remote|declare|extern|class|attribute)\\b"
 				},
 				{
 					"name": "keyword.operator.wordlike.aly",
@@ -374,7 +374,7 @@
 				{
 					"comment": "export opens a declaration or an export list; `export = t`, `export(x)`, and `export.f` are a local named export",
 					"name": "storage.type.aly",
-					"match": "(?<![.:])\\bexport\\b(?=[ \\t]*\\{|[ \\t]+(?:type|default|local|const|function|class|open|async|global|enum|struct|trait|interface|remote|attribute|macro|namespace|impl)\\b)"
+					"match": "(?<![.:])\\bexport\\b(?=[ \\t]*\\{|[ \\t]+(?:type|default|local|const|function|class|open|async|enum|struct|trait|interface|remote|attribute|macro|namespace|impl)\\b)"
 				},
 				{
 					"comment": "async is the modifier before function or do; `local async = false` and `async(x)` are a local named async",
@@ -871,7 +871,7 @@
 		},
 		"enum-body": {
 			"comment": "enum Name as ... end: a variant is a name, a payload is a type list, a value variant takes an expression; the end may sit on the as line",
-			"begin": "^\\s*(?:(export|global)\\s+)?(enum)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+(as)\\b",
+			"begin": "^\\s*(?:(export)\\s+)?(enum)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+(as)\\b",
 			"beginCaptures": {
 				"1": {
 					"name": "storage.type.aly"

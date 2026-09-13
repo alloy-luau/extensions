@@ -182,7 +182,7 @@ export function alloy(hljs: HLJSApi): Language {
             // `const LIMIT = 5`; `const = 1` and `const(x)` are a local.
             { begin: /(?<![.:])\bconst\b(?=[ \t]+(?:function\b|async[ \t]+function\b|@|[A-Za-z_]|\[|\{))/ },
             // `export type T`; `export = t` and `export.f` are a local.
-            { begin: /(?<![.:])\bexport\b(?=[ \t]*\{|[ \t]+(?:type|default|local|const|function|class|open|async|global|enum|struct|trait|interface|remote|attribute|macro|namespace|impl)\b)/ },
+            { begin: /(?<![.:])\bexport\b(?=[ \t]*\{|[ \t]+(?:type|default|local|const|function|class|open|async|enum|struct|trait|interface|remote|attribute|macro|namespace|impl)\b)/ },
             // `async function f()` and `async do`; `local async = false` is a local.
             { begin: /(?<![.:])\basync\b(?=[ \t]+(?:function|do)\b)/ },
             // `await f()`; `await(p)` and `await = f` are a local.
