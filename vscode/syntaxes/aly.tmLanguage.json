@@ -132,7 +132,7 @@
 			"match": "\\b(?:0[xX][0-9A-Fa-f_]+|0[bB][01_]+|\\d[\\d_]*(?:\\.[\\d_]*)?(?:[eE][+-]?\\d+)?)\\b"
 		},
 		"attribute": {
-			"comment": "@derive(...), @test, @unreliable, @ratelimit(...), @u8, and upstream @native",
+			"comment": "@derive(...), @test, @unreliable, @ratelimit(...), @u8, and upstream @native. An import list writes an attribute the same way, `import { @tagged as t } from \"./m\"`, so the sigil and the name colour there too; the local name after `as` takes no sigil.",
 			"match": "(@)([A-Za-z_][A-Za-z0-9_]*)",
 			"captures": {
 				"1": {
