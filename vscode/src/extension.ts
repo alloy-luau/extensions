@@ -29,6 +29,7 @@ function list(
 		? value.filter((v): v is string => typeof v === 'string')
 		: []
 }
+
 import {
 	LanguageClient,
 	type LanguageClientOptions,
