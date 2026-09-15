@@ -262,9 +262,13 @@ async function serverSettings(): Promise<Record<string, unknown>> {
 	const plugin = workspace.getConfiguration('alloy-luau.studioPlugin')
 	const sourcemap = workspace.getConfiguration('alloy-luau.sourcemap')
 	const alloy = workspace.getConfiguration('alloy-luau')
+	// Only a rig the user set travels: unset, `[roblox] rig` in
+	// alloy.toml decides.
+	const rig = alloy.inspect<string>('rig')
 	return {
 		luauLsp: JSON.parse(JSON.stringify(luauLsp)),
 		fflags: await fflagsSection(),
+		rig: rig?.workspaceFolderValue ?? rig?.workspaceValue ?? rig?.globalValue,
 		autoCloseTags: alloy.get<boolean>('autoCloseTags', true),
 		autoEnd: alloy.get<boolean>('autoEnd', true),
 		hideRobloxDeprecated: alloy.get<boolean>('hideRobloxDeprecated', false),

@@ -236,6 +236,12 @@
 					"default": false,
 					"description": "Leave a member the Roblox API marks deprecated out of every completion list, such as `brickColor` beside `BrickColor`. A method the project declares itself on a foreign type keeps its place."
 				},
+				"alloy-luau.rig": {
+					"type": "string",
+					"enum": ["R15", "R6"],
+					"default": "R15",
+					"description": "The rig of a player's character. `Player.Character` types as `R15Character?` or `R6Character?`. Set here, it wins over `[roblox] rig` in alloy.toml; unset, the file decides."
+				},
 				"alloy-luau.hideAllDeprecated": {
 					"type": "boolean",
 					"default": false,
