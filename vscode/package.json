@@ -87,6 +87,19 @@
 				"path": "./syntaxes/alx.tmLanguage.json"
 			}
 		],
+		"semanticTokenScopes": [
+			{
+				"language": "alloy-luau",
+				"scopes": {
+					"decorator": [
+						"entity.other.attribute-name.aly"
+					],
+					"macro": [
+						"entity.name.function.macro.aly"
+					]
+				}
+			}
+		],
 		"tomlValidation": [
 			{
 				"fileMatch": "alloy.toml",
