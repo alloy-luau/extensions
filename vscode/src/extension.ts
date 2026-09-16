@@ -178,11 +178,19 @@ async function fetchText(url: string): Promise<string> {
 	return response.text()
 }
 
+/** The luau-lsp binary the server drives: the configured path, else
+ *  the bundled one. */
+function luauLspPath(): string | undefined {
+	const config = workspace.getConfiguration('alloy-luau')
+	return (
+		config.get<string>('server.luauLspPath', '').trim() || bundledLuauLsp()
+	)
+}
+
 async function serverCommand(): Promise<{ command: string; args: string[] }> {
 	const config = workspace.getConfiguration('alloy-luau')
 	const configured = config.get<string>('server.path', '').trim()
-	const luauLsp =
-		config.get<string>('server.luauLspPath', '').trim() || bundledLuauLsp()
+	const luauLsp = luauLspPath()
 	const roblox = await robloxDefinitions()
 	const definitions = [
 		...roblox.definitions,
@@ -217,9 +225,40 @@ const FFLAG_KINDS = ['FFlag', 'FInt', 'DFFlag', 'DFInt']
  * `override` last. The new solver stays on unless `enableNewSolver` is
  * off; Alloy's emit needs it.
  */
-async function fflagsSection(): Promise<Record<string, unknown>> {
+/** The flags the luau-lsp binary knows, from `--show-flags`. Roblox
+ *  publishes flags for a newer Luau than the binary carries, and each
+ *  one the binary does not know prints "Unknown FFlag" on every start;
+ *  a flag not in this set is left out. An empty set means the binary
+ *  could not be asked, and nothing is filtered. */
+function knownFlags(luauLsp: string | undefined): Promise<Set<string>> {
+	return new Promise((resolve) => {
+		if (luauLsp === undefined || luauLsp.length === 0) {
+			resolve(new Set())
+			return
+		}
+		exec(`"${luauLsp}" --show-flags`, { timeout: 5000 }, (error, stdout) => {
+			if (error) {
+				resolve(new Set())
+				return
+			}
+			const names = new Set<string>()
+			for (const line of stdout.split('\n')) {
+				const name = line.trim().split('=')[0]
+				if (name.length > 0) {
+					names.add(name)
+				}
+			}
+			resolve(names)
+		})
+	})
+}
+
+async function fflagsSection(
+	luauLsp: string | undefined,
+): Promise<Record<string, unknown>> {
 	const config = workspace.getConfiguration('alloy-luau.fflags')
 	const override: Record<string, string> = {}
+	const known = await knownFlags(luauLsp)
 	if (config.get<boolean>('sync', true)) {
 		try {
 			const text = await fetchText(FFLAGS_URL)
@@ -231,7 +270,10 @@ async function fflagsSection(): Promise<Record<string, unknown>> {
 			)) {
 				for (const kind of FFLAG_KINDS) {
 					if (name.startsWith(`${kind}Luau`)) {
-						override[name.slice(kind.length)] = String(value)
+						const flag = name.slice(kind.length)
+						if (known.size === 0 || known.has(flag)) {
+							override[flag] = String(value)
+						}
 					}
 				}
 			}
@@ -267,7 +309,7 @@ async function serverSettings(): Promise<Record<string, unknown>> {
 	const rig = alloy.inspect<string>('rig')
 	return {
 		luauLsp: JSON.parse(JSON.stringify(luauLsp)),
-		fflags: await fflagsSection(),
+		fflags: await fflagsSection(luauLspPath()),
 		rig: rig?.workspaceFolderValue ?? rig?.workspaceValue ?? rig?.globalValue,
 		autoCloseTags: alloy.get<boolean>('autoCloseTags', true),
 		autoEnd: alloy.get<boolean>('autoEnd', true),
