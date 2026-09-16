@@ -132,16 +132,46 @@
 			"match": "\\b(?:0[xX][0-9A-Fa-f_]+|0[bB][01_]+|\\d[\\d_]*(?:\\.[\\d_]*)?(?:[eE][+-]?\\d+)?)\\b"
 		},
 		"attribute": {
-			"comment": "@derive(...), @test, @unreliable, @ratelimit(...), @u8, and upstream @native. An import list writes an attribute the same way, `import { @tagged as t } from \"./m\"`, so the sigil and the name colour there too; the local name after `as` takes no sigil.",
-			"match": "(@)([A-Za-z_][A-Za-z0-9_]*)",
-			"captures": {
-				"1": {
-					"name": "punctuation.definition.attribute.aly"
+			"comment": "@derive(...), @test, @unreliable, @ratelimit(...), @u8, and upstream @native. An import list writes an attribute the same way, `import { @tagged as t } from \"./m\"`, so the sigil and the name colour there too; the local name after `as` takes no sigil. The rule carries its own argument list: an enum or struct body has no string rule, so `@icon(\"x\")` on a variant needs one here.",
+			"patterns": [
+				{
+					"begin": "(@)([A-Za-z_][A-Za-z0-9_]*)(\\()",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.definition.attribute.aly"
+						},
+						"2": {
+							"name": "entity.other.attribute-name.aly"
+						},
+						"3": {
+							"name": "punctuation.definition.arguments.begin.aly"
+						}
+					},
+					"end": "(\\))",
+					"endCaptures": {
+						"1": {
+							"name": "punctuation.definition.arguments.end.aly"
+						}
+					},
+					"name": "meta.attribute.arguments.aly",
+					"patterns": [
+						{
+							"include": "#attribute-arguments"
+						}
+					]
 				},
-				"2": {
-					"name": "entity.other.attribute-name.aly"
+				{
+					"match": "(@)([A-Za-z_][A-Za-z0-9_]*)",
+					"captures": {
+						"1": {
+							"name": "punctuation.definition.attribute.aly"
+						},
+						"2": {
+							"name": "entity.other.attribute-name.aly"
+						}
+					}
 				}
-			}
+			]
 		},
 		"declaration": {
 			"patterns": [
@@ -956,6 +986,42 @@
 							"name": "variable.other.enummember.aly"
 						}
 					}
+				}
+			]
+		},
+		"attribute-arguments": {
+			"comment": "What sits inside an attribute's parens; balanced parens nest.",
+			"patterns": [
+				{
+					"include": "#comment"
+				},
+				{
+					"include": "#string"
+				},
+				{
+					"include": "#number"
+				},
+				{
+					"comment": "A nested pair of parens, as in `@validate(function(p) ... end)`, so the inner `)` does not end the argument list.",
+					"begin": "\\(",
+					"end": "\\)",
+					"patterns": [
+						{
+							"include": "#attribute-arguments"
+						}
+					]
+				},
+				{
+					"include": "#keyword"
+				},
+				{
+					"include": "#operator"
+				},
+				{
+					"include": "#call"
+				},
+				{
+					"include": "#identifier"
 				}
 			]
 		}
