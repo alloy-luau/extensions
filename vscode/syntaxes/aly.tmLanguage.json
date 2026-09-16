@@ -192,7 +192,7 @@
 				},
 				{
 					"comment": "on target, target: the targets colour as constants and each comma as a separator.",
-					"begin": "\\b(on)\\b(?=\\s+(?:function|struct|enum|variant|field|param|remote|interface|type|local|namespace)\\b)",
+					"begin": "\\b(on)\\b(?=\\s+(?:function|struct|enum|variant|field|param|remote|interface|type|local|namespace|impl|trait)\\b)",
 					"beginCaptures": {
 						"1": {
 							"name": "keyword.control.aly"
@@ -202,7 +202,7 @@
 					"name": "meta.attribute.targets.aly",
 					"patterns": [
 						{
-							"match": "\\b(?:function|struct|enum|variant|field|param|remote|interface|type|local|namespace)\\b",
+							"match": "\\b(?:function|struct|enum|variant|field|param|remote|interface|type|local|namespace|impl|trait)\\b",
 							"name": "constant.language.attribute-target.aly"
 						},
 						{
