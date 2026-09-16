@@ -191,15 +191,25 @@
 					}
 				},
 				{
-					"match": "\\b(on)\\s+((?:function|struct|enum|variant|field|param|remote|interface|type|local|namespace)(?:\\s*,\\s*(?:function|struct|enum|variant|field|param|remote|interface|type|local|namespace))*)\\b",
-					"captures": {
+					"comment": "on target, target: the targets colour as constants and each comma as a separator.",
+					"begin": "\\b(on)\\b(?=\\s+(?:function|struct|enum|variant|field|param|remote|interface|type|local|namespace)\\b)",
+					"beginCaptures": {
 						"1": {
 							"name": "keyword.control.aly"
-						},
-						"2": {
-							"name": "constant.language.attribute-target.aly"
 						}
-					}
+					},
+					"end": "(?=\\s*(?:$|--|\\brequires\\b))",
+					"name": "meta.attribute.targets.aly",
+					"patterns": [
+						{
+							"match": "\\b(?:function|struct|enum|variant|field|param|remote|interface|type|local|namespace)\\b",
+							"name": "constant.language.attribute-target.aly"
+						},
+						{
+							"match": ",",
+							"name": "punctuation.separator.attribute-target.aly"
+						}
+					]
 				},
 				{
 					"comment": "requires <visibility>? <kind> <each>? <name>: one clause of an attribute contract. `local requires = 1` and `requires(f)` are a local named requires",
