@@ -22,7 +22,7 @@ const onigLib = onig.loadWASM(wasm).then(() => ({
 const files = {
 	'source.aly': 'aly',
 	'source.alx': 'alx',
-	'source.daly': 'daly',
+	'source.d.aly': 'daly',
 }
 const registry = new vsctm.Registry({
 	onigLib,
@@ -46,7 +46,7 @@ const last = Number(process.argv[4] ?? Infinity)
 const scope = file.endsWith('.alx')
 	? 'source.alx'
 	: file.endsWith('.d.aly')
-		? 'source.daly'
+		? 'source.d.aly'
 		: 'source.aly'
 const grammar = await registry.loadGrammar(scope)
 let state = vsctm.INITIAL
