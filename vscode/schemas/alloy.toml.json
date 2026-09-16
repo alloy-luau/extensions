@@ -557,6 +557,23 @@
       },
       "additionalProperties": false
     },
+    "roblox": {
+      "type": "object",
+      "title": "[roblox]",
+      "description": "What the place is like. `rig` picks the character type `Player.Character` reads as; the editor's `alloy-luau.rig` setting wins over it.",
+      "properties": {
+        "rig": {
+          "type": "string",
+          "enum": [
+            "R15",
+            "R6"
+          ],
+          "description": "The rig of a player's character. `Player.Character` types as `R15Character?` or `R6Character?`; `alloy doc R15Character` shows the parts.",
+          "default": "R15"
+        }
+      },
+      "additionalProperties": false
+    },
     "test": {
       "type": "object",
       "title": "[test]",
