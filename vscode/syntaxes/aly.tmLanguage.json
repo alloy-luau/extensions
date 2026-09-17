@@ -132,10 +132,10 @@
 			"match": "\\b(?:0[xX][0-9A-Fa-f_]+|0[bB][01_]+|\\d[\\d_]*(?:\\.[\\d_]*)?(?:[eE][+-]?\\d+)?)\\b"
 		},
 		"attribute": {
-			"comment": "@derive(...), @test, @unreliable, @ratelimit(...), @u8, and upstream @native. An import list writes an attribute the same way, `import { @tagged as t } from \"./m\"`, so the sigil and the name colour there too; the local name after `as` takes no sigil. The rule carries its own argument list: an enum or struct body has no string rule, so `@icon(\"x\")` on a variant needs one here.",
+			"comment": "@derive(...), @test, @unreliable, @ratelimit(...), @u8, and upstream @native. An import list writes an attribute the same way, `import { @tagged as t } from \"./m\"`, so the sigil and the name colour there too; the local name after `as` takes no sigil. A namespaced attribute carries its path, `@testing.testatr`, so the whole path colours as the name. The rule carries its own argument list: an enum or struct body has no string rule, so `@icon(\"x\")` on a variant needs one here.",
 			"patterns": [
 				{
-					"begin": "(@)([A-Za-z_][A-Za-z0-9_]*)(\\()",
+					"begin": "(@)([A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*)(\\()",
 					"beginCaptures": {
 						"1": {
 							"name": "punctuation.definition.attribute.aly"
@@ -161,7 +161,7 @@
 					]
 				},
 				{
-					"match": "(@)([A-Za-z_][A-Za-z0-9_]*)",
+					"match": "(@)([A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*)",
 					"captures": {
 						"1": {
 							"name": "punctuation.definition.attribute.aly"
