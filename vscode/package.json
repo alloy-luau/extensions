@@ -326,7 +326,7 @@
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
 		"lint": "biome ci .",
-		"test": "node scripts/indent.mjs",
+		"test": "npm run -s compile && node scripts/indent.mjs",
 		"package": "vsce package --skip-license"
 	},
 	"dependencies": {

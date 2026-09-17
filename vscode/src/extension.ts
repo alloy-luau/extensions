@@ -11,6 +11,7 @@ import {
 	IndentAction,
 	languages,
 	type OutputChannel,
+	Range,
 	SnippetString,
 	type TextDocumentChangeEvent,
 	window,
@@ -35,6 +36,7 @@ import {
 	type LanguageClientOptions,
 	type ServerOptions,
 } from 'vscode-languageclient/node'
+import { matchIndent } from './indent'
 
 let client: LanguageClient | undefined
 let output: OutputChannel | undefined
@@ -335,6 +337,67 @@ async function serverSettings(): Promise<Record<string, unknown>> {
 /** The language of a `.alx` file, the only one that holds markup. */
 const ALX = 'alloy-luau-jsx'
 
+/** Every language that holds Alloy code. */
+const ALLOY = ['alloy-luau', 'alloy-luau-declaration', ALX]
+
+/** The word a line of a `match` opens with, alone on its line. */
+const ARM = /^[ \t]*(?:case|default|end)$/
+
+/**
+ * Writes the column of `case`, `default`, and the `end` that closes a
+ * `match`, as the reader finishes the word.
+ *
+ * The editor's indentation rules cannot reach that column. A pattern
+ * writes the reference line's own column, or one level out from it
+ * when that line opens no block, so it never writes one level in,
+ * which is where an arm of a `match` belongs. `src/indent.ts` holds
+ * the rule and `scripts/indent.mjs` checks it.
+ */
+async function matchArmIndent(event: TextDocumentChangeEvent): Promise<void> {
+	const document = event.document
+	const change = event.contentChanges[0]
+
+	if (
+		!ALLOY.includes(document.languageId) ||
+		event.reason !== undefined ||
+		event.contentChanges.length !== 1 ||
+		change.text.length !== 1
+	) {
+		return
+	}
+
+	const editor = window.activeTextEditor
+
+	if (editor === undefined || editor.document !== document) {
+		return
+	}
+
+	const at = document.positionAt(change.rangeOffset + change.text.length)
+	const line = document.lineAt(at.line)
+
+	if (!ARM.test(line.text.slice(0, at.character))) {
+		return
+	}
+
+	const size = editor.options.tabSize
+	const unit =
+		editor.options.insertSpaces === true
+			? ' '.repeat(typeof size === 'number' ? size : 4)
+			: '\t'
+	const written = matchIndent(document.getText().split('\n'), at.line, unit)
+	const start = line.firstNonWhitespaceCharacterIndex
+
+	if (written === undefined || written === line.text.slice(0, start)) {
+		return
+	}
+
+	await editor.edit(
+		(builder) =>
+			builder.replace(new Range(at.line, 0, at.line, start), written),
+		{ undoStopBefore: false, undoStopAfter: false },
+	)
+}
+
 /**
  * Writes the closing tag after the `>` that ends an opening tag. The
  * server names the element; the client inserts, because a snippet's
@@ -552,6 +615,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		commands.registerCommand('alloy-luau.generateSourcemap', generateSourcemap),
 		markupEnterRule(),
 		workspace.onDidChangeTextDocument(closeTag),
+		workspace.onDidChangeTextDocument(matchArmIndent),
 		workspace.onDidSaveTextDocument(async (document) => {
 			if (
 				basename(document.uri.fsPath) === 'alloy.toml' &&
