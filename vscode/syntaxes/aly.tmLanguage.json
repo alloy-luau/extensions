@@ -867,6 +867,25 @@
 					]
 				},
 				{
+					"comment": "x is T and x is not T type tests; `local is = 1`, `is(x)`, `t.is`, and `t:is()` are a local named is",
+					"begin": "(?<![.:])\\b(is)\\b(?:[ \\t]+(not)\\b)?(?=[ \\t]+(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue)\\b)[A-Za-z_])",
+					"beginCaptures": {
+						"1": {
+							"name": "keyword.operator.wordlike.aly"
+						},
+						"2": {
+							"name": "keyword.operator.wordlike.aly"
+						}
+					},
+					"end": "(?=[=,;)\\]}]|\\b(?:then|do|end|with|from|in|return|local|const|if|for|while|repeat|until|and|or|not)\\b|$)",
+					"name": "meta.type.is.aly",
+					"patterns": [
+						{
+							"include": "#type-content"
+						}
+					]
+				},
+				{
 					"comment": "expr satisfies T",
 					"begin": "\\b(satisfies)\\b",
 					"beginCaptures": {
