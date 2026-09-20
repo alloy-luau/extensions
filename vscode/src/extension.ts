@@ -317,6 +317,7 @@ async function serverSettings(): Promise<Record<string, unknown>> {
 		autoEnd: alloy.get<boolean>('autoEnd', true),
 		hideRobloxDeprecated: alloy.get<boolean>('hideRobloxDeprecated', false),
 		hideAllDeprecated: alloy.get<boolean>('hideAllDeprecated', false),
+		arrowReturnHints: alloy.get<boolean>('arrowReturnHints', false),
 		inlayHints: {
 			variableTypes: hints.get<boolean>('variableTypes', true),
 			parameterTypes: hints.get<boolean>('parameterTypes', true),
@@ -659,6 +660,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 					event.affectsConfiguration('alloy-luau.autoEnd') ||
 					event.affectsConfiguration('alloy-luau.hideRobloxDeprecated') ||
 					event.affectsConfiguration('alloy-luau.hideAllDeprecated') ||
+					event.affectsConfiguration('alloy-luau.arrowReturnHints') ||
 					event.affectsConfiguration('luau-lsp'))
 			) {
 				await client.sendNotification('workspace/didChangeConfiguration', {

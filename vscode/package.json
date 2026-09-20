@@ -255,6 +255,11 @@
 					"default": "R15",
 					"description": "The rig of a player's character. `Player.Character` types as `R15Character?` or `R6Character?`. Set here, it wins over `[roblox] rig` in alloy.toml; unset, the file decides."
 				},
+				"alloy-luau.arrowReturnHints": {
+					"type": "boolean",
+					"default": false,
+					"description": "Show a function's return type hint as `-> T`, the way `function f() -> T` spells it, rather than `: T`. A variable's hint keeps the colon: `local x: T` is the only spelling Alloy takes there."
+				},
 				"alloy-luau.hideAllDeprecated": {
 					"type": "boolean",
 					"default": false,
@@ -326,7 +331,7 @@
 		"compile": "tsc -p ./",
 		"watch": "tsc -watch -p ./",
 		"lint": "biome ci .",
-		"test": "npm run -s compile && node scripts/indent.mjs",
+		"test": "npm run -s compile && node scripts/indent.mjs && node scripts/scopes.mjs",
 		"package": "vsce package --skip-license"
 	},
 	"dependencies": {
