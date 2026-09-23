@@ -313,3 +313,13 @@
       .
       (string
         content: _ @string.regexp)))
+
+; Alloy. The Luau grammar reads a word it does not know as a name, so
+; the declaration words of Alloy colour here. Words that are also
+; common names, such as new, try, and match, stay names.
+((identifier) @keyword
+  (#any-of? @keyword
+    "struct" "enum" "impl" "trait" "interface" "namespace" "macro"
+    "attribute" "remote" "import" "export" "extends" "satisfies"
+    "async" "await" "declare" "extern" "requires"))
+

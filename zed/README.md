@@ -2,8 +2,10 @@
 
 Syntax highlighting and the language server for `.aly` and `.alx`
 files. Alloy is a superset of Luau, so the Luau tree-sitter grammar
-colors the shared part; the language server covers the rest: hover,
-completion, diagnostics, the lints, and the rewrites.
+colors the shared part, and the query colors Alloy's declaration words,
+such as `struct`, `impl`, and `remote`, as keywords. The language
+server covers the rest: hover, completion, diagnostics, the lints, and
+the rewrites.
 
 ## Install
 
