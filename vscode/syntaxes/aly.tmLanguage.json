@@ -1025,6 +1025,11 @@
 					"include": "#comment"
 				},
 				{
+					"comment": "The comma between arguments takes the colour of the `@`, so `@ratelimit(5, 1)` reads as punctuation between two values.",
+					"match": ",",
+					"name": "punctuation.definition.attribute.aly"
+				},
+				{
 					"include": "#string"
 				},
 				{

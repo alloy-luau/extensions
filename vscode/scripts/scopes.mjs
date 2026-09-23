@@ -13,6 +13,11 @@ const TYPE = 'entity.name.type.aly'
 // [source line, [token text, its innermost scope], ...]
 const cases = [
 	// `is` is a type test: the word and the type after it both colour.
+	[
+		'@ratelimit(5, 1)',
+		['@', 'punctuation.definition.attribute.aly'],
+		[',', 'punctuation.definition.attribute.aly'],
+	],
 	['x is Part', ['is', WORDLIKE], ['Part', TYPE]],
 	['x is not Part', ['is', WORDLIKE], ['not', WORDLIKE], ['Part', TYPE]],
 	['not x is Part', ['not', WORDLIKE], ['is', WORDLIKE], ['Part', TYPE]],
