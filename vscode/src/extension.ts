@@ -613,10 +613,13 @@ async function startClient(): Promise<void> {
 /** One restart per burst of saves. */
 const CONFIG_RESTART_DELAY = 500
 
+/** The files a project reads its configuration from. */
+const CONFIG_FILES = ['alloy.toml', '.config.aly']
+
 let configRestart: NodeJS.Timeout | undefined
 
 /**
- * Restarts the server after a save of `alloy.toml`. The child luau-lsp
+ * Restarts the server after a save of `alloy.toml` or `.config.aly`. The child luau-lsp
  * takes the mount aliases, the solver flag, and the definitions as
  * command line arguments, so only a new process reads the new file.
  * The restart stays quiet: one line in the output channel, no popup.
@@ -631,7 +634,7 @@ function restartForConfig(): void {
 		if (running === undefined) {
 			return
 		}
-		output?.appendLine('alloy.toml changed: restarting the server')
+		output?.appendLine('the configuration changed: restarting the server')
 		running.restart().catch((error: unknown) => {
 			const detail = error instanceof Error ? error.message : String(error)
 			output?.appendLine(`cannot restart the server: ${detail}`)
@@ -666,7 +669,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		workspace.onDidChangeTextDocument(signatureEnter),
 		workspace.onDidSaveTextDocument(async (document) => {
 			if (
-				basename(document.uri.fsPath) === 'alloy.toml' &&
+				CONFIG_FILES.includes(basename(document.uri.fsPath)) &&
 				workspace.getWorkspaceFolder(document.uri) !== undefined
 			) {
 				restartForConfig()
