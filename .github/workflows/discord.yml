@@ -1,5 +1,6 @@
 # Posts pushes and pull requests to Discord through the shared workflow
-# in alloy-luau/alloy. The DISCORD_WEBHOOK variable turns it on.
+# in alloy-luau/alloy. A DISCORD_WEBHOOK secret or variable turns it on;
+# prefer the secret, since a public log shows a variable's value.
 name: Discord
 
 on:
@@ -12,7 +13,7 @@ permissions: {}
 
 jobs:
   notify:
-    if: vars.DISCORD_WEBHOOK != ''
     uses: alloy-luau/alloy/.github/workflows/discord.yml@main
+    secrets: inherit
     with:
       webhook: ${{ vars.DISCORD_WEBHOOK }}
