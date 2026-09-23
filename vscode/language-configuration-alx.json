@@ -1,0 +1,55 @@
+{
+	"comments": {
+		"lineComment": "--",
+		"blockComment": ["--[[", "]]"]
+	},
+	"brackets": [["{", "}"], ["[", "]"], ["(", ")"]],
+	"autoClosingPairs": [
+		{
+			"open": "{",
+			"close": "}"
+		},
+		{
+			"open": "[",
+			"close": "]"
+		},
+		{
+			"open": "(",
+			"close": ")"
+		},
+		{
+			"open": "\"",
+			"close": "\"",
+			"notIn": ["string", "comment"]
+		},
+		{
+			"open": "'",
+			"close": "'",
+			"notIn": ["string", "comment"]
+		},
+		{
+			"open": "`",
+			"close": "`",
+			"notIn": ["string", "comment"]
+		}
+	],
+	"surroundingPairs": [
+		["{", "}"],
+		["[", "]"],
+		["(", ")"],
+		["\"", "\""],
+		["'", "'"],
+		["`", "`"],
+		["<", ">"]
+	],
+	"indentationRules": {
+		"increaseIndentPattern": "(?:^(?!\\s*(?:export\\s+|global\\s+)?(?:declare|remote)\\s+function\\b)(?:(?:[^-]|-(?!-))*(?:\\b(?:then|do|repeat|else|with|as)\\b|[\\{\\[\\(])|\\s*default|(?:[^-]|-(?!-))*\\b(?:function|macro)\\b(?!(?:[^-]|-(?!-))*\\bend\\b)(?:[^-]|-(?!-))*\\)(?:\\s*(?:->|:)\\s*\\S.*)?)\\s*(?:--.*)?$)|^\\s*<[A-Za-z][\\w.]*(?:(?!/>)[^<])*>\\s*$|^\\s*<[A-Za-z][\\w.]*\\s*$",
+		"decreaseIndentPattern": "(?:^\\s*(?:(?:end|else|elseif|until)\\b|[\\}\\]\\)]))|^\\s*(?:</|/?>)"
+	},
+	"folding": {
+		"markers": {
+			"start": "^\\s*--\\s*#?region\\b",
+			"end": "^\\s*--\\s*#?endregion\\b"
+		}
+	}
+}

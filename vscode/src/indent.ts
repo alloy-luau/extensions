@@ -157,3 +157,56 @@ export function matchIndent(
 
 	return word[2] === 'end' ? found : found + unit
 }
+
+/** A line that opens a body of signatures: a trait, an interface, or a
+ *  declaration of a class or an extern type. */
+const SIGNATURES =
+	/^\s*(?:export\s+)?(?:trait|interface|declare\s+class|declare\s+extern\s+type)\b/
+
+/** A function header that ends the line with no body after it. */
+const SIGNATURE =
+	/^\s*(?:(?:public|private)\s+)?(?:async\s+)?function\s+[\w.:]+\s*(?:<[^>]*>)?\s*\(.*\)(?:\s*(?:->|:)\s*\S.*)?$/
+
+/**
+ * The indentation of the line after a signature in a trait, an
+ * interface, or a `declare` block: the signature's own, since it opens
+ * no body. Undefined leaves the line to the editor's rules.
+ *
+ * The scan walks up to the block around the line. A signature there
+ * opens nothing; a method with a body counts as the block it is.
+ */
+export function signatureIndent(
+	lines: readonly string[],
+	index: number,
+): string | undefined {
+	const above = code(lines[index - 1] ?? '').trimEnd()
+
+	if (!SIGNATURE.test(above)) {
+		return undefined
+	}
+
+	let depth = 0
+
+	for (let i = index - 1; i >= 0; i--) {
+		const text = code(lines[i] ?? '').trimEnd()
+
+		if (text.trim() === '' || (depth === 0 && SIGNATURE.test(text))) {
+			continue
+		}
+
+		depth += closes(text)
+
+		// `declare extern type X with` opens its block with no opener word.
+		const open = SIGNATURES.test(text) ? Math.max(1, opens(text)) : opens(text)
+
+		if (open > depth) {
+			return SIGNATURES.test(text)
+				? above.slice(0, above.length - above.trimStart().length)
+				: undefined
+		}
+
+		depth -= open
+	}
+
+	return undefined
+}

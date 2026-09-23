@@ -22,7 +22,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { matchIndent } from '../out/indent.js'
+import { matchIndent, signatureIndent } from '../out/indent.js'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 const rules = JSON.parse(
@@ -167,6 +167,67 @@ const cases = [
 	['export attribute server_only on function', false, false], // 21:9
 	['attribute icon(asset: string) on struct, enum, variant', false, false], // 21:10
 ]
+
+// A body-less signature keeps its column for the next line, in a trait,
+// an interface, and a declare block; a method with a body stays open.
+{
+	const trait = ['trait Weapon as', '    function damage(self): number', '']
+	assert.equal(signatureIndent(trait, 2), '    ', 'trait signature')
+
+	const withDefault = [
+		'export trait Weapon as',
+		'    function describe(self): string',
+		'        return "x"',
+		'    end',
+		'    function fire(self, target: Health)',
+		'',
+	]
+	assert.equal(
+		signatureIndent(withDefault, 5),
+		'    ',
+		'after a default method',
+	)
+
+	const declared = [
+		'declare extern type CFrame with',
+		'    function inverse(self): CFrame',
+		'',
+	]
+	assert.equal(signatureIndent(declared, 2), '    ', 'declare block')
+
+	const body = ['local function f(x: number): number', '']
+	assert.equal(signatureIndent(body, 1), undefined, 'a function with a body')
+}
+
+// .alx: a tag that stays open indents, and its close dedents.
+const alx = JSON.parse(
+	fs.readFileSync(
+		path.join(here, '..', 'language-configuration-alx.json'),
+		'utf8',
+	),
+).indentationRules
+const alxCases = [
+	['\t<Frame Size={size}>', true, false],
+	['<Frame', true, false],
+	['<TextLabel Text="hi" />', false, false],
+	['<TextLabel>hi</TextLabel>', false, false],
+	['</Frame>', false, true],
+	['/>', false, true],
+	['if open then', true, false],
+]
+
+for (const [line, opens, closes] of alxCases) {
+	assert.equal(
+		new RegExp(alx.increaseIndentPattern).test(line),
+		opens,
+		`alx increase: ${line}`,
+	)
+	assert.equal(
+		new RegExp(alx.decreaseIndentPattern).test(line),
+		closes,
+		`alx decrease: ${line}`,
+	)
+}
 
 for (const [line, opens, closes] of cases) {
 	assert.equal(increase.test(line), opens, `increase: ${line}`)

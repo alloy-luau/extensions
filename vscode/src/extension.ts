@@ -36,7 +36,7 @@ import {
 	type LanguageClientOptions,
 	type ServerOptions,
 } from 'vscode-languageclient/node'
-import { matchIndent } from './indent'
+import { matchIndent, signatureIndent } from './indent'
 
 let client: LanguageClient | undefined
 let output: OutputChannel | undefined
@@ -343,6 +343,54 @@ const ALLOY = ['alloy-luau', 'alloy-luau-declaration', ALX]
 const ARM = /^[ \t]*(?:case|default|end)$/
 
 /**
+ * Enter below a body-less signature in a trait, an interface, or a
+ * `declare` block keeps the signature's column. The indentation rules
+ * read one line, so they open a body that the block never has.
+ */
+async function signatureEnter(event: TextDocumentChangeEvent): Promise<void> {
+	const document = event.document
+	const change = event.contentChanges[0]
+
+	if (
+		!ALLOY.includes(document.languageId) ||
+		event.reason !== undefined ||
+		event.contentChanges.length !== 1 ||
+		!change.text.startsWith('\n') ||
+		change.text.trim() !== ''
+	) {
+		return
+	}
+
+	const editor = window.activeTextEditor
+
+	if (editor === undefined || editor.document !== document) {
+		return
+	}
+
+	const at = document.positionAt(change.rangeOffset + change.text.length)
+	const line = document.lineAt(at.line)
+	const written = signatureIndent(document.getText().split('\n'), at.line)
+	const start = line.firstNonWhitespaceCharacterIndex
+
+	if (
+		written === undefined ||
+		written === line.text.slice(0, start) ||
+		line.text.trim() !== ''
+	) {
+		return
+	}
+
+	await editor.edit(
+		(builder) =>
+			builder.replace(
+				new Range(at.line, 0, at.line, line.text.length),
+				written,
+			),
+		{ undoStopBefore: false, undoStopAfter: false },
+	)
+}
+
+/**
  * Writes the column of `case`, `default`, and the `end` that closes a
  * `match`, as the reader finishes the word.
  *
@@ -615,6 +663,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		markupEnterRule(),
 		workspace.onDidChangeTextDocument(closeTag),
 		workspace.onDidChangeTextDocument(matchArmIndent),
+		workspace.onDidChangeTextDocument(signatureEnter),
 		workspace.onDidSaveTextDocument(async (document) => {
 			if (
 				basename(document.uri.fsPath) === 'alloy.toml' &&
