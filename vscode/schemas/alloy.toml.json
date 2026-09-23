@@ -54,7 +54,7 @@
         "wait_timeout": {
           "type": "number",
           "minimum": 0,
-          "description": "Seconds passed to every `WaitForChild` that `=>` emits. Unset means no timeout: the engine waits forever and warns after five seconds. With a timeout the call can return nil, so `=>` guards like `->`."
+          "description": "Seconds passed to every `WaitForChild` that `=>` emits. Unset means no timeout: the engine waits forever and warns after five seconds. With a timeout the call can return nil, so `=>` guards like `->`. The file `alloy init` writes sets five seconds."
         },
         "std_require": {
           "type": "string",
@@ -645,7 +645,7 @@
           "type": "integer",
           "minimum": 0,
           "description": "Spaces per level, when `indent_type` is spaces.",
-          "default": 4
+          "default": 2
         },
         "quote_style": {
           "type": "string",
@@ -657,7 +657,7 @@
             "preserve"
           ],
           "description": "The quotes of a string literal. An `auto` style keeps the other quote for a string that holds the preferred one; `force` escapes instead.",
-          "default": "auto-prefer-double"
+          "default": "force-single"
         },
         "leading_zero": {
           "type": "string",
