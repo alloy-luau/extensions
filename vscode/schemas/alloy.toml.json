@@ -369,7 +369,725 @@
           "type": "object",
           "title": "[lint.rules]",
           "description": "The level of one lint: a lint name, a group name (correctness, suspicious, style, complexity, perf, roblox, pedantic, naming, or luau for the type checker's own), an ingot's `<ingot>/<lint>`, or `alx.<name>` for a markup lint. A name beats its group.",
-          "properties": {},
+          "properties": {
+            "correctness": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "The `correctness` group: code that is wrong, or cannot run."
+            },
+            "suspicious": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "The `suspicious` group: code that is probably not what the author meant."
+            },
+            "style": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "The `style` group: a Luau habit with an Alloy form."
+            },
+            "complexity": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "The `complexity` group: a simple thing done in a hard way."
+            },
+            "perf": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "The `perf` group: code that runs slower than the plain form."
+            },
+            "roblox": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "The `roblox` group: a Roblox API that is deprecated or misused."
+            },
+            "pedantic": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "The `pedantic` group: strict rules, on while `[lint] strict = true`."
+            },
+            "naming": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "The `naming` group: the case of names, off until `[lint.rules] naming = \"warn\"`."
+            },
+            "luau": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "The `luau` group: the type checker's own reports."
+            },
+            "optional_access": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a value that may be nil is indexed without a guard. Default: `warn`."
+            },
+            "needless_assert": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a `!` on a value the file types as never nil. Default: `warn`."
+            },
+            "dropped_result": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a call of a `Result` function whose value nothing reads. Default: `warn`."
+            },
+            "static_call": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a static of an `impl` called with `:`. Default: `warn`."
+            },
+            "argument_count": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a call passes more arguments than the function takes. Default: `warn`."
+            },
+            "unreachable_default": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a `default` arm after arms that cover every variant. Default: `warn`."
+            },
+            "empty_default": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a `default` arm with an empty body. Default: `warn`."
+            },
+            "unused_import": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "an imported name the file never uses. Default: `warn`."
+            },
+            "self_assignment": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`x = x`, an assignment that changes nothing. Default: `warn`."
+            },
+            "unreachable_code": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a statement after `return`, `break`, or `continue`. Default: `warn`."
+            },
+            "constant_condition": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`if true`, `if false`, or `if nil`. Default: `warn`."
+            },
+            "duplicate_key": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a table constructor that sets one key twice. Default: `warn`."
+            },
+            "misplaced_not": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`not a == b`, which compares `not a` to `b`. Default: `warn`."
+            },
+            "identical_branches": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "an `if` whose `then` and `else` bodies are the same. Default: `warn`."
+            },
+            "private_access": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a private field or method read outside its struct's impl. Default: `warn`."
+            },
+            "duplicate_function": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "one name given a `function` body twice. Default: `warn`."
+            },
+            "circular_import": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "two files that import each other. Default: `warn`."
+            },
+            "deprecated_namespace": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a use of a namespace declared `@deprecated`. Default: `warn`."
+            },
+            "and_or_ternary": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`c and a or b` in place of a ternary. Default: `warn`."
+            },
+            "unused_variable": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a local that nothing reads. Default: `warn`."
+            },
+            "unused_function": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a function that nothing calls. Default: `warn`."
+            },
+            "empty_block": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "an `if`, `else`, or loop body with nothing in it. Default: `warn`."
+            },
+            "bool_comparison": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`x == true` or `x == false`. Default: `warn`."
+            },
+            "needless_bool": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`if c then return true else return false end`. Default: `warn`."
+            },
+            "prefer_destroy": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`delete part` on a plain Instance, where `destroy part` says it. Default: `allow`."
+            },
+            "manual_safe_access": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`a and a.b`, the guard written by hand. Default: `warn`."
+            },
+            "manual_coalesce": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`if x == nil then x = v end`, a coalescing assignment by hand. Default: `warn`."
+            },
+            "nil_check_call": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`if f then f(...) end`, an optional call by hand. Default: `warn`."
+            },
+            "manual_type_test": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`typeof(x) == \"T\"` in place of `x is T`. Default: `warn`."
+            },
+            "legacy_iterator": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`pairs` or `ipairs` around a `for ... in` table. Default: `warn`."
+            },
+            "manual_floor_div": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`math.floor(a / b)` in place of `a // b`. Default: `warn`."
+            },
+            "manual_push": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`table.insert` or `table.remove` on a value typed as an Array. Default: `warn`."
+            },
+            "concat_interpolation": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a `..` chain that joins literals and values. Default: `warn`."
+            },
+            "raw_pcall": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a `pcall` or `xpcall`. Default: `warn`."
+            },
+            "raw_require": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a `require` where an `import` would do. Default: `warn`."
+            },
+            "game_alias": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`\"game\"` or `\"game:X\"`, the service path before the alias. Default: `warn`."
+            },
+            "manual_class": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`X.__index = X`, the class idiom by hand. Default: `warn`."
+            },
+            "manual_ternary_return": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`if c then return a else return b end`. Default: `warn`."
+            },
+            "redundant_return": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a bare `return` at the end of a function. Default: `warn`."
+            },
+            "local_then_return": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`local x = v` followed by `return x`. Default: `warn`."
+            },
+            "numeric_for_index": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`for i = 1, #t do local v = t[i]`. Default: `warn`."
+            },
+            "missing_reason": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "an `--@alloy-expect-error` with no reason. Default: `warn`."
+            },
+            "too_many_arguments": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a function with more parameters than `[flux] too_many_arguments`. Default: `warn`."
+            },
+            "too_many_lines": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a function longer than `[flux] too_many_lines`. Default: `warn`."
+            },
+            "deep_nesting": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "blocks nested deeper than `[flux] max_nesting`. Default: `warn`."
+            },
+            "cognitive_complexity": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a function whose branches score past `[flux] cognitive_complexity`. Default: `warn`."
+            },
+            "collapsible_if": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`if a then if b then ... end end`. Default: `warn`."
+            },
+            "collapsible_else_if": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`else if ... end end` in place of `elseif`. Default: `warn`."
+            },
+            "concat_in_loop": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`s = s .. x` inside a loop. Default: `warn`."
+            },
+            "service_in_loop": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`game:GetService` inside a loop. Default: `warn`."
+            },
+            "table_insert_position": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`table.insert(t, #t + 1, v)`. Default: `warn`."
+            },
+            "deprecated_global": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a call to `wait`, `spawn`, `delay`, or `unpack`. Default: `warn`."
+            },
+            "manual_child_lookup": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`:FindFirstChild(\"X\")` or `:WaitForChild(\"X\")` with a literal name. Default: `warn`."
+            },
+            "deprecated_method": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a lowercase Roblox method: `:connect`, `:wait`, `:remove`, `:clone`. Default: `warn`."
+            },
+            "instance_new_parent": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`Instance.new(class, parent)`, the parent as an argument. Default: `warn`."
+            },
+            "deprecated_body_mover": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`BodyVelocity`, `BodyPosition`, `BodyGyro`, and the other body movers. Default: `warn`."
+            },
+            "explicit_any": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "an annotation of `any`. Default: `allow`."
+            },
+            "implicit_any": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a named function parameter, or an empty array literal, with no type. Default: `allow`."
+            },
+            "missing_return_type": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a public function with no return type. Default: `allow`."
+            },
+            "todo_comment": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a `TODO`, `FIXME`, `XXX`, or `HACK` comment. Default: `allow`."
+            },
+            "print_debug": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a `print` call. Default: `allow`."
+            },
+            "const_mutation": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a write into the value a `const` holds. Default: `allow`."
+            },
+            "missing_doc": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "an exported declaration with no comment above it. Default: `allow`."
+            },
+            "missing_doc_type": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "an exported `type` alias or `interface` with no comment above it. Default: `allow`."
+            },
+            "import_order": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "an `import` under code that runs. Default: `allow`."
+            },
+            "camel_case_name": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a local, function, or parameter in camelCase. Default: `allow`."
+            },
+            "type_case": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a struct, enum, trait, interface, or type not in PascalCase. Default: `allow`."
+            },
+            "pascal_case_function": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a `local function` in PascalCase. Default: `allow`."
+            },
+            "alx": {
+              "type": "object",
+              "description": "The levels of the markup lints.",
+              "properties": {
+                "static_conditional_child": {
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "warn",
+                    "deny"
+                  ],
+                  "description": "markup in a child expression that no function encloses: it is built once, not on each render. Default: `warn`."
+                }
+              },
+              "additionalProperties": {
+                "type": "string",
+                "enum": [
+                  "allow",
+                  "warn",
+                  "deny"
+                ],
+                "description": "The level of one markup lint."
+              }
+            }
+          },
           "additionalProperties": {
             "description": "The level of one lint, one group, or a table of them under a prefix: `alx.static_conditional_child = \"warn\"`.",
             "oneOf": [
