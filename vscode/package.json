@@ -251,7 +251,10 @@
 				},
 				"alloy-luau.rig": {
 					"type": "string",
-					"enum": ["R15", "R6"],
+					"enum": [
+						"R15",
+						"R6"
+					],
 					"default": "R15",
 					"description": "The rig of a player's character. `Player.Character` types as `R15Character?` or `R6Character?`. Set here, it wins over `[roblox] rig` in alloy.toml; unset, the file decides."
 				},
@@ -342,6 +345,8 @@
 		"@types/node": "^20.0.0",
 		"@types/vscode": "^1.102.0",
 		"@vscode/vsce": "^3.0.0",
-		"typescript": "^5.4.0"
+		"typescript": "^5.4.0",
+		"vscode-oniguruma": "2.0.1",
+		"vscode-textmate": "9.3.2"
 	}
 }

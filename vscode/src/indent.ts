@@ -13,8 +13,9 @@ same arm body take different columns from one reference. So the
 extension writes the column for `case`, `default`, and the `end` that
 closes a `match`.
 
-The scan reads the text. A string that holds `end` counts as a close,
-the way the server's own block scan counts it.
+The scan reads the text, past comments and past the body of a string:
+the server's own block scan walks tokens, so an `end` it reads there
+closes nothing.
 */
 
 /** The words that open a block an `end` or an `until` closes. */
@@ -29,6 +30,7 @@ const OPENERS = new Set([
 	'struct',
 	'trait',
 	'impl',
+	'macro',
 	'enum',
 	'interface',
 	'namespace',
@@ -42,28 +44,39 @@ const WORD = /^([ \t]*)(case|default|end)\b/
 /** A `match` head: the `with` ends it and the arms follow. */
 const HEAD = /\bmatch\b.*\bwith$/
 
-/** The code of a line: the text in front of a `--` comment. A `--`
- *  inside a string is text. */
+/** The code of a line: the text in front of a `--` comment, with the
+ *  body of every string dropped. A `--` or an opener word inside a
+ *  string is text; the `{...}` hole of a backtick string is code, and
+ *  holds strings of its own. */
 function code(line: string): string {
-	let quote = ''
+	// The strings open here, innermost last. A `{` stands for a hole.
+	const open: string[] = []
+	let out = ''
 
 	for (let i = 0; i < line.length; i++) {
 		const c = line[i]
+		const inside = open.at(-1)
 
-		if (quote !== '') {
+		if (inside !== undefined && inside !== '{') {
 			if (c === '\\') {
 				i++
-			} else if (c === quote) {
-				quote = ''
+			} else if (c === inside) {
+				open.pop()
+			} else if (inside === '`' && c === '{') {
+				open.push('{')
 			}
 		} else if (c === '"' || c === "'" || c === '`') {
-			quote = c
+			open.push(c)
+		} else if (inside === '{' && c === '}') {
+			open.pop()
 		} else if (c === '-' && line[i + 1] === '-') {
-			return line.slice(0, i)
+			return out
+		} else {
+			out += c
 		}
 	}
 
-	return line
+	return out
 }
 
 function words(text: string): string[] {

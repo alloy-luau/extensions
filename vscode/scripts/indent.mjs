@@ -31,6 +31,33 @@ const rules = JSON.parse(
 const increase = new RegExp(rules.increaseIndentPattern)
 const decrease = new RegExp(rules.decreaseIndentPattern)
 
+// increaseIndentPattern reads, in the order it is written:
+//
+//   ^(?!\s*(?:export\s+|global\s+)?(?:declare|remote)\s+function\b)
+//                                             a signature, never a body
+//   (?: CODE (?:\b(?:then|do|repeat|else|with|as)\b|[{[(])
+//     | \s*default
+//     | CODE \b(?:function|macro)\b (?!CODE\bend\b) CODE \)(: T)?
+//   ) \s*(?:--.*)?$
+//
+// CODE is `(?:[^-]|-(?!-))*`: any run of text with no `--` in it, so
+// every opener must sit in front of the comment, and a line that opens
+// with `--` holds no opener at all. The tail takes the comment.
+//
+// The opener is the last word of the code, which is what makes a block
+// that closes on its own line (`function f() return 1 end`) open
+// nothing: the line ends in `end`, not in an opener. The prefix is
+// free, so an opener that is not the first word (`local x = async do`,
+// `Damage.on(function(a, b)`) counts. The `function` branch refuses a
+// line that closes its own body, hence the `end` lookahead.
+//
+// Undecidable from one line: a body-less signature in a `trait`,
+// `interface`, or `declare` block. `    function area(self): number`
+// is the same text in `trait Shape as` (08_structs_traits.aly:32, no
+// body) and in `impl Shape for Circle as` (:46, a body follows), so
+// the pattern opens for both. Dropping the increase would misplace the
+// `end` of every method, which is the commoner line.
+//
 // [line, opens a body, closes one]
 const cases = [
 	['namespace test as', true, false],
@@ -50,6 +77,95 @@ const cases = [
 	// its column.
 	['    case Ok(v) then print(v)', false, false],
 	['    default "none"', false, false],
+	// A name that opens with a word of the close list keeps its indent.
+	['end_time = 0', false, false],
+	['endpoint.x = 1', false, false],
+	['elsewhere()', false, false],
+	['until_now = 2', false, false],
+	['end)', false, true],
+	// An opener away from the front of the line. Each line is a hit in
+	// ~/Documents/alloy-examples.
+	['local twice = async do', true, false], // 03_async:65
+	['    local combined = try do', true, false], // 04_result:50
+	['local first = async do', true, false], // 13_std:63
+	['type function Keys(t)', true, false], // 09:41, 12:30
+	['type function F(', true, false],
+	['declare extern type PluginToolbar with', true, false], // 12:7
+	['    local Build(model_name) = job else', true, false], // 06:84
+	['attribute service(n: string) on impl as', true, false],
+	['export class Widget as', true, false],
+	['declare class Part as', true, false],
+	['export impl Vector3 as', true, false],
+	['interface SaveData extends Serializable as', true, false],
+	['return match color with', true, false],
+	[
+		'for _, player in Players:GetPlayers() where player.Team ~= nil do',
+		true,
+		false,
+	],
+	// A `function(` that ends the line opens a body wherever it sits.
+	['    table.sort(order, function(a, b)', true, false], // 03_async:47
+	['local ping = async function(): number', true, false], // 03_async:76
+	[
+		'    Damage.on(function(sender: Player, target: Player, amount: number)',
+		true,
+		false,
+	], // 16_remotes:63
+	['    Chat.on(function(sender: Player, text: string)', true, false], // 16_remotes:67
+	['    Chat.on_ratelimited(function(sender: Player)', true, false], // 16_remotes:71
+	[
+		'    GetProfile.on(async function(sender: Player, id: number): Profile',
+		true,
+		false,
+	], // 16_remotes:76
+	['    JoinTeam.on(function(sender: Player, team: Team)', true, false], // 16_remotes:82
+	['    Ping.on(function(sender: Player, sent_at: number)', true, false], // 16_remotes:86
+	['    Toast.on(function(message: string, seconds: number)', true, false], // 16_remotes:97
+	['    Confirm.on(function(prompt: string): boolean', true, false], // 16_remotes:101
+	['    Ping.on(function(sent_at: number)', true, false], // 16_remotes:133
+	['        self.health.on_death = function()', true, false], // 14_oop:144
+	[
+		'        self.connections:push(player.CharacterAdded:Connect(function()',
+		true,
+		false,
+	], // 14_oop:147
+	['            Activated={function()', true, false], // 11_ui.alx:17
+	['    local rows = props.items:map(function(item)', true, false], // 11_ui.alx:28
+	['x = function()', true, false],
+	['    macro clamp01(x)', true, false], // 20_macros:6
+	// A block that closes on its own line opens nothing.
+	['function f() return 1 end', false, false],
+	['macro m(x) $dbg(x) end', false, false],
+	['if x then return end', false, false],
+	['struct X as x: number end', false, false],
+	['    function(acc: number, x) return acc + x end,', false, false], // 13_std:21
+	['    function(n) return n * n end', false, false], // 13_std:103
+	['local doubled = xs:map(function(x) return x * 2 end)', false, false], // 13_std:18
+	[
+		'local heartbeat = scope:add(RunService.Heartbeat:Connect(function() end))',
+		false,
+		false,
+	], // 13_std:97
+	// A comment neither opens a body nor hides one.
+	['-- if x then', false, false],
+	['    -- local t = {', false, false],
+	['x = 1 -- if y then', false, false],
+	['local t = { -- note', true, false],
+	['local twice = async do -- a thread of its own', true, false],
+	// A signature with no body of its own.
+	['declare function warn_once(message: string): ()', false, false], // 12:5
+	[
+		'export remote function GetProfile(id: number) -> Profile from client',
+		false,
+		false,
+	], // 16_remotes:12
+	[
+		'export remote function Confirm(prompt: string): boolean from server',
+		false,
+		false,
+	], // 16_remotes:31
+	['export attribute server_only on function', false, false], // 21:9
+	['attribute icon(asset: string) on struct, enum, variant', false, false], // 21:10
 ]
 
 for (const [line, opens, closes] of cases) {
@@ -209,6 +325,37 @@ const arms = [
 		4,
 	],
 	['the `end` of a match with one `default`', null, 2, 0],
+	// `macro` opens a block the scan must count, as block_end.rs does.
+	[
+		'`default` under a macro block in an arm',
+		[
+			'match z with',
+			'    case Ok(v) then',
+			'        macro m(a)',
+			'            a',
+			'        end',
+			'    default nil',
+			'end',
+		],
+		5,
+		4,
+	],
+	['the `end` of a match with a macro block', null, 6, 0],
+	// An opener word inside a string opens nothing.
+	[
+		'`default` under a string that holds an opener',
+		[
+			'match z with',
+			'    case Ok(v) then',
+			'        print("function")',
+			'        print(`{v} end`)',
+			'    default nil',
+			'end',
+		],
+		4,
+		4,
+	],
+	['the `end` of a match with such a string', null, 5, 0],
 ]
 
 let lines = []

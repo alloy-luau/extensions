@@ -184,9 +184,7 @@ async function fetchText(url: string): Promise<string> {
  *  the bundled one. */
 function luauLspPath(): string | undefined {
 	const config = workspace.getConfiguration('alloy-luau')
-	return (
-		config.get<string>('server.luauLspPath', '').trim() || bundledLuauLsp()
-	)
+	return config.get<string>('server.luauLspPath', '').trim() || bundledLuauLsp()
 }
 
 async function serverCommand(): Promise<{ command: string; args: string[] }> {

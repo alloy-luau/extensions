@@ -21,8 +21,8 @@
 		["`", "`"]
 	],
 	"indentationRules": {
-		"increaseIndentPattern": "^\\s*(?:public\\s+|private\\s+)?(?:(?:else)?if\\b.*\\bthen|else|case\\b.*\\bthen|default|for\\b.*\\bdo|while\\b.*\\bdo|repeat|(?:async\\s+|try\\s+)?do|function\\b.*\\)(?:\\s*(?:->|:)\\s*.*)?|(?:local\\s+|const\\s+|export\\s+)?(?:async\\s+)?(?:function|macro)\\b.*|(?:export\\s+)?(?:struct|trait|impl|enum|interface|namespace)\\b(?!.*\\bend\\s*$).*|match\\b.*\\bwith|.*[\\{\\[\\(]|.*\\bthen)\\s*$",
-		"decreaseIndentPattern": "^\\s*(?:end|else|elseif|until|[\\}\\]\\)])"
+		"increaseIndentPattern": "^(?!\\s*(?:export\\s+|global\\s+)?(?:declare|remote)\\s+function\\b)(?:(?:[^-]|-(?!-))*(?:\\b(?:then|do|repeat|else|with|as)\\b|[\\{\\[\\(])|\\s*default|(?:[^-]|-(?!-))*\\b(?:function|macro)\\b(?!(?:[^-]|-(?!-))*\\bend\\b)(?:[^-]|-(?!-))*\\)(?:\\s*(?:->|:)\\s*\\S.*)?)\\s*(?:--.*)?$",
+		"decreaseIndentPattern": "^\\s*(?:(?:end|else|elseif|until)\\b|[\\}\\]\\)])"
 	},
 	"folding": {
 		"markers": {
