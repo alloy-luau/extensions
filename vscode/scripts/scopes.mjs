@@ -18,6 +18,17 @@ const cases = [
 		['@', 'punctuation.definition.attribute.aly'],
 		[',', 'punctuation.definition.attribute.aly'],
 	],
+	['local r = total/count', ['count', 'variable.other.aly']],
+	['local s = a..b', ['b', 'variable.other.aly']],
+	[
+		'local n = 3i + .5',
+		['3i', 'constant.numeric.aly'],
+		['.5', 'constant.numeric.aly'],
+	],
+	['$expect(x)', ['expect', 'entity.name.function.macro.intrinsic.aly']],
+	['export open namespace Ui as', ['open', 'storage.modifier.aly']],
+	['local h = Heap.new()', ['Heap', 'support.class.std.aly']],
+	['attribute service on impl as', ['as', 'keyword.control.aly']],
 	['x is Part', ['is', WORDLIKE], ['Part', TYPE]],
 	['x is not Part', ['is', WORDLIKE], ['not', WORDLIKE], ['Part', TYPE]],
 	['not x is Part', ['not', WORDLIKE], ['is', WORDLIKE], ['Part', TYPE]],
@@ -51,6 +62,17 @@ for (const [line, ...wanted] of cases) {
 		assert.ok(token, `no \`${text}\` token in: ${line}`)
 		assert.equal(token.scopes.at(-1), scope, `${text} in: ${line}`)
 	}
+}
+
+// A union written over lines keeps its type context past the first.
+{
+	const lines = ['export type Id =', '\t| Part', '\t| Model', 'local x = Part']
+	const tokens = tokenize(grammar, lines)
+	const scope = (row, text) =>
+		tokens[row].find((t) => t.text === text).scopes.at(-1)
+
+	assert.equal(scope(2, 'Model'), TYPE, 'Model in the union')
+	assert.notEqual(scope(3, 'local'), TYPE, 'the next statement leaves the type')
 }
 
 console.log(`token scopes: ${cases.length} lines ok`)

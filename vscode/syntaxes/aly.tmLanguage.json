@@ -129,7 +129,7 @@
 		},
 		"number": {
 			"name": "constant.numeric.aly",
-			"match": "\\b(?:0[xX][0-9A-Fa-f_]+|0[bB][01_]+|\\d[\\d_]*(?:\\.[\\d_]*)?(?:[eE][+-]?\\d+)?)\\b"
+			"match": "(?:\\b(?:0[xX][0-9A-Fa-f_]+|0[bB][01_]+|\\d[\\d_]*(?:\\.[\\d_]*)?(?:[eE][+-]?\\d+)?)|(?<![\\w.])\\.\\d[\\d_]*(?:[eE][+-]?\\d+)?)i?\\b"
 		},
 		"attribute": {
 			"comment": "@derive(...), @test, @unreliable, @ratelimit(...), @u8, and upstream @native. An import list writes an attribute the same way, `import { @tagged as t } from \"./m\"`, so the sigil and the name colour there too; the local name after `as` takes no sigil. A namespaced attribute carries its path, `@testing.testatr`, so the whole path colours as the name. The rule carries its own argument list: an enum or struct body has no string rule, so `@icon(\"x\")` on a variant needs one here.",
@@ -191,14 +191,14 @@
 					}
 				},
 				{
-					"comment": "on target, target: the targets colour as constants and each comma as a separator.",
+					"comment": "on target, target: the targets colour as constants and each comma as a separator. The header's `as` stays a keyword.",
 					"begin": "\\b(on)\\b(?=\\s+(?:function|struct|enum|variant|field|param|remote|interface|type|local|namespace|impl|trait)\\b)",
 					"beginCaptures": {
 						"1": {
 							"name": "keyword.control.aly"
 						}
 					},
-					"end": "(?=\\s*(?:$|--|\\brequires\\b))",
+					"end": "(?=\\s*(?:$|--|\\brequires\\b|\\bas\\b))",
 					"name": "meta.attribute.targets.aly",
 					"patterns": [
 						{
@@ -362,6 +362,11 @@
 		"keyword": {
 			"patterns": [
 				{
+					"comment": "`open namespace` and `export global`; a local named open or global stays a name",
+					"name": "storage.modifier.aly",
+					"match": "(?<![.:])\\b(?:open(?=\\s+namespace\\b)|global(?=\\s+[A-Za-z_]))\\b"
+				},
+				{
 					"comment": "read x: T and write x: T on a field or in a type",
 					"name": "storage.modifier.aly",
 					"match": "\\b(?:read|write)\\b(?=\\s+[A-Za-z_({\\[])"
@@ -462,7 +467,7 @@
 			"comment": "$name( and $Module.name( are macro calls, and $set[ is the bracket form; intrinsics carry a .intrinsic suffix on the same scope so they color alike by default",
 			"patterns": [
 				{
-					"match": "(\\$)(dbg|todo|unreachable|assert|assert_eq|nameof|stringify|matches|bnot|set|map)\\b(?=[\\(\\[])",
+					"match": "(\\$)(dbg|expect|todo|unreachable|assert|assert_eq|nameof|stringify|matches|bnot|set|map)\\b(?=[\\(\\[])",
 					"captures": {
 						"1": {
 							"name": "punctuation.definition.macro.aly"
@@ -515,7 +520,7 @@
 		},
 		"std": {
 			"name": "support.class.std.aly",
-			"match": "\\b(?:Future|Result|Ok|Err|Array|HashMap|Set|Symbol|Attributes)\\b"
+			"match": "\\b(?:Future|Result|Ok|Err|Array|HashMap|Set|Symbol|Attributes|Heap|Iter|Queue|Signal|Scope|Sink|Partial|Readonly|ReadArray|WriteArray|Traits)\\b"
 		},
 		"call": {
 			"match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\s*(?=[({\"'`])",
@@ -528,9 +533,9 @@
 		"identifier": {
 			"patterns": [
 				{
-					"comment": "a name after ., :, ?., ?:, ?/, or :/ is a property or method, whatever its case",
+					"comment": "a name after ., :, ?., ?:, ?/, or :/ is a property or method, whatever its case; the right operand of .. and / is not",
 					"name": "variable.other.property.aly",
-					"match": "(?<=[.:/])(?<!\\.\\.\\.)[A-Za-z_][A-Za-z0-9_]*\\b(?!\\s*[({\"'`])"
+					"match": "(?:(?<=[^.]\\.)|(?<=^\\.)|(?<=:)|(?<=[?:]/))[A-Za-z_][A-Za-z0-9_]*\\b(?!\\s*[({\"'`])"
 				},
 				{
 					"name": "entity.name.type.aly",
@@ -820,7 +825,7 @@
 					]
 				},
 				{
-					"comment": "type Name<T> = ... and export type",
+					"comment": "type Name<T> = ... and export type; a next line that opens with | or & continues the type",
 					"begin": "\\b(type)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*(?:(<)([^>]*)(>))?\\s*(=)",
 					"beginCaptures": {
 						"1": {
@@ -842,7 +847,7 @@
 							"name": "keyword.operator.aly"
 						}
 					},
-					"end": "$",
+					"end": "^(?!\\s*[|&])",
 					"name": "meta.type.alias.aly",
 					"patterns": [
 						{
@@ -930,7 +935,7 @@
 		},
 		"enum-body": {
 			"comment": "enum Name as ... end: a variant is a name, a payload is a type list, a value variant takes an expression; the end may sit on the as line",
-			"begin": "^\\s*(?:(export)\\s+)?(enum)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+(as)\\b",
+			"begin": "^\\s*(?:(export|public|private)\\s+)?(enum)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+(as)\\b",
 			"beginCaptures": {
 				"1": {
 					"name": "storage.type.aly"

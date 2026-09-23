@@ -63,7 +63,7 @@
 				"extensions": [
 					".alx"
 				],
-				"configuration": "./language-configuration.json",
+				"configuration": "./language-configuration-alx.json",
 				"icon": {
 					"light": "./assets/alx-symbol.png",
 					"dark": "./assets/alx-symbol.png"
@@ -90,6 +90,28 @@
 		"semanticTokenScopes": [
 			{
 				"language": "alloy-luau",
+				"scopes": {
+					"decorator": [
+						"entity.other.attribute-name.aly"
+					],
+					"macro": [
+						"entity.name.function.macro.aly"
+					]
+				}
+			},
+			{
+				"language": "alloy-luau-declaration",
+				"scopes": {
+					"decorator": [
+						"entity.other.attribute-name.aly"
+					],
+					"macro": [
+						"entity.name.function.macro.aly"
+					]
+				}
+			},
+			{
+				"language": "alloy-luau-jsx",
 				"scopes": {
 					"decorator": [
 						"entity.other.attribute-name.aly"
