@@ -18,6 +18,17 @@ const cases = [
 		['@', 'punctuation.definition.attribute.aly'],
 		[',', 'punctuation.definition.attribute.aly'],
 	],
+	[
+		'local v: ~nil = 1',
+		['~', 'keyword.operator.type.negation.aly'],
+		['nil', 'support.type.primitive.aly'],
+	],
+	['type N = ~string | ~number', ['~', 'keyword.operator.type.negation.aly']],
+	[
+		'local function g<T: ~nil>(x: T)',
+		['~', 'keyword.operator.type.negation.aly'],
+	],
+	['if a ~= b then', ['~=', 'keyword.operator.aly']],
 	['local r = total/count', ['count', 'variable.other.aly']],
 	['local s = a..b', ['b', 'variable.other.aly']],
 	[

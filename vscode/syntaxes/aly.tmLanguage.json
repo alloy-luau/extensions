@@ -590,6 +590,11 @@
 					"match": "\\?"
 				},
 				{
+					"comment": "~T negates a type: every value that is not a T",
+					"name": "keyword.operator.type.negation.aly",
+					"match": "~(?!=)"
+				},
+				{
 					"name": "keyword.operator.type.union.aly",
 					"match": "[|&]"
 				},
@@ -719,7 +724,7 @@
 			"patterns": [
 				{
 					"comment": "x: T in bindings, params, fields. Needs whitespace after the colon, which is what separates it from a:b method syntax; the formatter enforces both.",
-					"begin": "(?<!\\s)(:)(?!:)(?=\\s+(?:[A-Za-z_(\\{<'\"`]|\\.\\.\\.|-?\\d))(?!\\s*[A-Za-z_][A-Za-z0-9_.]*\\s*[({\"'`])",
+					"begin": "(?<!\\s)(:)(?!:)(?=\\s+(?:[A-Za-z_(\\{<'\"`~]|\\.\\.\\.|-?\\d))(?!\\s*[A-Za-z_][A-Za-z0-9_.]*\\s*[({\"'`])",
 					"beginCaptures": {
 						"1": {
 							"name": "punctuation.separator.type.annotation.aly"
