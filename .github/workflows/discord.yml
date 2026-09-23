@@ -1,0 +1,18 @@
+# Posts pushes and pull requests to Discord through the shared workflow
+# in alloy-luau/alloy. The DISCORD_WEBHOOK variable turns it on.
+name: Discord
+
+on:
+  push:
+    branches: ["**"]
+  pull_request_target:
+    types: [opened, closed]
+
+permissions: {}
+
+jobs:
+  notify:
+    if: vars.DISCORD_WEBHOOK != ''
+    uses: alloy-luau/alloy/.github/workflows/discord.yml@main
+    with:
+      webhook: ${{ vars.DISCORD_WEBHOOK }}
