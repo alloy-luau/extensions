@@ -1224,7 +1224,7 @@
           "items": {
             "type": "string"
           },
-          "description": "Definitions files for the type check, `.d.luau` or `.d.aly`, relative to this file. The project's `.d.aly` files join them on their own.",
+          "description": "Definitions files for the type check, `.d.luau` or `.d.aly`, relative to this file. The project's `.d.aly` files join them on their own. The editor loads the same list.",
           "default": []
         },
         "roblox_types": {
