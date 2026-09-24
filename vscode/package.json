@@ -41,6 +41,20 @@
 				}
 			},
 			{
+				"id": "alloy-luau-config",
+				"aliases": [
+					"Alloy Config"
+				],
+				"filenames": [
+					".config.aly"
+				],
+				"configuration": "./language-configuration.json",
+				"icon": {
+					"light": "./assets/alloy-toml-symbol.png",
+					"dark": "./assets/alloy-toml-symbol.png"
+				}
+			},
+			{
 				"id": "alloy-luau-declaration",
 				"aliases": [
 					"Alloy Declaration"
@@ -71,6 +85,11 @@
 			}
 		],
 		"grammars": [
+			{
+				"language": "alloy-luau-config",
+				"scopeName": "source.aly.config",
+				"path": "./syntaxes/aly-config.tmLanguage.json"
+			},
 			{
 				"language": "alloy-luau",
 				"scopeName": "source.aly",
@@ -120,6 +139,17 @@
 						"entity.name.function.macro.aly"
 					]
 				}
+			},
+			{
+				"language": "alloy-luau-config",
+				"scopes": {
+					"decorator": [
+						"entity.other.attribute-name.aly"
+					],
+					"macro": [
+						"entity.name.function.macro.aly"
+					]
+				}
 			}
 		],
 		"tomlValidation": [
@@ -130,6 +160,16 @@
 		],
 		"configurationDefaults": {
 			"[alloy-luau]": {
+				"editor.formatOnType": true,
+				"editor.quickSuggestions": {
+					"other": "on",
+					"comments": "off",
+					"strings": "on"
+				},
+				"editor.suggest.snippetsPreventQuickSuggestions": false,
+				"editor.wordBasedSuggestions": "off"
+			},
+			"[alloy-luau-config]": {
 				"editor.formatOnType": true,
 				"editor.quickSuggestions": {
 					"other": "on",
