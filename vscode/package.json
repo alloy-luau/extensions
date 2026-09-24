@@ -228,7 +228,7 @@
 						"type": "string"
 					},
 					"default": [],
-					"description": "Declaration files (.d.aly or .d.luau) passed to the language server as --definitions. The Roblox globals of luau-lsp.types.roblox.securityLevel and the files of luau-lsp.types.definitionFiles are passed on their own."
+					"description": "Declaration files (.d.aly or .d.luau) whose globals every file sees, for this editor alone. A relative path reads from the workspace folder. `[flux] definitions` in alloy.toml or .config.aly gives files to the editor and to `alloy flux` both, and every .d.aly under `[build] in` joins on its own. The Roblox globals of luau-lsp.types.roblox.securityLevel and the files of luau-lsp.types.definitionFiles are passed on their own."
 				},
 				"alloy-luau.server.args": {
 					"type": "array",

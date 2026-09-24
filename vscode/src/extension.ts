@@ -2,7 +2,7 @@ import { exec } from 'node:child_process'
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
-import { basename, delimiter, dirname, join } from 'node:path'
+import { delimiter, dirname, join } from 'node:path'
 import {
 	commands,
 	type Disposable,
@@ -570,10 +570,26 @@ async function generateSourcemap(): Promise<void> {
 	}
 }
 
+/** The server's `--version` line. Every build of one release prints
+ *  the same version, and the commit in it tells a stale install from a
+ *  new build. */
+function serverVersion(command: string): Promise<string> {
+	return new Promise((resolve) => {
+		exec(
+			`"${command}" --version`,
+			{ timeout: 5000, env: serverEnv() },
+			(error, stdout) => {
+				resolve(error ? `unknown (${error.message})` : stdout.trim())
+			},
+		)
+	})
+}
+
 async function startClient(): Promise<void> {
 	output ??= window.createOutputChannel('Alloy')
 	const { command, args } = await serverCommand()
 	output.appendLine(`starting: ${command} ${args.join(' ')}`)
+	output.appendLine(`server: ${await serverVersion(command)}`)
 	const options = { env: serverEnv() }
 	const serverOptions: ServerOptions = {
 		run: { command, args, options },
@@ -614,16 +630,19 @@ async function startClient(): Promise<void> {
 /** One restart per burst of saves. */
 const CONFIG_RESTART_DELAY = 500
 
-/** The files a project reads its configuration from. */
-const CONFIG_FILES = ['alloy.toml', '.config.aly']
+/** The files the server reads at its start alone: the configuration,
+ *  and each `.d.aly`, which the child luau-lsp loads as definitions. */
+const START_FILES = '**/{alloy.toml,.config.aly,*.d.aly}'
 
 let configRestart: NodeJS.Timeout | undefined
 
 /**
- * Restarts the server after a save of `alloy.toml` or `.config.aly`. The child luau-lsp
- * takes the mount aliases, the solver flag, and the definitions as
- * command line arguments, so only a new process reads the new file.
- * The restart stays quiet: one line in the output channel, no popup.
+ * Restarts the server after a change to `alloy.toml`, `.config.aly`,
+ * or a `.d.aly`, saved in the editor or written on disk. The child
+ * luau-lsp takes the mount aliases, the solver flag, and the
+ * definitions as command line arguments, so only a new process reads
+ * the new file. The restart stays quiet: one line in the output
+ * channel, no popup.
  */
 function restartForConfig(): void {
 	if (configRestart !== undefined) {
@@ -658,6 +677,9 @@ async function stopClient(): Promise<void> {
 
 export async function activate(context: ExtensionContext): Promise<void> {
 	storage = context.globalStorageUri.fsPath
+	// A save in the editor and a write on disk, such as a checkout,
+	// both reach the watcher.
+	const startFiles = workspace.createFileSystemWatcher(START_FILES)
 	context.subscriptions.push(
 		commands.registerCommand('alloy-luau.restartServer', async () => {
 			await stopClient()
@@ -668,13 +690,11 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		workspace.onDidChangeTextDocument(closeTag),
 		workspace.onDidChangeTextDocument(matchArmIndent),
 		workspace.onDidChangeTextDocument(signatureEnter),
+		startFiles,
+		startFiles.onDidChange(restartForConfig),
+		startFiles.onDidCreate(restartForConfig),
+		startFiles.onDidDelete(restartForConfig),
 		workspace.onDidSaveTextDocument(async (document) => {
-			if (
-				CONFIG_FILES.includes(basename(document.uri.fsPath)) &&
-				workspace.getWorkspaceFolder(document.uri) !== undefined
-			) {
-				restartForConfig()
-			}
 			const config = workspace.getConfiguration('alloy-luau.sourcemap')
 			const scripts = [
 				'alloy-luau',
