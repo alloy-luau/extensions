@@ -86,4 +86,20 @@ for (const [line, ...wanted] of cases) {
 	assert.notEqual(scope(3, 'local'), TYPE, 'the next statement leaves the type')
 }
 
+// `.config.aly` has a language of its own, for its icon, and reads as
+// Alloy through the grammar it includes.
+{
+	const config = await grammarOf('source.aly.config')
+	const [tokens] = tokenize(config, [
+		'export default { build = { out = "dist" } }',
+	])
+	const scope = (text) => tokens.find((t) => t.text === text).scopes.at(-1)
+
+	assert.equal(scope('export'), 'storage.type.aly', 'export in a config')
+	assert.ok(
+		tokens.some((t) => t.scopes.includes('string.quoted.double.aly')),
+		'a string in a config',
+	)
+}
+
 console.log(`token scopes: ${cases.length} lines ok`)

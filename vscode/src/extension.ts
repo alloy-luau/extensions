@@ -337,7 +337,7 @@ async function serverSettings(): Promise<Record<string, unknown>> {
 const ALX = 'alloy-luau-jsx'
 
 /** Every language that holds Alloy code. */
-const ALLOY = ['alloy-luau', 'alloy-luau-declaration', ALX]
+const ALLOY = ['alloy-luau', 'alloy-luau-config', 'alloy-luau-declaration', ALX]
 
 /** The word a line of a `match` opens with, alone on its line. */
 const ARM = /^[ \t]*(?:case|default|end)$/
@@ -582,6 +582,7 @@ async function startClient(): Promise<void> {
 	const clientOptions: LanguageClientOptions = {
 		documentSelector: [
 			{ scheme: 'file', language: 'alloy-luau' },
+			{ scheme: 'file', language: 'alloy-luau-config' },
 			{ scheme: 'file', language: 'alloy-luau-declaration' },
 			{ scheme: 'file', language: 'alloy-luau-jsx' },
 		],

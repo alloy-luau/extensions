@@ -20,6 +20,7 @@ const onigLib = onig.loadWASM(wasm).then(() => ({
 }))
 const files = {
 	'source.aly': 'aly',
+	'source.aly.config': 'aly-config',
 	'source.alx': 'alx',
 	'source.d.aly': 'daly',
 }
@@ -39,13 +40,15 @@ const registry = new vsctm.Registry({
 	},
 })
 
-/** The scope a file name asks for: `.alx`, `.d.aly`, then `.aly`. */
+/** The scope a file name asks for: `.config.aly`, `.alx`, `.d.aly`, then `.aly`. */
 export const scopeOf = (file) =>
-	file.endsWith('.alx')
-		? 'source.alx'
-		: file.endsWith('.d.aly')
-			? 'source.d.aly'
-			: 'source.aly'
+	file.endsWith('.config.aly')
+		? 'source.aly.config'
+		: file.endsWith('.alx')
+			? 'source.alx'
+			: file.endsWith('.d.aly')
+				? 'source.d.aly'
+				: 'source.aly'
 
 export const grammarOf = (scope) => registry.loadGrammar(scope)
 
