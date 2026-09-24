@@ -103,7 +103,10 @@
 			{
 				"language": "alloy-luau-jsx",
 				"scopeName": "source.alx",
-				"path": "./syntaxes/alx.tmLanguage.json"
+				"path": "./syntaxes/alx.tmLanguage.json",
+				"embeddedLanguages": {
+					"meta.embedded.block.css": "css"
+				}
 			}
 		],
 		"semanticTokenScopes": [

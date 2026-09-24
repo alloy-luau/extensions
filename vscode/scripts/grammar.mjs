@@ -27,6 +27,16 @@ const files = {
 const registry = new vsctm.Registry({
 	onigLib,
 	loadGrammar: async (scope) => {
+		// VS Code ships the CSS grammar the `<style>` rule includes. The
+		// tests stand in an empty one: a rule whose include cannot load
+		// drops out whole.
+		if (scope === 'source.css') {
+			return vsctm.parseRawGrammar(
+				JSON.stringify({ scopeName: 'source.css', patterns: [] }),
+				'css.json',
+			)
+		}
+
 		const file = files[scope]
 
 		if (!file) return null

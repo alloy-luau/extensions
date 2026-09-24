@@ -102,4 +102,34 @@ for (const [line, ...wanted] of cases) {
 	)
 }
 
+// A `<style>` holds CSS up to `</style>`: `--accent` is a custom
+// property there, not a Luau comment, and `{` opens no hole.
+{
+	const alx = await grammarOf('source.alx')
+	const lines = [
+		'return <div>',
+		'<style>',
+		':root { --accent: #7c5cff; }',
+		'</style>',
+		'<p>x</p>',
+		'</div>',
+	]
+	const tokens = tokenize(alx, lines)
+	const css = tokens[2]
+
+	assert.ok(
+		css.every((t) => t.scopes.includes('meta.embedded.block.css')),
+		'the CSS line is CSS',
+	)
+	assert.ok(
+		!css.some((t) => t.scopes.some((s) => s.startsWith('comment'))),
+		'--accent is no comment',
+	)
+	assert.equal(
+		tokens[4].find((t) => t.text === 'p').scopes.at(-1),
+		'entity.name.tag.alx',
+		'the markup after the style',
+	)
+}
+
 console.log(`token scopes: ${cases.length} lines ok`)
