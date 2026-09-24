@@ -8,6 +8,7 @@
 			"patterns": [
 				{ "include": "#comment" },
 				{ "include": "#fragment" },
+				{ "include": "#style" },
 				{ "include": "#element" }
 			]
 		},
@@ -36,6 +37,34 @@
 				"2": { "name": "punctuation.definition.tag.end.alx" }
 			},
 			"patterns": [{ "include": "#children" }]
+		},
+		"style": {
+			"comment": "<style>: CSS up to </style>, as HTML reads it. The Silk ingot compiles it to a StyleSheet.",
+			"name": "meta.tag.alx",
+			"begin": "(<)(style)\\b",
+			"beginCaptures": {
+				"1": { "name": "punctuation.definition.tag.begin.alx" },
+				"2": { "name": "entity.name.tag.alx" }
+			},
+			"end": "(</)(style)\\s*(>)",
+			"endCaptures": {
+				"1": { "name": "punctuation.definition.tag.begin.alx" },
+				"2": { "name": "entity.name.tag.alx" },
+				"3": { "name": "punctuation.definition.tag.end.alx" }
+			},
+			"patterns": [
+				{ "include": "#attributes" },
+				{
+					"comment": "The CSS starts on the > of the head, so it runs across the lines after it.",
+					"contentName": "meta.embedded.block.css",
+					"begin": "(>)",
+					"beginCaptures": {
+						"1": { "name": "punctuation.definition.tag.end.alx" }
+					},
+					"end": "(?=</style\\s*>)",
+					"patterns": [{ "include": "source.css" }]
+				}
+			]
 		},
 		"element": {
 			"comment": "One element: the head up to > or />, then the children up to the closing tag with the same name. A self-closing head ends the element.",
@@ -98,6 +127,7 @@
 			"patterns": [
 				{ "include": "#comment" },
 				{ "include": "#fragment" },
+				{ "include": "#style" },
 				{ "include": "#element" },
 				{ "include": "#hole" },
 				{
