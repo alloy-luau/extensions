@@ -232,6 +232,10 @@ const cases = [
 	const trait = ['trait Weapon as', '    function damage(self): number', '']
 	assert.equal(signatureIndent(trait, 2), '    ', 'trait signature')
 
+	// A blank line after the signature keeps the column too.
+	const spaced = ['trait Weapon', '    function damage(self): number', '', '']
+	assert.equal(signatureIndent(spaced, 3), '    ', 'after a blank line')
+
 	const withDefault = [
 		'export trait Weapon as',
 		'    function describe(self): string',
@@ -294,6 +298,14 @@ const cases = [
 		'end',
 	]
 	assert.equal(signatureEndIndent(trait, 3), '', 'trait end')
+	assert.equal(
+		signatureEndIndent(
+			['trait Named', '    function name(self): string', '', 'end'],
+			3,
+		),
+		'',
+		'trait end after a blank line',
+	)
 
 	const nested = [
 		'namespace N',
@@ -337,6 +349,9 @@ const alxCases = [
 	['<TextLabel>hi</TextLabel>', false, false],
 	['</Frame>', false, true],
 	['/>', false, true],
+	// A lone `>` closes a multi-line opening tag: it takes the tag's
+	// column, and the children below it go one level in.
+	['  >', true, true],
 	['if open then', true, false],
 ]
 

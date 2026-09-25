@@ -304,7 +304,15 @@ function signatureBlock(
 	index: number,
 ): { above: string; opener: string } | undefined {
 	const all = codes(lines, index - 1)
-	const above = (all[index - 1] ?? '').trimEnd()
+	// A blank line after the signature changes nothing: the next method
+	// still takes the signature's column.
+	let at = index - 1
+
+	while (at >= 0 && (all[at] ?? '').trim() === '') {
+		at--
+	}
+
+	const above = (all[at] ?? '').trimEnd()
 
 	if (!SIGNATURE.test(above)) {
 		return undefined
