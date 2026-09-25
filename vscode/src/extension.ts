@@ -11,9 +11,12 @@ import {
 	IndentAction,
 	languages,
 	type OutputChannel,
+	Position,
 	Range,
+	Selection,
 	SnippetString,
 	type TextDocumentChangeEvent,
+	Uri,
 	window,
 	workspace,
 } from 'vscode'
@@ -681,6 +684,21 @@ async function stopClient(): Promise<void> {
 	await running.stop()
 }
 
+/** The rename that follows a refactor such as "Extract to local
+ *  variable". The server sends the source file and the new name's place.
+ *  luau-lsp's own extension has the same command, but it registers it
+ *  only once a Luau file starts it. */
+async function renameAt(
+	uri: string,
+	at: { line: number; character: number },
+): Promise<void> {
+	const editor = window.activeTextEditor
+	if (editor?.document.uri.toString() !== Uri.parse(uri).toString()) return
+	const place = new Position(at.line, at.character)
+	editor.selection = new Selection(place, place)
+	await commands.executeCommand('editor.action.rename')
+}
+
 export async function activate(context: ExtensionContext): Promise<void> {
 	storage = context.globalStorageUri.fsPath
 	// A save in the editor and a write on disk, such as a checkout,
@@ -692,6 +710,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 			await startClient()
 		}),
 		commands.registerCommand('alloy-luau.generateSourcemap', generateSourcemap),
+		commands.registerCommand('alloy-luau.rename', renameAt),
 		markupEnterRule(),
 		workspace.onDidChangeTextDocument(closeTag),
 		workspace.onDidChangeTextDocument(matchArmIndent),
