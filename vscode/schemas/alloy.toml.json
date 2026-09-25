@@ -117,6 +117,7 @@
                   "duplicate_function",
                   "circular_import",
                   "deprecated_namespace",
+                  "deprecated_call",
                   "and_or_ternary",
                   "unused_variable",
                   "unused_function",
@@ -213,6 +214,7 @@
                   "duplicate_function",
                   "circular_import",
                   "deprecated_namespace",
+                  "deprecated_call",
                   "and_or_ternary",
                   "unused_variable",
                   "unused_function",
@@ -309,6 +311,7 @@
                   "duplicate_function",
                   "circular_import",
                   "deprecated_namespace",
+                  "deprecated_call",
                   "and_or_ternary",
                   "unused_variable",
                   "unused_function",
@@ -446,7 +449,7 @@
                 "warn",
                 "deny"
               ],
-              "description": "The `naming` group: the case of names, off until `[lint.rules] naming = \"warn\"`."
+              "description": "The `naming` group: the case of names, by `[lint.naming]`; `[lint.rules] naming = \"allow\"` turns it off."
             },
             "luau": {
               "type": "string",
@@ -618,6 +621,15 @@
                 "deny"
               ],
               "description": "a use of a namespace declared `@deprecated`. Default: `warn`."
+            },
+            "deprecated_call": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a `:` call of an impl method declared `@deprecated`. Default: `warn`."
             },
             "and_or_ternary": {
               "type": "string",
@@ -1170,6 +1182,7 @@
                   "duplicate_function",
                   "circular_import",
                   "deprecated_namespace",
+                  "deprecated_call",
                   "and_or_ternary",
                   "unused_variable",
                   "unused_function",
