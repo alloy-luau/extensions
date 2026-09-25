@@ -22,7 +22,11 @@ const cases = [
 	],
 	// Luau's own list: the names it takes are attributes, and the keys
 	// of `deprecated`'s table are properties.
-	['@[native]', ['@', 'punctuation.definition.attribute.aly'], ['native', 'entity.other.attribute-name.aly']],
+	[
+		'@[native]',
+		['@', 'punctuation.definition.attribute.aly'],
+		['native', 'entity.other.attribute-name.aly'],
+	],
 	[
 		"@[deprecated { use = 'mix', reason = 'renamed' }]",
 		['deprecated', 'entity.other.attribute-name.aly'],
@@ -30,7 +34,10 @@ const cases = [
 		['reason', 'variable.other.property.aly'],
 	],
 	// A star import's attribute colours its whole path.
-	['@serde.deny_unknown_fields', ['serde.deny_unknown_fields', 'entity.other.attribute-name.aly']],
+	[
+		'@serde.deny_unknown_fields',
+		['serde.deny_unknown_fields', 'entity.other.attribute-name.aly'],
+	],
 	[
 		'local v: ~nil = 1',
 		['~', 'keyword.operator.type.negation.aly'],
