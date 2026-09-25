@@ -36,7 +36,7 @@ import {
 	type LanguageClientOptions,
 	type ServerOptions,
 } from 'vscode-languageclient/node'
-import { matchIndent, signatureIndent } from './indent'
+import { matchIndent, signatureEndIndent, signatureIndent } from './indent'
 
 let client: LanguageClient | undefined
 let output: OutputChannel | undefined
@@ -399,6 +399,10 @@ async function signatureEnter(event: TextDocumentChangeEvent): Promise<void> {
  * when that line opens no block, so it never writes one level in,
  * which is where an arm of a `match` belongs. `src/indent.ts` holds
  * the rule and `scripts/indent.mjs` checks it.
+ *
+ * The same handler writes the column of an `end` under a body-less
+ * signature. The editor reads the signature as a function header, so
+ * it keeps that `end` one level in.
  */
 async function matchArmIndent(event: TextDocumentChangeEvent): Promise<void> {
 	const document = event.document
@@ -431,7 +435,9 @@ async function matchArmIndent(event: TextDocumentChangeEvent): Promise<void> {
 		editor.options.insertSpaces === true
 			? ' '.repeat(typeof size === 'number' ? size : 4)
 			: '\t'
-	const written = matchIndent(document.getText().split('\n'), at.line, unit)
+	const lines = document.getText().split('\n')
+	const written =
+		matchIndent(lines, at.line, unit) ?? signatureEndIndent(lines, at.line)
 	const start = line.firstNonWhitespaceCharacterIndex
 
 	if (written === undefined || written === line.text.slice(0, start)) {
