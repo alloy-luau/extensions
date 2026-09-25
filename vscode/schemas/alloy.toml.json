@@ -130,6 +130,8 @@
                   "manual_type_test",
                   "array_long_string",
                   "pattern_shadows_local",
+                  "prefer_const",
+                  "redundant_as",
                   "match_guard_and",
                   "legacy_iterator",
                   "manual_floor_div",
@@ -166,10 +168,7 @@
                   "const_mutation",
                   "missing_doc",
                   "missing_doc_type",
-                  "import_order",
-                  "camel_case_name",
-                  "type_case",
-                  "pascal_case_function"
+                  "naming_convention"
                 ]
               },
               {
@@ -227,6 +226,8 @@
                   "manual_type_test",
                   "array_long_string",
                   "pattern_shadows_local",
+                  "prefer_const",
+                  "redundant_as",
                   "match_guard_and",
                   "legacy_iterator",
                   "manual_floor_div",
@@ -263,10 +264,7 @@
                   "const_mutation",
                   "missing_doc",
                   "missing_doc_type",
-                  "import_order",
-                  "camel_case_name",
-                  "type_case",
-                  "pascal_case_function"
+                  "naming_convention"
                 ]
               },
               {
@@ -324,6 +322,8 @@
                   "manual_type_test",
                   "array_long_string",
                   "pattern_shadows_local",
+                  "prefer_const",
+                  "redundant_as",
                   "match_guard_and",
                   "legacy_iterator",
                   "manual_floor_div",
@@ -360,10 +360,7 @@
                   "const_mutation",
                   "missing_doc",
                   "missing_doc_type",
-                  "import_order",
-                  "camel_case_name",
-                  "type_case",
-                  "pascal_case_function"
+                  "naming_convention"
                 ]
               },
               {
@@ -739,6 +736,24 @@
               ],
               "description": "a match pattern that binds the name of a local in scope. Default: `warn`."
             },
+            "prefer_const": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a `local` that nothing assigns again. Default: `warn`."
+            },
+            "redundant_as": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`as` before a declaration body on the next line. Default: `warn`."
+            },
             "match_guard_and": {
               "type": "string",
               "enum": [
@@ -1063,41 +1078,14 @@
               ],
               "description": "an exported `type` alias or `interface` with no comment above it. Default: `allow`."
             },
-            "import_order": {
+            "naming_convention": {
               "type": "string",
               "enum": [
                 "allow",
                 "warn",
                 "deny"
               ],
-              "description": "an `import` under code that runs. Default: `allow`."
-            },
-            "camel_case_name": {
-              "type": "string",
-              "enum": [
-                "allow",
-                "warn",
-                "deny"
-              ],
-              "description": "a local, function, or parameter in camelCase. Default: `allow`."
-            },
-            "type_case": {
-              "type": "string",
-              "enum": [
-                "allow",
-                "warn",
-                "deny"
-              ],
-              "description": "a struct, enum, trait, interface, or type not in PascalCase. Default: `allow`."
-            },
-            "pascal_case_function": {
-              "type": "string",
-              "enum": [
-                "allow",
-                "warn",
-                "deny"
-              ],
-              "description": "a `local function` in PascalCase. Default: `allow`."
+              "description": "a name in a case other than the one `[lint.naming]` sets for its kind. Default: `warn`."
             },
             "alx": {
               "type": "object",
@@ -1195,6 +1183,8 @@
                   "manual_type_test",
                   "array_long_string",
                   "pattern_shadows_local",
+                  "prefer_const",
+                  "redundant_as",
                   "match_guard_and",
                   "legacy_iterator",
                   "manual_floor_div",
@@ -1231,10 +1221,7 @@
                   "const_mutation",
                   "missing_doc",
                   "missing_doc_type",
-                  "import_order",
-                  "camel_case_name",
-                  "type_case",
-                  "pascal_case_function",
+                  "naming_convention",
                   "alx.static_conditional_child",
                   "alx"
                 ]
@@ -1244,6 +1231,510 @@
               }
             ]
           }
+        },
+        "naming": {
+          "type": "object",
+          "title": "[lint.naming]",
+          "description": "The case style of each kind of name, for the `naming_convention` lint. A value is `snake_case`, `camelCase`, `PascalCase`, `SCREAMING_SNAKE_CASE`, `any`, or a list of them. A name passes when it fits one style of its list, and `alloy flux --fix` and `alloy fmt` rename it to the first. `alloy doc naming-conventions` explains it.",
+          "properties": {
+            "variable": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "snake_case",
+                    "camelCase",
+                    "PascalCase",
+                    "SCREAMING_SNAKE_CASE",
+                    "any"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "snake_case",
+                      "camelCase",
+                      "PascalCase",
+                      "SCREAMING_SNAKE_CASE",
+                      "any"
+                    ]
+                  }
+                }
+              ],
+              "description": "A local, and a loop variable.",
+              "default": "snake_case"
+            },
+            "const": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "snake_case",
+                    "camelCase",
+                    "PascalCase",
+                    "SCREAMING_SNAKE_CASE",
+                    "any"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "snake_case",
+                      "camelCase",
+                      "PascalCase",
+                      "SCREAMING_SNAKE_CASE",
+                      "any"
+                    ]
+                  }
+                }
+              ],
+              "description": "A `const` binding. Alloy marks any binding that the file never assigns again as `const`, so both cases pass by default.",
+              "default": [
+                "snake_case",
+                "SCREAMING_SNAKE_CASE"
+              ]
+            },
+            "function": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "snake_case",
+                    "camelCase",
+                    "PascalCase",
+                    "SCREAMING_SNAKE_CASE",
+                    "any"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "snake_case",
+                      "camelCase",
+                      "PascalCase",
+                      "SCREAMING_SNAKE_CASE",
+                      "any"
+                    ]
+                  }
+                }
+              ],
+              "description": "A free function and a `local function`.",
+              "default": "snake_case"
+            },
+            "component": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "snake_case",
+                    "camelCase",
+                    "PascalCase",
+                    "SCREAMING_SNAKE_CASE",
+                    "any"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "snake_case",
+                      "camelCase",
+                      "PascalCase",
+                      "SCREAMING_SNAKE_CASE",
+                      "any"
+                    ]
+                  }
+                }
+              ],
+              "description": "A function of an `.alx` file that returns markup, or that a tag names, `<Row />`.",
+              "default": "PascalCase"
+            },
+            "method": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "snake_case",
+                    "camelCase",
+                    "PascalCase",
+                    "SCREAMING_SNAKE_CASE",
+                    "any"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "snake_case",
+                      "camelCase",
+                      "PascalCase",
+                      "SCREAMING_SNAKE_CASE",
+                      "any"
+                    ]
+                  }
+                }
+              ],
+              "description": "A function in an `impl` or a `trait`.",
+              "default": "snake_case"
+            },
+            "parameter": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "snake_case",
+                    "camelCase",
+                    "PascalCase",
+                    "SCREAMING_SNAKE_CASE",
+                    "any"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "snake_case",
+                      "camelCase",
+                      "PascalCase",
+                      "SCREAMING_SNAKE_CASE",
+                      "any"
+                    ]
+                  }
+                }
+              ],
+              "description": "A parameter of a function.",
+              "default": "snake_case"
+            },
+            "field": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "snake_case",
+                    "camelCase",
+                    "PascalCase",
+                    "SCREAMING_SNAKE_CASE",
+                    "any"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "snake_case",
+                      "camelCase",
+                      "PascalCase",
+                      "SCREAMING_SNAKE_CASE",
+                      "any"
+                    ]
+                  }
+                }
+              ],
+              "description": "A field of a struct or an interface.",
+              "default": "snake_case"
+            },
+            "struct": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "snake_case",
+                    "camelCase",
+                    "PascalCase",
+                    "SCREAMING_SNAKE_CASE",
+                    "any"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "snake_case",
+                      "camelCase",
+                      "PascalCase",
+                      "SCREAMING_SNAKE_CASE",
+                      "any"
+                    ]
+                  }
+                }
+              ],
+              "description": "A struct.",
+              "default": "PascalCase"
+            },
+            "enum": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "snake_case",
+                    "camelCase",
+                    "PascalCase",
+                    "SCREAMING_SNAKE_CASE",
+                    "any"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "snake_case",
+                      "camelCase",
+                      "PascalCase",
+                      "SCREAMING_SNAKE_CASE",
+                      "any"
+                    ]
+                  }
+                }
+              ],
+              "description": "An enum.",
+              "default": "PascalCase"
+            },
+            "variant": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "snake_case",
+                    "camelCase",
+                    "PascalCase",
+                    "SCREAMING_SNAKE_CASE",
+                    "any"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "snake_case",
+                      "camelCase",
+                      "PascalCase",
+                      "SCREAMING_SNAKE_CASE",
+                      "any"
+                    ]
+                  }
+                }
+              ],
+              "description": "A variant of an enum.",
+              "default": "PascalCase"
+            },
+            "trait": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "snake_case",
+                    "camelCase",
+                    "PascalCase",
+                    "SCREAMING_SNAKE_CASE",
+                    "any"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "snake_case",
+                      "camelCase",
+                      "PascalCase",
+                      "SCREAMING_SNAKE_CASE",
+                      "any"
+                    ]
+                  }
+                }
+              ],
+              "description": "A trait.",
+              "default": "PascalCase"
+            },
+            "interface": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "snake_case",
+                    "camelCase",
+                    "PascalCase",
+                    "SCREAMING_SNAKE_CASE",
+                    "any"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "snake_case",
+                      "camelCase",
+                      "PascalCase",
+                      "SCREAMING_SNAKE_CASE",
+                      "any"
+                    ]
+                  }
+                }
+              ],
+              "description": "An interface.",
+              "default": "PascalCase"
+            },
+            "type": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "snake_case",
+                    "camelCase",
+                    "PascalCase",
+                    "SCREAMING_SNAKE_CASE",
+                    "any"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "snake_case",
+                      "camelCase",
+                      "PascalCase",
+                      "SCREAMING_SNAKE_CASE",
+                      "any"
+                    ]
+                  }
+                }
+              ],
+              "description": "A type alias.",
+              "default": "PascalCase"
+            },
+            "namespace": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "snake_case",
+                    "camelCase",
+                    "PascalCase",
+                    "SCREAMING_SNAKE_CASE",
+                    "any"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "snake_case",
+                      "camelCase",
+                      "PascalCase",
+                      "SCREAMING_SNAKE_CASE",
+                      "any"
+                    ]
+                  }
+                }
+              ],
+              "description": "A namespace.",
+              "default": "PascalCase"
+            },
+            "attribute": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "snake_case",
+                    "camelCase",
+                    "PascalCase",
+                    "SCREAMING_SNAKE_CASE",
+                    "any"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "snake_case",
+                      "camelCase",
+                      "PascalCase",
+                      "SCREAMING_SNAKE_CASE",
+                      "any"
+                    ]
+                  }
+                }
+              ],
+              "description": "An attribute declaration.",
+              "default": "snake_case"
+            },
+            "macro": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "snake_case",
+                    "camelCase",
+                    "PascalCase",
+                    "SCREAMING_SNAKE_CASE",
+                    "any"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "snake_case",
+                      "camelCase",
+                      "PascalCase",
+                      "SCREAMING_SNAKE_CASE",
+                      "any"
+                    ]
+                  }
+                }
+              ],
+              "description": "A macro.",
+              "default": "snake_case"
+            },
+            "remote": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "snake_case",
+                    "camelCase",
+                    "PascalCase",
+                    "SCREAMING_SNAKE_CASE",
+                    "any"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "snake_case",
+                      "camelCase",
+                      "PascalCase",
+                      "SCREAMING_SNAKE_CASE",
+                      "any"
+                    ]
+                  }
+                }
+              ],
+              "description": "A remote.",
+              "default": "PascalCase"
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -1509,6 +2000,11 @@
           "description": "Alloy's own: an `import { }` or `export { }` list with more than one name breaks one name per line. Off, a trailing comma in the list asks for the same.",
           "default": false
         },
+        "prefer_const": {
+          "type": "boolean",
+          "description": "Alloy's own: a `local` that nothing assigns again becomes a `const`, as the `prefer_const` lint asks. `recommended = false` leaves it off.",
+          "default": true
+        },
         "exclude": {
           "type": "array",
           "items": {
@@ -1516,6 +2012,11 @@
           },
           "description": "Paths the formatter leaves alone. A `*` matches any run of characters: `\"vendor/*\"`, `\"*.gen.aly\"`.",
           "default": []
+        },
+        "fix_naming": {
+          "type": "boolean",
+          "description": "Rename a name that breaks its `[lint.naming]` style, as `alloy flux --fix` does, while the `naming_convention` lint is on. The rename skips a name that another file reads.",
+          "default": true
         },
         "call_chains": {
           "type": "object",
@@ -1702,7 +2203,11 @@
                   "Sink",
                   "R15Character",
                   "R6Character",
-                  "Attributes"
+                  "Attributes",
+                  "rename",
+                  "rename_all",
+                  "skip",
+                  "deny_unknown_fields"
                 ]
               }
             }
