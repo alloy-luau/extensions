@@ -31,7 +31,7 @@
         },
         "clean": {
           "type": "boolean",
-          "description": "Delete an output whose source is gone.",
+          "description": "Delete every `.luau` under `out` that no source makes. Off, the build deletes only the stale outputs it wrote itself.",
           "default": false
         },
         "artifact": {
@@ -115,6 +115,7 @@
                   "identical_branches",
                   "private_access",
                   "duplicate_function",
+                  "identity_compare",
                   "circular_import",
                   "deprecated_namespace",
                   "deprecated_call",
@@ -212,6 +213,7 @@
                   "identical_branches",
                   "private_access",
                   "duplicate_function",
+                  "identity_compare",
                   "circular_import",
                   "deprecated_namespace",
                   "deprecated_call",
@@ -309,6 +311,7 @@
                   "identical_branches",
                   "private_access",
                   "duplicate_function",
+                  "identity_compare",
                   "circular_import",
                   "deprecated_namespace",
                   "deprecated_call",
@@ -603,6 +606,15 @@
                 "deny"
               ],
               "description": "one name given a `function` body twice. Default: `warn`."
+            },
+            "identity_compare": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`==` or `~=` with a new payload variant or a new struct of a type that derives no `Eq`. Default: `warn`."
             },
             "circular_import": {
               "type": "string",
@@ -1180,6 +1192,7 @@
                   "identical_branches",
                   "private_access",
                   "duplicate_function",
+                  "identity_compare",
                   "circular_import",
                   "deprecated_namespace",
                   "deprecated_call",
@@ -2143,7 +2156,7 @@
         },
         "runtime": {
           "type": "string",
-          "description": "Where `alloy.luau` lands, as `@game/Service/Folder`. Emitted code requires it by an instance path. Unset means the place the project file already gives it, then the node that mounts `[build] out`, then `@game/ReplicatedStorage/Alloy`."
+          "description": "Where `alloy.luau` lands, as `@game/Service/Folder`. Emitted code requires it by an instance path. Unset means the place the tree already gives it, then `alloy` inside the node that mounts `[build] out` or `[build] in`, then `@game/ReplicatedStorage/Alloy`."
         },
         "source_of_truth": {
           "type": "boolean",
