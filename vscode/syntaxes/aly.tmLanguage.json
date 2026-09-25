@@ -135,6 +135,38 @@
 			"comment": "@derive(...), @test, @unreliable, @ratelimit(...), @u8, and upstream @native. An import list writes an attribute the same way, `import { @tagged as t } from \"./m\"`, so the sigil and the name colour there too; the local name after `as` takes no sigil. A namespaced attribute carries its path, `@testing.testatr`, so the whole path colours as the name. The rule carries its own argument list: an enum or struct body has no string rule, so `@icon(\"x\")` on a variant needs one here.",
 			"patterns": [
 				{
+					"comment": "Luau's own attribute list, `@[native]` and `@[deprecated {use = \"f\", reason = \"why\"}]`: the names Luau takes colour as attributes, and the keys of `deprecated`'s table as properties.",
+					"begin": "(@)(\\[)",
+					"beginCaptures": {
+						"1": {
+							"name": "punctuation.definition.attribute.aly"
+						},
+						"2": {
+							"name": "punctuation.definition.attribute.begin.aly"
+						}
+					},
+					"end": "(\\])",
+					"endCaptures": {
+						"1": {
+							"name": "punctuation.definition.attribute.end.aly"
+						}
+					},
+					"name": "meta.attribute.list.aly",
+					"patterns": [
+						{
+							"match": "\\b(?:native|checked|deprecated)\\b",
+							"name": "entity.other.attribute-name.aly"
+						},
+						{
+							"match": "\\b(?:use|reason)\\b(?=\\s*=)",
+							"name": "variable.other.property.aly"
+						},
+						{
+							"include": "#attribute-arguments"
+						}
+					]
+				},
+				{
 					"begin": "(@)([A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*)(\\()",
 					"beginCaptures": {
 						"1": {
