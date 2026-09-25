@@ -18,25 +18,44 @@ the server's own block scan walks tokens, so an `end` it reads there
 closes nothing.
 */
 
-/** The words that open a block an `end` or an `until` closes. */
-const OPENERS = new Set([
-	'function',
-	'if',
-	'for',
-	'while',
-	'do',
-	'match',
-	'repeat',
-	'struct',
-	'trait',
-	'impl',
-	'macro',
-	'enum',
-	'interface',
-	'namespace',
-	'attribute',
-	'class',
-])
+/** The words that open a block an `end` or an `until` closes, and that
+ *  Luau reserves, so no name spells them. `if`, `match`, and the
+ *  declaration words have rules of their own below. */
+const OPENERS = new Set(['function', 'for', 'while', 'do', 'repeat'])
+
+/** The words that cannot be the name of a declaration or an operand.
+ *  The grammar refuses the same list, so `match trait with` reads
+ *  `trait` as the scrutinee. */
+const KEYWORD =
+	'end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue|with|from|band|bor|bxor|shl|shr'
+
+/** A declaration word opens a block only before a name on its line, and
+ *  never after `.` or `:`, as `keyword_at` in contextual.rs decides.
+ *  `local trait = 1`, `macro(1)`, and `t.impl` are names. */
+const DECLARATION = new RegExp(
+	String.raw`(?<![.:\w])(?:struct|trait|impl|macro|enum|interface|namespace|class)[ \t]+(?!(?:${KEYWORD})\b)[A-Za-z_]`,
+	'g',
+)
+
+/** `match` opens a block before a scrutinee, as the grammar reads it.
+ *  `s:match(p)`, `string.match(s, p)`, and `local match = 1` are names. */
+const MATCH = new RegExp(
+	String.raw`(?<![.:\w])match[ \t]+(?:(?!(?:${KEYWORD})\b)[A-Za-z_$#{[]|[0-9]|-(?!-))`,
+	'g',
+)
+
+/** The text in front of an `if` that makes it an expression: an
+ *  operator, an open bracket, a `,`, or `return`. */
+const OPERAND = /(?:[-=(,[{+*/%^<>]|\.\.|\b(?:return|and|or|not|in)\b)\s*$/
+
+/** `attribute name(...) on function, struct as`: the targets open
+ *  nothing, and only a body after `as` needs an `end`. */
+const ATTRIBUTE = new RegExp(
+	String.raw`(?<![.:\w])attribute[ \t]+(?!(?:${KEYWORD})\b)[A-Za-z_]`,
+)
+
+/** A `function` with no body: a remote and a declared signature. */
+const BODILESS = /(?<![.:\w])(?:remote|declare)[ \t]+function\b/g
 
 /** The word a line of a `match` opens with, and its indentation. */
 const WORD = /^([ \t]*)(case|default|end)\b/
@@ -44,16 +63,50 @@ const WORD = /^([ \t]*)(case|default|end)\b/
 /** A `match` head: the `with` ends it and the arms follow. */
 const HEAD = /\bmatch\b.*\bwith$/
 
+/** The long bracket that opens at `i`, `[[` or `[==[`: the index past
+ *  its close, or the close it waits for when the line holds none. */
+function long(
+	line: string,
+	i: number,
+): { end: number; close?: string } | undefined {
+	const open = /\[(=*)\[/y
+	open.lastIndex = i
+
+	const found = open.exec(line)
+
+	if (found === null) {
+		return undefined
+	}
+
+	const close = `]${found[1]}]`
+	const at = line.indexOf(close, open.lastIndex)
+
+	return at < 0 ? { end: line.length, close } : { end: at + close.length }
+}
+
 /** The code of a line: the text in front of a `--` comment, with the
  *  body of every string dropped. A `--` or an opener word inside a
  *  string is text; the `{...}` hole of a backtick string is code, and
- *  holds strings of its own. */
-function code(line: string): string {
+ *  holds strings of its own. A long string and a block comment can run
+ *  over lines: `close` is the bracket the line opens inside, and the
+ *  second value is the one the next line opens inside. */
+function code(line: string, close?: string): [string, string | undefined] {
 	// The strings open here, innermost last. A `{` stands for a hole.
 	const open: string[] = []
 	let out = ''
+	let i = 0
 
-	for (let i = 0; i < line.length; i++) {
+	if (close !== undefined) {
+		const at = line.indexOf(close)
+
+		if (at < 0) {
+			return ['', close]
+		}
+
+		i = at + close.length
+	}
+
+	for (; i < line.length; i++) {
 		const c = line[i]
 		const inside = open.at(-1)
 
@@ -70,10 +123,41 @@ function code(line: string): string {
 		} else if (inside === '{' && c === '}') {
 			open.pop()
 		} else if (c === '-' && line[i + 1] === '-') {
-			return out
+			const comment = long(line, i + 2)
+
+			if (comment === undefined || comment.close !== undefined) {
+				return [out, comment?.close]
+			}
+
+			i = comment.end - 1
 		} else {
-			out += c
+			// `$map[[` opens a list of pairs, not a string.
+			const string =
+				c === '[' && !/\$(?:map|set)$/.test(out) ? long(line, i) : undefined
+
+			if (string === undefined) {
+				out += c
+			} else if (string.close !== undefined) {
+				return [out, string.close]
+			} else {
+				i = string.end - 1
+			}
 		}
+	}
+
+	return [out, undefined]
+}
+
+/** The code of each line from the first up to `last`, so a long string
+ *  or a block comment that opens above a line hides its text. */
+function codes(lines: readonly string[], last: number): string[] {
+	const out: string[] = []
+	let close: string | undefined
+
+	for (let i = 0; i <= last; i++) {
+		const [text, next] = code(lines[i] ?? '', close)
+		out.push(text)
+		close = next
 	}
 
 	return out
@@ -83,11 +167,43 @@ function words(text: string): string[] {
 	return text.split(/[^A-Za-z0-9_]+/).filter((word) => word.length > 0)
 }
 
+/** How many `if` statements a line opens. An if-expression has no
+ *  `end`: `local x = if a then b else c`. It follows an operand
+ *  position, or the `then` or `else` of another if-expression. */
+function ifs(text: string): number {
+	let count = 0
+	let expression = false
+
+	for (const found of text.matchAll(/(?<![.:\w])if\b/g)) {
+		const before = text.slice(0, found.index)
+
+		expression =
+			OPERAND.test(before) || (expression && /\b(?:then|else)\s*$/.test(before))
+
+		if (!expression) {
+			count++
+		}
+	}
+
+	return count
+}
+
 /** How many blocks a line opens. The `do` of a `for` or a `while`
  *  belongs to the loop, so the pair opens one block, not two. */
 function opens(text: string): number {
+	const attribute = ATTRIBUTE.exec(text)
+
+	if (attribute !== null) {
+		return /\bas\b/.test(text.slice(attribute.index)) ? 1 : 0
+	}
+
 	const list = words(text)
-	const count = list.filter((word) => OPENERS.has(word)).length
+	const count =
+		list.filter((word) => OPENERS.has(word)).length +
+		ifs(text) +
+		(text.match(MATCH)?.length ?? 0) +
+		(text.match(DECLARATION)?.length ?? 0) -
+		(text.match(BODILESS)?.length ?? 0)
 
 	if (!list.some((word) => word === 'for' || word === 'while')) {
 		return count
@@ -105,10 +221,11 @@ function closes(text: string): number {
  *  undefined when the line sits in another block. The scan counts the
  *  blocks upward, so the nearest open `match` wins. */
 function opener(lines: readonly string[], index: number): string | undefined {
+	const all = codes(lines, index - 1)
 	let depth = 0
 
 	for (let i = index - 1; i >= 0; i--) {
-		const text = code(lines[i] ?? '').trimEnd()
+		const text = (all[i] ?? '').trimEnd()
 
 		if (text.trim() === '') {
 			continue
@@ -159,9 +276,12 @@ export function matchIndent(
 }
 
 /** A line that opens a body of signatures: a trait, an interface, or a
- *  declaration of a class or an extern type. */
-const SIGNATURES =
-	/^\s*(?:export\s+)?(?:trait|interface|declare\s+class|declare\s+extern\s+type)\b/
+ *  declaration of a class or an extern type. Attributes and a
+ *  visibility word can come first; a trait or an interface needs a
+ *  name, so `trait = 1` opens nothing. */
+const SIGNATURES = new RegExp(
+	String.raw`^\s*(?:@[A-Za-z_][\w.]*(?:\((?:[^()]|\([^()]*\))*\))?\s+)*(?:(?:export(?:\s+default)?|public|private)\s+)?(?:(?:trait|interface)[ \t]+(?!(?:${KEYWORD})\b)[A-Za-z_]|declare\s+class\b|declare\s+extern\s+type\b)`,
+)
 
 /** A function header that ends the line with no body after it. */
 const SIGNATURE =
@@ -179,7 +299,8 @@ export function signatureIndent(
 	lines: readonly string[],
 	index: number,
 ): string | undefined {
-	const above = code(lines[index - 1] ?? '').trimEnd()
+	const all = codes(lines, index - 1)
+	const above = (all[index - 1] ?? '').trimEnd()
 
 	if (!SIGNATURE.test(above)) {
 		return undefined
@@ -188,7 +309,7 @@ export function signatureIndent(
 	let depth = 0
 
 	for (let i = index - 1; i >= 0; i--) {
-		const text = code(lines[i] ?? '').trimEnd()
+		const text = (all[i] ?? '').trimEnd()
 
 		if (text.trim() === '' || (depth === 0 && SIGNATURE.test(text))) {
 			continue

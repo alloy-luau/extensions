@@ -166,6 +166,60 @@ const cases = [
 	], // 16_remotes:31
 	['export attribute server_only on function', false, false], // 21:9
 	['attribute icon(asset: string) on struct, enum, variant', false, false], // 21:10
+	// A declaration header needs no `as` when its body starts on the
+	// next line. Attributes, `export default`, and a visibility word can
+	// come first, and a generic default holds an `=`.
+	['struct P', true, false],
+	['enum E', true, false],
+	['trait T', true, false],
+	['interface I extends J', true, false],
+	['namespace N', true, false],
+	['impl T for P', true, false],
+	['impl Box<T>', true, false],
+	['export struct P -- a point', true, false],
+	['    public struct Point', true, false],
+	['    private enum Inner', true, false],
+	['export default struct Config', true, false],
+	['export default enum Mode', true, false],
+	['struct Box<T = number>', true, false],
+	['struct Box<T = Array<number>>', true, false],
+	['@derive(Eq) struct R', true, false],
+	['@derive(Eq, Hash) @icon("x") export enum R', true, false],
+	['@derive(Eq) struct R as', true, false],
+	['@derive(Eq)', false, false],
+	['struct P end', false, false],
+	// A declaration word is a name unless a name follows it.
+	['print(macro)', false, false],
+	['macro(1)', false, false],
+	['local r = macro(1)', false, false],
+	['export macro m2(x)', true, false],
+	['print(trait, macro)', false, false],
+	['local struct = 1', false, false],
+	['local trait = 1', false, false],
+	['trait = trait + 1', false, false],
+	['t.impl = 2', false, false],
+	['local impl = { run = function() end }', false, false],
+	['local remote = folder.Hit', false, false],
+	['remote:FireServer()', false, false],
+	// A long string opens no body, so its text keeps its column. After
+	// `$map` or `$set` the brackets open the pairs.
+	['local s = [[', false, false],
+	['local s = [==[', false, false],
+	['local s = [[ -- note', false, false],
+	['foo([[', false, false],
+	['local t = [', true, false],
+	['local m = $map[[', true, false],
+	// A declaration word is the scrutinee of a `match`: `with` is no name.
+	['match trait with', true, false],
+	['match enum with', true, false],
+	['match macro with', true, false],
+	['match attribute with', true, false],
+	['local ok = macro and f()', false, false],
+	// Generics nest three deep, and a class header needs no `as`.
+	['struct Box<T = HashMap<string, Array<number>>>', true, false],
+	['declare class Foo', true, false],
+	['export class Widget', true, false],
+	['local class = 1', false, false],
 ]
 
 // A body-less signature keeps its column for the next line, in a trait,
@@ -197,6 +251,32 @@ const cases = [
 
 	const body = ['local function f(x: number): number', '']
 	assert.equal(signatureIndent(body, 1), undefined, 'a function with a body')
+
+	const noAs = ['trait Weapon', '    function damage(self): number', '']
+	assert.equal(signatureIndent(noAs, 2), '    ', 'trait with no `as`')
+
+	const attributed = [
+		'@derive(Eq) export default interface Shape',
+		'    function area(self): number',
+		'',
+	]
+	assert.equal(
+		signatureIndent(attributed, 2),
+		'    ',
+		'attributes and `export default`',
+	)
+
+	const visible = [
+		'namespace N',
+		'    public trait Shape',
+		'        function area(self): number',
+		'',
+	]
+	assert.equal(signatureIndent(visible, 3), '        ', 'public trait')
+
+	// `trait` here is a local, so the function below it has a body.
+	const named = ['trait = 1', 'function f(x): number', '']
+	assert.equal(signatureIndent(named, 2), undefined, 'a local named trait')
 }
 
 // .alx: a tag that stays open indents, and its close dedents.
@@ -232,6 +312,12 @@ for (const [line, opens, closes] of alxCases) {
 for (const [line, opens, closes] of cases) {
 	assert.equal(increase.test(line), opens, `increase: ${line}`)
 	assert.equal(decrease.test(line), closes, `decrease: ${line}`)
+	// An .alx file holds Alloy code, which indents the same there.
+	assert.equal(
+		new RegExp(alx.increaseIndentPattern).test(line),
+		opens,
+		`alx increase: ${line}`,
+	)
 }
 
 const UNIT = '    '
@@ -417,6 +503,145 @@ const arms = [
 		4,
 	],
 	['the `end` of a match with such a string', null, 5, 0],
+	// A declaration word opens a block only before a name.
+	[
+		'`default` under declaration words used as names',
+		[
+			'match z with',
+			'    case Ok(v) then',
+			'        local trait = macro(1)',
+			'        t.impl = struct.enum',
+			'        print(namespace, interface)',
+			'    default nil',
+			'end',
+		],
+		5,
+		4,
+	],
+	['the `end` of a match with such names', null, 6, 0],
+	[
+		'`default` under an attribute with no body',
+		[
+			'match z with',
+			'    case Ok(v) then',
+			'        attribute server_only on function',
+			'        remote function Get(id: number): number from server',
+			'    default nil',
+			'end',
+		],
+		4,
+		4,
+	],
+	// A long string and a block comment hide the words they hold, over
+	// lines.
+	[
+		'`default` under a long string over lines',
+		[
+			'match z with',
+			'    case Ok(v) then',
+			'        local s = [==[',
+			'if x then',
+			'    for i = 1, 3 do',
+			']==]',
+			'    default nil',
+			'end',
+		],
+		6,
+		4,
+	],
+	['the `end` of a match with a long string', null, 7, 0],
+	[
+		'`default` under a block comment over lines',
+		[
+			'match z with',
+			'    case Ok(v) then',
+			'        --[[',
+			'        if x then',
+			'        ]] print(v)',
+			'    default nil',
+			'end',
+		],
+		5,
+		4,
+	],
+	// `$map[[` opens a list of pairs, so the `end` after it counts.
+	[
+		'`default` under a `$map` over lines',
+		[
+			'match z with',
+			'    case Ok(v) then',
+			'        if v then',
+			'            local m = $map[[1, 2],',
+			'                [3, 4],',
+			'            ]',
+			'        end',
+			'    default nil',
+			'end',
+		],
+		7,
+		4,
+	],
+	// A declaration word as a scrutinee opens the `match` alone.
+	[
+		'a `case` after a nested `match trait with`',
+		[
+			'match x with',
+			'    case 1 then',
+			'        match trait with',
+			'            case 2 then nil',
+			'        end',
+			'    case 3 then nil',
+			'end',
+		],
+		5,
+		4,
+	],
+	['the `end` after a nested `match trait with`', null, 6, 0],
+	[
+		'an arm of `match attribute with`',
+		['match attribute with', '    case 1 then nil', '    default nil', 'end'],
+		1,
+		4,
+	],
+	['`default` of `match attribute with`', null, 2, 4],
+	['the `end` of `match attribute with`', null, 3, 0],
+	[
+		'an arm of `match macro with` in `match enum with`',
+		[
+			'match enum with',
+			'    case A then',
+			'        match macro with',
+			'            default nil',
+			'        end',
+			'    default nil',
+			'end',
+		],
+		3,
+		12,
+	],
+	['`default` after `match macro with`', null, 5, 4],
+	// A method or a field named `match`, a local named `class`, and an
+	// if-expression open no block.
+	[
+		'`default` under names and if-expressions',
+		[
+			'match z with',
+			'    case Ok(s) then',
+			'        local ok = s:match("x")',
+			'        local n = string.match(s, "%d")',
+			'        local class = 1',
+			'        local v = if ok then 1 else 2',
+			'        print(if ok then "a" else "b")',
+			'        f(v, if ok then 1 else 2)',
+			'        local w = if a then if b then 1 else 2 else 3',
+			'        if ok then print(v) end',
+			'    default nil',
+			'end',
+		],
+		10,
+		4,
+	],
+	['the `end` of a match with if-expressions', null, 11, 0],
 ]
 
 let lines = []
@@ -426,6 +651,14 @@ for (const [name, document, index, expected] of arms) {
 
 	assert.equal(column(lines, index), expected, `${name}: ${lines[index]}`)
 }
+
+// The editor's rules give an arm under `match attribute with` the same
+// column, so this asks the extension itself: the line is a match head.
+assert.equal(
+	matchIndent(['match attribute with', 'case 1 then nil'], 1, UNIT),
+	UNIT,
+	'matchIndent under `match attribute with`',
+)
 
 console.log(`indent rules: ${cases.length} lines ok`)
 console.log(`match columns: ${arms.length} lines ok`)

@@ -116,9 +116,9 @@
 					]
 				},
 				{
-					"comment": "A long string keeps the leveled form; `[[` opens a nested array in Alloy.",
+					"comment": "A long string is Luau's, `[[ ... ]]` or `[=[ ... ]=]`. After `$map` or `$set` the brackets open the pairs.",
 					"name": "string.quoted.other.multiline.aly",
-					"begin": "\\[(=+)\\[",
+					"begin": "(?<!\\$map|\\$set)\\[(=*)\\[",
 					"end": "\\]\\1\\]"
 				}
 			]
@@ -176,8 +176,8 @@
 		"declaration": {
 			"patterns": [
 				{
-					"comment": "attribute name(...) on target, target",
-					"match": "\\b(?:(export)\\s+)?(attribute)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+					"comment": "attribute name(...) on target, target. The word is a keyword only before a name on its line, so `local attribute = 1` keeps the name.",
+					"match": "(?<![.:])\\b(?:(export)\\s+)?(attribute)[ \\t]+(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue|with|from|band|bor|bxor|shl|shr)\\b)([A-Za-z_][A-Za-z0-9_]*)",
 					"captures": {
 						"1": {
 							"name": "storage.type.aly"
@@ -234,7 +234,7 @@
 				},
 				{
 					"comment": "struct Name<T> as, enum Name as, trait Name, interface Name [extends A, B] as",
-					"match": "(?<![.:])\\b(struct|enum|trait|interface)[ \\t]+(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue)\\b)([A-Za-z_][A-Za-z0-9_]*)(\\s*<[^>]*>)?",
+					"match": "(?<![.:])\\b(struct|enum|trait|interface)[ \\t]+(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue|with|from|band|bor|bxor|shl|shr)\\b)([A-Za-z_][A-Za-z0-9_]*)(\\s*<(?:[^<>]|<(?:[^<>]|<(?:[^<>]|<[^<>]*>)*>)*>)*>)?",
 					"captures": {
 						"1": {
 							"name": "storage.type.aly"
@@ -253,8 +253,8 @@
 					}
 				},
 				{
-					"comment": "namespace Name as",
-					"match": "\\b(namespace)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+					"comment": "namespace Name, with or without `as`. `local namespace = ns` keeps the name.",
+					"match": "(?<![.:])\\b(namespace)[ \\t]+(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue|with|from|band|bor|bxor|shl|shr)\\b)([A-Za-z_][A-Za-z0-9_]*)",
 					"captures": {
 						"1": {
 							"name": "storage.type.aly"
@@ -265,8 +265,8 @@
 					}
 				},
 				{
-					"comment": "macro name(",
-					"match": "\\b(macro)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+					"comment": "macro name(. `macro(1)` and `print(macro)` use a name.",
+					"match": "(?<![.:])\\b(macro)[ \\t]+(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue|with|from|band|bor|bxor|shl|shr)\\b)([A-Za-z_][A-Za-z0-9_]*)",
 					"captures": {
 						"1": {
 							"name": "storage.type.aly"
@@ -326,8 +326,8 @@
 		"remote": {
 			"patterns": [
 				{
-					"comment": "remote Name(...) from client, remote function Name(...) from server",
-					"match": "\\b(remote)\\s+(?:(function)\\s+)?([A-Za-z_][A-Za-z0-9_]*)",
+					"comment": "remote Name(...) from client, remote function Name(...) from server. `local remote = folder.Hit` and `remote:FireServer()` keep the name.",
+					"match": "(?<![.:])\\b(remote)[ \\t]+(?:(function)[ \\t]+)?(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue|with|from|band|bor|bxor|shl|shr)\\b)([A-Za-z_][A-Za-z0-9_]*)",
 					"captures": {
 						"1": {
 							"name": "storage.type.remote.aly"
@@ -372,17 +372,18 @@
 					"match": "\\b(?:read|write)\\b(?=\\s+[A-Za-z_({\\[])"
 				},
 				{
-					"comment": "private and public on a struct field or an impl method",
+					"comment": "private and public before a name or `function` on the same line. `local private = {}` and `if public then` keep the name.",
 					"name": "storage.modifier.aly",
-					"match": "\\b(?:private|public)\\b(?=\\s+(?:function|async|read|write|[A-Za-z_]))"
+					"match": "(?<![.:])\\b(?:private|public)\\b(?=[ \\t]+(?:function\\b|(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue|with|from|band|bor|bxor|shl|shr)\\b)[A-Za-z_]))"
 				},
 				{
 					"name": "keyword.control.aly",
 					"match": "\\b(?:if|then|elseif|else|end|for|in|while|do|repeat|until|return|break|continue|with|as|case|default|where)\\b"
 				},
 				{
+					"comment": "`trait`, `impl`, `remote`, `macro`, `attribute`, and `namespace` are keywords only before a name, so the declaration rules colour them and this list leaves them out.",
 					"name": "storage.type.aly",
-					"match": "\\b(?:local|function|macro|namespace|trait|impl|extends|type|from|remote|declare|extern|class|attribute)\\b"
+					"match": "\\b(?:local|function|extends|type|from|declare|extern|class)\\b"
 				},
 				{
 					"name": "keyword.operator.wordlike.aly",
@@ -399,17 +400,17 @@
 				{
 					"comment": "new is a constructor before a type name; `new(x)`, `new.f`, `new = 1`, and `new \"s\"` are a local named new",
 					"name": "keyword.operator.new.aly",
-					"match": "(?<![.:])\\bnew\\b(?=[ \\t]+(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue)\\b)[A-Za-z_])"
+					"match": "(?<![.:])\\bnew\\b(?=[ \\t]+(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue|with|from|band|bor|bxor|shl|shr)\\b)[A-Za-z_])"
 				},
 				{
 					"comment": "try takes an operand or a do block; `try(f)`, `try = 1`, and `try.f` are a local named try",
 					"name": "keyword.control.aly",
-					"match": "(?<![.:])\\btry\\b(?=[ \\t]+(?:do\\b|(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue)\\b)[A-Za-z_$#]|[0-9]|-[^-]))"
+					"match": "(?<![.:])\\btry\\b(?=[ \\t]+(?:do\\b|(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue|with|from|band|bor|bxor|shl|shr)\\b)[A-Za-z_$#]|[0-9]|-[^-]))"
 				},
 				{
 					"comment": "match opens a match; `match(s, p)`, `match[k]`, `match = 1`, and `match.f` are a local named match",
 					"name": "keyword.control.aly",
-					"match": "(?<![.:])\\bmatch\\b(?=[ \\t]+(?:(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue)\\b)[A-Za-z_${\\[]|[0-9]|#|-[^-]))"
+					"match": "(?<![.:])\\bmatch\\b(?=[ \\t]+(?:(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue|with|from|band|bor|bxor|shl|shr)\\b)[A-Za-z_${\\[]|[0-9]|#|-[^-]))"
 				},
 				{
 					"comment": "const declares; `const = 1`, `const(x)`, `const[k]`, and `const.f` are a local named const",
@@ -429,12 +430,12 @@
 				{
 					"comment": "await takes an operand; `await(p)`, `await = f`, and `await.f` are a local named await",
 					"name": "keyword.control.aly",
-					"match": "(?<![.:])\\bawait\\b(?=[ \\t]+(?:(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue)\\b)[A-Za-z_$#]|[0-9]|-[^-]))"
+					"match": "(?<![.:])\\bawait\\b(?=[ \\t]+(?:(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue|with|from|band|bor|bxor|shl|shr)\\b)[A-Za-z_$#]|[0-9]|-[^-]))"
 				},
 				{
 					"comment": "import opens the statement, and import(...) is its expression form; `local import = {}` and `import.cache` are a local named import",
 					"name": "storage.type.aly",
-					"match": "(?<![.:])\\bimport\\b(?=[ \\t]*(?:\\(|<<|\\*|\\{)|[ \\t]+(?:type[ \\t]*\\{|(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue)\\b)[A-Za-z_]))"
+					"match": "(?<![.:])\\bimport\\b(?=[ \\t]*(?:\\(|<<|\\*|\\{)|[ \\t]+(?:type[ \\t]*\\{|(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue|with|from|band|bor|bxor|shl|shr)\\b)[A-Za-z_]))"
 				},
 				{
 					"name": "keyword.operator.expression.delete.aly",
@@ -443,7 +444,7 @@
 				{
 					"comment": "after opens a timed block and follows the operand of a destroy, both before a delay; `after = 1`, `after(x)`, and `after.f` are a local named after",
 					"name": "keyword.control.after.aly",
-					"match": "(?<![.:])\\bafter\\b(?=[ \\t]+(?:(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue)\\b)[A-Za-z_(#]|[0-9]))"
+					"match": "(?<![.:])\\bafter\\b(?=[ \\t]+(?:(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue|with|from|band|bor|bxor|shl|shr)\\b)[A-Za-z_(#]|[0-9]))"
 				},
 				{
 					"name": "keyword.operator.type.aly",
@@ -730,7 +731,7 @@
 							"name": "punctuation.separator.type.annotation.aly"
 						}
 					},
-					"end": "(?=[=,;)\\]}]|\\b(?:then|do|end|with|from|in|return|local|const|if|for|while|repeat|until)\\b|$)",
+					"end": "(?=[=,;)\\]}]|\\b(?:then|do|end|with|from|band|bor|bxor|shl|shr|in|return|local|const|if|for|while|repeat|until)\\b|$)",
 					"name": "meta.type.annotation.aly",
 					"patterns": [
 						{
@@ -746,7 +747,7 @@
 							"name": "keyword.operator.type.ascription.aly"
 						}
 					},
-					"end": "(?=[=,;)\\]}]|\\b(?:then|do|end|with|from|in|return|local|const|if|for|while|repeat|until)\\b|$)",
+					"end": "(?=[=,;)\\]}]|\\b(?:then|do|end|with|from|band|bor|bxor|shl|shr|in|return|local|const|if|for|while|repeat|until)\\b|$)",
 					"name": "meta.type.ascription.aly",
 					"patterns": [
 						{
@@ -762,7 +763,7 @@
 							"name": "keyword.operator.return-type.aly"
 						}
 					},
-					"end": "(?=\\b(?:then|do|end|with|from|return|local|const|if|for|while|repeat|until)\\b|$)",
+					"end": "(?=\\b(?:then|do|end|with|from|band|bor|bxor|shl|shr|return|local|const|if|for|while|repeat|until)\\b|$)",
 					"name": "meta.type.return.aly",
 					"patterns": [
 						{
@@ -878,7 +879,7 @@
 				},
 				{
 					"comment": "x is T and x is not T type tests; `local is = 1`, `is(x)`, `t.is`, and `t:is()` are a local named is",
-					"begin": "(?<![.:])\\b(is)\\b(?:[ \\t]+(not)\\b)?(?=[ \\t]+(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue)\\b)[A-Za-z_])",
+					"begin": "(?<![.:])\\b(is)\\b(?:[ \\t]+(not)\\b)?(?=[ \\t]+(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue|with|from|band|bor|bxor|shl|shr)\\b)[A-Za-z_])",
 					"beginCaptures": {
 						"1": {
 							"name": "keyword.operator.wordlike.aly"
@@ -887,7 +888,7 @@
 							"name": "keyword.operator.wordlike.aly"
 						}
 					},
-					"end": "(?=[=,;)\\]}]|\\b(?:then|do|end|with|from|in|return|local|const|if|for|while|repeat|until|and|or|not)\\b|$)",
+					"end": "(?=[=,;)\\]}]|\\b(?:then|do|end|with|from|band|bor|bxor|shl|shr|in|return|local|const|if|for|while|repeat|until|and|or|not)\\b|$)",
 					"name": "meta.type.is.aly",
 					"patterns": [
 						{
@@ -903,7 +904,7 @@
 							"name": "keyword.operator.wordlike.aly"
 						}
 					},
-					"end": "(?=[=,;)\\]}]|\\b(?:then|do|end|with|from|in|return|local|const|if|for|while|repeat|until)\\b|$)",
+					"end": "(?=[=,;)\\]}]|\\b(?:then|do|end|with|from|band|bor|bxor|shl|shr|in|return|local|const|if|for|while|repeat|until)\\b|$)",
 					"name": "meta.type.satisfies.aly",
 					"patterns": [
 						{
@@ -912,8 +913,8 @@
 					]
 				},
 				{
-					"comment": "impl Trait for Type as and impl Type as: the header stops at `as`, so the `as` and the `end` of a one-line body stay keywords",
-					"begin": "\\b(impl)\\s+",
+					"comment": "impl Trait for Type and impl Type, with or without `as`: the header stops at `as` or at the end of the line, so the `as` and the `end` of a one-line body stay keywords. `impl` opens it only before a name, so `local impl = {}` and `t.impl` stay names.",
+					"begin": "(?<![.:])\\b(impl)[ \\t]+(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue|with|from|band|bor|bxor|shl|shr)\\b)(?=[A-Za-z_])",
 					"beginCaptures": {
 						"1": {
 							"name": "storage.type.aly"
@@ -939,19 +940,32 @@
 			"match": "\\b(?:table|string|math|os|task|coroutine|bit32|utf8|buffer|debug|vector|game|workspace|script|plugin)\\b(?=\\s*[.:])"
 		},
 		"enum-body": {
-			"comment": "enum Name as ... end: a variant is a name, a payload is a type list, a value variant takes an expression; the end may sit on the as line",
-			"begin": "^\\s*(?:(export|public|private)\\s+)?(enum)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+(as)\\b",
+			"comment": "enum Name<T> ... end: a variant is a name, a payload is a type list, a value variant takes an expression. The body opens after `as`, or at the end of the header line when the variants start below it. A one-line body keeps `as` and its `end`.",
+			"begin": "(?<![.:])\\b(?:(export)[ \\t]+(?:(default)[ \\t]+)?|(public|private)[ \\t]+)?(enum)[ \\t]+(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue|with|from|band|bor|bxor|shl|shr)\\b)([A-Za-z_][A-Za-z0-9_]*)[ \\t]*(<(?:[^<>]|<(?:[^<>]|<(?:[^<>]|<[^<>]*>)*>)*>)*>)?(?:[ \\t]*\\b(as)\\b|(?=[ \\t]*(?:--|$)))",
 			"beginCaptures": {
 				"1": {
 					"name": "storage.type.aly"
 				},
 				"2": {
-					"name": "storage.type.aly"
+					"name": "keyword.control.aly"
 				},
 				"3": {
-					"name": "entity.name.type.enum.aly"
+					"name": "storage.modifier.aly"
 				},
 				"4": {
+					"name": "storage.type.aly"
+				},
+				"5": {
+					"name": "entity.name.type.enum.aly"
+				},
+				"6": {
+					"patterns": [
+						{
+							"include": "#type-content"
+						}
+					]
+				},
+				"7": {
 					"name": "keyword.control.aly"
 				}
 			},

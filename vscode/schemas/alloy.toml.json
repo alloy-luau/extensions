@@ -128,6 +128,9 @@
                   "manual_coalesce",
                   "nil_check_call",
                   "manual_type_test",
+                  "array_long_string",
+                  "pattern_shadows_local",
+                  "match_guard_and",
                   "legacy_iterator",
                   "manual_floor_div",
                   "manual_push",
@@ -222,6 +225,9 @@
                   "manual_coalesce",
                   "nil_check_call",
                   "manual_type_test",
+                  "array_long_string",
+                  "pattern_shadows_local",
+                  "match_guard_and",
                   "legacy_iterator",
                   "manual_floor_div",
                   "manual_push",
@@ -316,6 +322,9 @@
                   "manual_coalesce",
                   "nil_check_call",
                   "manual_type_test",
+                  "array_long_string",
+                  "pattern_shadows_local",
+                  "match_guard_and",
                   "legacy_iterator",
                   "manual_floor_div",
                   "manual_push",
@@ -711,6 +720,33 @@
                 "deny"
               ],
               "description": "`typeof(x) == \"T\"` in place of `x is T`. Default: `warn`."
+            },
+            "array_long_string": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a long string whose text reads like a nested array. Default: `warn`."
+            },
+            "pattern_shadows_local": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a match pattern that binds the name of a local in scope. Default: `warn`."
+            },
+            "match_guard_and": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a match guard written with `and`. Default: `warn`."
             },
             "legacy_iterator": {
               "type": "string",
@@ -1157,6 +1193,9 @@
                   "manual_coalesce",
                   "nil_check_call",
                   "manual_type_test",
+                  "array_long_string",
+                  "pattern_shadows_local",
+                  "match_guard_and",
                   "legacy_iterator",
                   "manual_floor_div",
                   "manual_push",
@@ -1606,6 +1645,70 @@
           "type": "boolean",
           "description": "Write `sourcemap.json` at the root on every build, the name Rojo and luau-lsp read. The language server reads it for `@game/` completion and instance types. On, the build writes over a `sourcemap.json` another tool wrote; off, it writes none.",
           "default": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "std": {
+      "type": "object",
+      "title": "[std]",
+      "description": "How a file reaches the std. `alloy doc std` lists its modules.",
+      "properties": {
+        "globals": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "none",
+                "all"
+              ]
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "HashMap",
+                  "Set",
+                  "BitSet",
+                  "Queue",
+                  "Heap",
+                  "Array",
+                  "Symbol",
+                  "Iter",
+                  "Result",
+                  "Ok",
+                  "Err",
+                  "Future",
+                  "Scope",
+                  "Signal",
+                  "SignalConnection",
+                  "Signalish",
+                  "Display",
+                  "Debug",
+                  "Clone",
+                  "Default",
+                  "Eq",
+                  "PartialEq",
+                  "Ord",
+                  "Add",
+                  "Sub",
+                  "Mul",
+                  "Div",
+                  "Serialize",
+                  "Deserialize",
+                  "Partial",
+                  "Readonly",
+                  "Sink",
+                  "R15Character",
+                  "R6Character",
+                  "Attributes"
+                ]
+              }
+            }
+          ],
+          "description": "The std names a file writes with no import. `none` means a file imports each one, `import { HashMap } from \"@alloy/std/collections\"`; `all` makes every one ambient; a list makes those names ambient. `Future`, `Result`, `Ok`, `Err`, `Array`, and the operator traits need no import under any value, since a keyword or an operator writes them.",
+          "default": "none"
         }
       },
       "additionalProperties": false

@@ -9,6 +9,8 @@ import { grammarOf, scopeOf, tokenize } from './grammar.mjs'
 
 const WORDLIKE = 'keyword.operator.wordlike.aly'
 const TYPE = 'entity.name.type.aly'
+const NAME = 'variable.other.aly'
+const MEMBER = 'variable.other.enummember.aly'
 
 // [source line, [token text, its innermost scope], ...]
 const cases = [
@@ -60,6 +62,66 @@ const cases = [
 	['is(x)', ['is', 'entity.name.function.aly']],
 	['t.is', ['is', 'variable.other.property.aly']],
 	['t:is()', ['is', 'entity.name.function.aly']],
+	// A declaration word is a keyword only before a name on its line
+	// (`remote`, `public`, and `private` also before `function`). Every
+	// other use is a name, as in Roblox code.
+	['local remote = folder.Hit', ['remote', NAME]],
+	['remote:FireServer()', ['remote', NAME]],
+	['trait = trait + 1', ['trait', NAME]],
+	['print(trait, macro)', ['trait', NAME], ['macro', NAME]],
+	['macro(1)', ['macro', 'entity.name.function.aly']],
+	['local attribute = 1', ['attribute', NAME]],
+	['local namespace = ns', ['namespace', NAME]],
+	[
+		'local ok = if public then private else nil',
+		['public', NAME],
+		['private', NAME],
+	],
+	// `impl` opens a type header only before a name, so the rest of the
+	// line keeps its own colours.
+	[
+		't.impl = 2',
+		['impl', 'variable.other.property.aly'],
+		['2', 'constant.numeric.aly'],
+	],
+	[
+		'local impl = { run = function() end }',
+		['impl', NAME],
+		['run', NAME],
+		['function', 'storage.type.aly'],
+		['end', 'keyword.control.aly'],
+	],
+	[
+		'remote Hit(n: number) from client',
+		['remote', 'storage.type.remote.aly'],
+		['Hit', 'entity.name.function.remote.aly'],
+	],
+	[
+		'remote function Get(id: number): number from server',
+		['remote', 'storage.type.remote.aly'],
+		['Get', 'entity.name.function.remote.aly'],
+	],
+	['export macro m(x)', ['macro', 'storage.type.aly']],
+	['impl T for P', ['impl', 'storage.type.aly'], ['P', TYPE]],
+	['namespace N', ['namespace', 'storage.type.aly']],
+	['trait Shape', ['trait', 'storage.type.aly']],
+	['export attribute tagged on struct', ['attribute', 'storage.type.aly']],
+	['private function hidden() end', ['private', 'storage.modifier.aly']],
+	[
+		'enum Color as Red, Green end',
+		['Red', MEMBER],
+		['end', 'keyword.control.aly'],
+	],
+	['print($map[[1, 2]])', ['1', 'constant.numeric.aly']],
+	// A declaration word as the scrutinee of a `match` is a name, and
+	// `with` keeps its keyword colour.
+	['match trait with', ['trait', NAME], ['with', 'keyword.control.aly']],
+	['match macro with', ['macro', NAME], ['with', 'keyword.control.aly']],
+	[
+		'match attribute with',
+		['attribute', NAME],
+		['with', 'keyword.control.aly'],
+	],
 ]
 
 const grammar = await grammarOf(scopeOf('case.aly'))
@@ -75,6 +137,20 @@ for (const [line, ...wanted] of cases) {
 	}
 }
 
+// Generics nest three deep in a header: the last `>` closes the list
+// and reads as no shift operator.
+{
+	const [tokens] = tokenize(grammar, [
+		'struct Box<T = HashMap<string, Array<number>>>',
+	])
+
+	assert.equal(
+		tokens.at(-1).scopes.at(-1),
+		'punctuation.definition.type.generics.aly',
+		'the last `>` of nested generics',
+	)
+}
+
 // A union written over lines keeps its type context past the first.
 {
 	const lines = ['export type Id =', '\t| Part', '\t| Model', 'local x = Part']
@@ -84,6 +160,81 @@ for (const [line, ...wanted] of cases) {
 
 	assert.equal(scope(2, 'Model'), TYPE, 'Model in the union')
 	assert.notEqual(scope(3, 'local'), TYPE, 'the next statement leaves the type')
+}
+
+// An enum body opens on its header with or without `as`, so a variant
+// colours as a member in both forms and the body closes at its `end`.
+// A `[[` long string holds its keywords as text over lines.
+{
+	// [lines, [row, token text, its innermost scope], ...]
+	const blocks = [
+		[
+			['enum Shape', '    Circle(number)', '    Unit', 'end', 'local u = Unit'],
+			[1, 'Circle', MEMBER],
+			[1, 'number', 'support.type.primitive.aly'],
+			[2, 'Unit', MEMBER],
+			[3, 'end', 'keyword.control.aly'],
+			[4, 'Unit', TYPE],
+		],
+		[
+			[
+				'@derive(Eq)',
+				'export default enum Mode -- the modes',
+				'    Fast = 1',
+				'    Slow',
+				'end',
+			],
+			[1, 'default', 'keyword.control.aly'],
+			[1, 'Mode', 'entity.name.type.enum.aly'],
+			[2, 'Fast', MEMBER],
+			[3, 'Slow', MEMBER],
+		],
+		[
+			['@derive(Eq) enum R', '    A(Array<number>)', 'end'],
+			[0, 'R', 'entity.name.type.enum.aly'],
+			[1, 'A', MEMBER],
+			[1, 'Array', TYPE],
+		],
+		[
+			['enum Result<T, E = Array<string>>', '    Ok(T)', 'end'],
+			[0, 'string', 'support.type.primitive.aly'],
+			[1, 'Ok', MEMBER],
+			[1, 'T', TYPE],
+		],
+		[
+			['namespace N', '    public enum Inner', '        X', '    end', 'end'],
+			[1, 'public', 'storage.modifier.aly'],
+			[2, 'X', MEMBER],
+		],
+		[
+			['enum Old as', '    A', 'end'],
+			[1, 'A', MEMBER],
+		],
+		[
+			['local s = [[', 'if x then', ']]', 'local t = 1'],
+			[1, 'if x then', 'string.quoted.other.multiline.aly'],
+			[3, 'local', 'storage.type.aly'],
+		],
+		// `match enum with` opens a match, not an enum body.
+		[
+			['match enum with', '    case A then 1', 'end', 'local u = Unit'],
+			[0, 'enum', NAME],
+			[0, 'with', 'keyword.control.aly'],
+			[1, 'case', 'keyword.control.aly'],
+			[3, 'Unit', TYPE],
+		],
+	]
+
+	for (const [lines, ...wanted] of blocks) {
+		const tokens = tokenize(grammar, lines)
+
+		for (const [row, text, scope] of wanted) {
+			const token = tokens[row].find((t) => t.text === text)
+
+			assert.ok(token, `no \`${text}\` token in: ${lines[row]}`)
+			assert.equal(token.scopes.at(-1), scope, `${text} in: ${lines[row]}`)
+		}
+	}
 }
 
 // `.config.aly` has a language of its own, for its icon, and reads as
