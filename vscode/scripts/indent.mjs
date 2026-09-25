@@ -353,6 +353,18 @@ const alxCases = [
 	// column, and the children below it go one level in.
 	['  >', true, true],
 	['if open then', true, false],
+	// A fragment opens a level as a tag does, and `</>` closes it.
+	['\t<>', true, false],
+	['</>', false, true],
+	['<></>', false, false],
+	// A tag or a fragment after `return` or `=` opens a level too.
+	['    return <>', true, false],
+	['    return <Frame>', true, false],
+	['    return <Frame', true, false],
+	['    local e = <>', true, false],
+	['    return <Frame />', false, false],
+	['    return <Frame></Frame>', false, false],
+	['local t: Array<number>', false, false],
 ]
 
 for (const [line, opens, closes] of alxCases) {
