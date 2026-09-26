@@ -287,20 +287,32 @@ const SIGNATURES = new RegExp(
 const SIGNATURE =
 	/^\s*(?:(?:public|private)\s+)?(?:async\s+)?function\s+[\w.:]+\s*(?:<[^>]*>)?\s*\(.*\)(?:\s*(?:->|:)\s*\S.*)?$/
 
+function indentOf(text: string): string {
+	return text.slice(0, text.length - text.trimStart().length)
+}
+
 /**
- * The indentation of the line after a signature in a trait, an
- * interface, or a `declare` block: the signature's own, since it opens
- * no body. Undefined leaves the line to the editor's rules.
+ * The signature above `lines[index]` and the line that opens the block
+ * around it, when that block is a trait, an interface, or a `declare`
+ * block. Undefined for any other line above.
  *
  * The scan walks up to the block around the line. A signature there
  * opens nothing; a method with a body counts as the block it is.
  */
-export function signatureIndent(
+function signatureBlock(
 	lines: readonly string[],
 	index: number,
-): string | undefined {
+): { above: string; opener: string } | undefined {
 	const all = codes(lines, index - 1)
-	const above = (all[index - 1] ?? '').trimEnd()
+	// A blank line after the signature changes nothing: the next method
+	// still takes the signature's column.
+	let at = index - 1
+
+	while (at >= 0 && (all[at] ?? '').trim() === '') {
+		at--
+	}
+
+	const above = (all[at] ?? '').trimEnd()
 
 	if (!SIGNATURE.test(above)) {
 		return undefined
@@ -321,13 +333,44 @@ export function signatureIndent(
 		const open = SIGNATURES.test(text) ? Math.max(1, opens(text)) : opens(text)
 
 		if (open > depth) {
-			return SIGNATURES.test(text)
-				? above.slice(0, above.length - above.trimStart().length)
-				: undefined
+			return SIGNATURES.test(text) ? { above, opener: text } : undefined
 		}
 
 		depth -= open
 	}
 
 	return undefined
+}
+
+/**
+ * The indentation of the line after a signature in a trait, an
+ * interface, or a `declare` block: the signature's own, since it opens
+ * no body. Undefined leaves the line to the editor's rules.
+ */
+export function signatureIndent(
+	lines: readonly string[],
+	index: number,
+): string | undefined {
+	const block = signatureBlock(lines, index)
+
+	return block === undefined ? undefined : indentOf(block.above)
+}
+
+/**
+ * The indentation of an `end` typed under a signature: the column of
+ * the trait, the interface, or the `declare` block it closes. The
+ * editor reads the signature as a function header and keeps the `end`
+ * one level in. Undefined leaves the line to the editor's rules.
+ */
+export function signatureEndIndent(
+	lines: readonly string[],
+	index: number,
+): string | undefined {
+	if (!/^[ \t]*end\b/.test(lines[index] ?? '')) {
+		return undefined
+	}
+
+	const block = signatureBlock(lines, index)
+
+	return block === undefined ? undefined : indentOf(block.opener)
 }

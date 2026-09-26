@@ -22,7 +22,11 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { matchIndent, signatureIndent } from '../out/indent.js'
+import {
+	matchIndent,
+	signatureEndIndent,
+	signatureIndent,
+} from '../out/indent.js'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 const rules = JSON.parse(
@@ -228,6 +232,10 @@ const cases = [
 	const trait = ['trait Weapon as', '    function damage(self): number', '']
 	assert.equal(signatureIndent(trait, 2), '    ', 'trait signature')
 
+	// A blank line after the signature keeps the column too.
+	const spaced = ['trait Weapon', '    function damage(self): number', '', '']
+	assert.equal(signatureIndent(spaced, 3), '    ', 'after a blank line')
+
 	const withDefault = [
 		'export trait Weapon as',
 		'    function describe(self): string',
@@ -279,6 +287,54 @@ const cases = [
 	assert.equal(signatureIndent(named, 2), undefined, 'a local named trait')
 }
 
+// The `end` under a signature closes the block of signatures, so it
+// takes the column of the trait, the interface, or the declare block.
+// Under a function header with a body, it closes that body.
+{
+	const trait = [
+		'trait Named',
+		'    function name(self): string',
+		'    function tag(self): string',
+		'end',
+	]
+	assert.equal(signatureEndIndent(trait, 3), '', 'trait end')
+	assert.equal(
+		signatureEndIndent(
+			['trait Named', '    function name(self): string', '', 'end'],
+			3,
+		),
+		'',
+		'trait end after a blank line',
+	)
+
+	const nested = [
+		'namespace N',
+		'    public interface Shape',
+		'        function area(self): number',
+		'    end',
+	]
+	assert.equal(signatureEndIndent(nested, 3), '    ', 'nested interface end')
+
+	const declared = [
+		'declare extern type CFrame with',
+		'    function inverse(self): CFrame',
+		'end',
+	]
+	assert.equal(signatureEndIndent(declared, 2), '', 'declare block end')
+
+	const body = ['impl P', '    function len(self): number', 'end']
+	assert.equal(signatureEndIndent(body, 2), undefined, 'a method body end')
+
+	assert.equal(
+		signatureEndIndent(
+			['trait Named', '    function name(self): string', 'x'],
+			2,
+		),
+		undefined,
+		'a line that is no end',
+	)
+}
+
 // .alx: a tag that stays open indents, and its close dedents.
 const alx = JSON.parse(
 	fs.readFileSync(
@@ -293,7 +349,22 @@ const alxCases = [
 	['<TextLabel>hi</TextLabel>', false, false],
 	['</Frame>', false, true],
 	['/>', false, true],
+	// A lone `>` closes a multi-line opening tag: it takes the tag's
+	// column, and the children below it go one level in.
+	['  >', true, true],
 	['if open then', true, false],
+	// A fragment opens a level as a tag does, and `</>` closes it.
+	['\t<>', true, false],
+	['</>', false, true],
+	['<></>', false, false],
+	// A tag or a fragment after `return` or `=` opens a level too.
+	['    return <>', true, false],
+	['    return <Frame>', true, false],
+	['    return <Frame', true, false],
+	['    local e = <>', true, false],
+	['    return <Frame />', false, false],
+	['    return <Frame></Frame>', false, false],
+	['local t: Array<number>', false, false],
 ]
 
 for (const [line, opens, closes] of alxCases) {
@@ -388,7 +459,11 @@ function afterTyping(lines, index) {
 /** The column the reader ends up with: the extension's answer when it
  *  has one, else the editor's. */
 function column(lines, index) {
-	return (matchIndent(lines, index, UNIT) ?? afterTyping(lines, index)).length
+	return (
+		matchIndent(lines, index, UNIT) ??
+		signatureEndIndent(lines, index) ??
+		afterTyping(lines, index)
+	).length
 }
 
 // [name, lines, the line typed, its column]
@@ -642,6 +717,25 @@ const arms = [
 		4,
 	],
 	['the `end` of a match with if-expressions', null, 11, 0],
+	// The editor reads a signature as a function header; the extension
+	// writes the `end` of the trait at the trait's column.
+	[
+		'the `end` of a trait after a signature',
+		[
+			'trait Named',
+			'    function name(self): string',
+			'    function tag(self): string',
+			'end',
+		],
+		3,
+		0,
+	],
+	[
+		'the `end` of a method in an impl',
+		['impl P', '    function len(self): number', '    end', 'end'],
+		2,
+		4,
+	],
 ]
 
 let lines = []
