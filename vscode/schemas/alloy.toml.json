@@ -62,8 +62,7 @@
         },
         "erase_type_imports": {
           "type": "boolean",
-          "description": "Blank `import type` lines in the output so they add no runtime dependency. The output is then untyped for anyone who analyzes it directly.",
-          "default": false
+          "description": "Deprecated, and does nothing. A type-only import never runs its `require`, so remove the key."
         }
       },
       "additionalProperties": false
@@ -119,6 +118,7 @@
                   "circular_import",
                   "single_angle_call",
                   "deprecated_namespace",
+                  "stale_export",
                   "deprecated_call",
                   "and_or_ternary",
                   "unused_variable",
@@ -218,6 +218,7 @@
                   "circular_import",
                   "single_angle_call",
                   "deprecated_namespace",
+                  "stale_export",
                   "deprecated_call",
                   "and_or_ternary",
                   "unused_variable",
@@ -317,6 +318,7 @@
                   "circular_import",
                   "single_angle_call",
                   "deprecated_namespace",
+                  "stale_export",
                   "deprecated_call",
                   "and_or_ternary",
                   "unused_variable",
@@ -645,6 +647,15 @@
                 "deny"
               ],
               "description": "a use of a namespace declared `@deprecated`. Default: `warn`."
+            },
+            "stale_export": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "a write to an exported `local` inside a function. Default: `warn`."
             },
             "deprecated_call": {
               "type": "string",
@@ -1208,6 +1219,7 @@
                   "circular_import",
                   "single_angle_call",
                   "deprecated_namespace",
+                  "stale_export",
                   "deprecated_call",
                   "and_or_ternary",
                   "unused_variable",
@@ -2411,10 +2423,10 @@
             "interpolate": {
               "type": "string",
               "enum": [
-                "plain",
-                "compute"
+                "wrap",
+                "plain"
               ],
-              "description": "How `{expr}` in text lowers: `plain` inserts the value, `compute` wraps it."
+              "description": "How `{expr}` in text lowers: `wrap` wraps it so a reactive library re-runs it (through `compute` when set), `plain` inserts the value."
             },
             "merge": {
               "type": "string",
