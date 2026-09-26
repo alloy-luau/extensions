@@ -717,6 +717,63 @@ const arms = [
 		4,
 	],
 	['the `end` of a match with if-expressions', null, 11, 0],
+	// An if-expression that opens a line is the value of its arm. It owns
+	// an `else` and no `end`, so it opens no block.
+	[
+		'a `case` after an arm that ends in an if-expression',
+		[
+			'local function quote(s: State): number',
+			'    local price = match s with',
+			'        case Ripe(kind) then',
+			'            const base = kind',
+			'            if base > 0 then base * 2 else base',
+			'        case Growing(kind) then',
+			'            const base = kind',
+			'            if base > 0 then base else 0',
+			'        default 0',
+			'    end',
+			'    return price',
+			'end',
+		],
+		5,
+		8,
+	],
+	['`default` after an arm that ends in an if-expression', null, 8, 8],
+	['the `end` of a match after an if-expression arm', null, 9, 4],
+	['the `end` of the function after it', null, 11, 0],
+	[
+		'a `case` after an if-expression on the arm line',
+		[
+			'match s with',
+			'    case Ripe(kind) then if kind > 0 then 1 else 2',
+			'    case Growing(kind) then if a then if b then 1 else 2 else 3',
+			'    default 0',
+			'end',
+		],
+		2,
+		4,
+	],
+	['`default` after a nested if-expression on the arm line', null, 3, 4],
+	['the `end` after if-expressions on arm lines', null, 4, 0],
+	// A statement `if` keeps its block: one that closes on its line, and
+	// one whose `else` takes a nested if-expression.
+	[
+		'`default` under one-line `if` statements',
+		[
+			'match z with',
+			'    case Ok(v) then',
+			'        if v then print(1) else print(2) end',
+			'        if v then',
+			'            print(v)',
+			'        end',
+			'        if v then x = if w then 1 else 2 end',
+			'    default nil',
+			'end',
+		],
+		7,
+		4,
+	],
+	['the `end` under one-line `if` statements', null, 8, 0],
 	// The editor reads a signature as a function header; the extension
 	// writes the `end` of the trait at the trait's column.
 	[

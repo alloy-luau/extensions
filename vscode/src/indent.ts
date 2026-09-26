@@ -167,9 +167,41 @@ function words(text: string): string[] {
 	return text.split(/[^A-Za-z0-9_]+/).filter((word) => word.length > 0)
 }
 
+/** Whether the `if` that opens `rest` is a whole if-expression: it owns
+ *  an `else` on the line, and no `end` after that `else` closes it. An
+ *  `if` inside it takes the next `else` first. The value of a `match`
+ *  arm is one: `if base > 0 then base else 0`. */
+function whole(rest: string): boolean {
+	let inner = 0
+	let own = false
+	let depth = 0
+
+	for (const word of words(rest).slice(1)) {
+		if (!own) {
+			if (word === 'if') {
+				inner++
+			} else if (word === 'else') {
+				own = inner === 0
+				inner = Math.max(0, inner - 1)
+			}
+		} else if (word === 'function') {
+			depth++
+		} else if (word === 'end') {
+			if (depth === 0) {
+				return false
+			}
+
+			depth--
+		}
+	}
+
+	return own
+}
+
 /** How many `if` statements a line opens. An if-expression has no
  *  `end`: `local x = if a then b else c`. It follows an operand
- *  position, or the `then` or `else` of another if-expression. */
+ *  position, or the `then` or `else` of another if-expression, or it
+ *  owns an `else` and no `end` on its line. */
 function ifs(text: string): number {
 	let count = 0
 	let expression = false
@@ -178,7 +210,9 @@ function ifs(text: string): number {
 		const before = text.slice(0, found.index)
 
 		expression =
-			OPERAND.test(before) || (expression && /\b(?:then|else)\s*$/.test(before))
+			OPERAND.test(before) ||
+			(expression && /\b(?:then|else)\s*$/.test(before)) ||
+			whole(text.slice(found.index))
 
 		if (!expression) {
 			count++
