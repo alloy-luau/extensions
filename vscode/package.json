@@ -2,7 +2,7 @@
 	"name": "alloy-luau",
 	"displayName": "Alloy",
 	"description": "Language support for Alloy, a strict superset of Luau",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"publisher": "AndrewBordis",
 	"icon": "assets/aly-extension-icon.png",
 	"license": "MIT",
