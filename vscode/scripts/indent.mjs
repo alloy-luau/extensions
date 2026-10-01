@@ -90,6 +90,12 @@ const cases = [
 	// An opener away from the front of the line. Each line is a hit in
 	// ~/Documents/alloy-examples.
 	['local twice = async do', true, false], // 03_async:65
+	// `parallel do` opens a block; a message is one line, and its
+	// `as parallel` opens nothing.
+	['  parallel do', true, false],
+	['message Step(dt: number, reply: Actor)', false, false],
+	['export message Hit(part: Part) as parallel', false, false],
+	['message Light(job: number) reply(job: number)', false, false],
 	['    local combined = try do', true, false], // 04_result:50
 	['local first = async do', true, false], // 13_std:63
 	['type function Keys(t)', true, false], // 09:41, 12:30

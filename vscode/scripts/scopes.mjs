@@ -75,6 +75,18 @@ const cases = [
 	// The test ends at the operator after it, so `and` keeps its own
 	// colour and the type never runs to the end of the line.
 	['local ok = x is Part and y is Model', ['and', WORDLIKE], ['Model', TYPE]],
+	// The type is a dotted name, so a ternary after it keeps its colours:
+	// the import call is the keyword, and its argument is a name.
+	[
+		'return m is ModuleScript ? import<<unknown>>(module) : nil',
+		['ModuleScript', TYPE],
+		['import', 'storage.type.aly'],
+		['unknown', 'support.type.primitive.aly'],
+		['module', NAME],
+		['nil', 'constant.language.aly'],
+	],
+	// `import "m"` is the call too.
+	["import './m'", ['import', 'storage.type.aly']],
 	// `is` is also a free name.
 	['local is = 1', ['is', 'variable.other.aly']],
 	['is(x)', ['is', 'entity.name.function.aly']],
@@ -84,6 +96,47 @@ const cases = [
 	// (`remote`, `public`, and `private` also before `function`). Every
 	// other use is a name, as in Roblox code.
 	['local remote = folder.Hit', ['remote', NAME]],
+	// `parallel` opens a block before `do`, and `message` declares
+	// before a name and its parameters. Each is a name everywhere else.
+	[
+		'parallel do',
+		['parallel', 'keyword.control.parallel.aly'],
+		['do', 'keyword.control.aly'],
+	],
+	['local parallel = true', ['parallel', NAME]],
+	['parallel(x)', ['parallel', 'entity.name.function.aly']],
+	['t.parallel = 1', ['parallel', 'variable.other.property.aly']],
+	[
+		'message Step(dt: number, reply: Actor)',
+		['message', 'storage.type.message.aly'],
+		['Step', 'entity.name.function.message.aly'],
+	],
+	[
+		'export message Hit(part: Part) as parallel',
+		['export', 'storage.type.aly'],
+		['message', 'storage.type.message.aly'],
+		['Hit', 'entity.name.function.message.aly'],
+		['as', 'keyword.control.aly'],
+		['parallel', 'keyword.control.parallel.aly'],
+	],
+	[
+		'export message Light(job: number) reply(job: number, levels: buffer) as parallel',
+		['message', 'storage.type.message.aly'],
+		['Light', 'entity.name.function.message.aly'],
+		['reply', 'keyword.control.reply.aly'],
+		['as', 'keyword.control.aly'],
+		['parallel', 'keyword.control.parallel.aly'],
+	],
+	['message Step(dt: number, reply: Actor)', ['reply', 'variable.other.aly']],
+	['local reply = 1', ['reply', NAME]],
+	['reply(x)', ['reply', 'entity.name.function.aly']],
+	['local message = "hi"', ['message', NAME]],
+	['message(x)', ['message', 'entity.name.function.aly']],
+	['import * as parallel from "./p"', ['parallel', NAME]],
+	[
+		'attribute tick on message, function',
+		['message', 'constant.language.attribute-target.aly'],
+	],
 	['remote:FireServer()', ['remote', NAME]],
 	['trait = trait + 1', ['trait', NAME]],
 	['print(trait, macro)', ['trait', NAME], ['macro', NAME]],

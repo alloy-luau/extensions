@@ -28,6 +28,9 @@
 			"include": "#remote"
 		},
 		{
+			"include": "#message"
+		},
+		{
 			"include": "#keyword"
 		},
 		{
@@ -224,7 +227,7 @@
 				},
 				{
 					"comment": "on target, target: the targets colour as constants and each comma as a separator. The header's `as` stays a keyword.",
-					"begin": "\\b(on)\\b(?=\\s+(?:function|struct|enum|variant|field|param|remote|interface|type|local|namespace|impl|trait)\\b)",
+					"begin": "\\b(on)\\b(?=\\s+(?:function|struct|enum|variant|field|param|remote|message|interface|type|local|namespace|impl|trait)\\b)",
 					"beginCaptures": {
 						"1": {
 							"name": "keyword.control.aly"
@@ -234,7 +237,7 @@
 					"name": "meta.attribute.targets.aly",
 					"patterns": [
 						{
-							"match": "\\b(?:function|struct|enum|variant|field|param|remote|interface|type|local|namespace|impl|trait)\\b",
+							"match": "\\b(?:function|struct|enum|variant|field|param|remote|message|interface|type|local|namespace|impl|trait)\\b",
 							"name": "constant.language.attribute-target.aly"
 						},
 						{
@@ -391,6 +394,48 @@
 				}
 			]
 		},
+		"message": {
+			"patterns": [
+				{
+					"comment": "message Name(...) declares a channel between actors. `local message = \"hi\"`, `message(x)`, and `message.text` keep the name.",
+					"match": "(?<![.:])\\b(message)[ \\t]+(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue|with|from|band|bor|bxor|shl|shr)\\b)([A-Za-z_][A-Za-z0-9_]*)(?=[ \\t]*\\()",
+					"captures": {
+						"1": {
+							"name": "storage.type.message.aly"
+						},
+						"2": {
+							"name": "entity.name.function.message.aly"
+						}
+					}
+				},
+				{
+					"comment": "`reply(...)` after the parameters of a message: the answer the handler sends back. A name `reply` elsewhere keeps its colour, and the server's tokens paint a call that stands after a `)`.",
+					"match": "(?<=\\))[ \\t]*\\b(reply)(?=[ \\t]*\\()",
+					"captures": {
+						"1": {
+							"name": "keyword.control.reply.aly"
+						}
+					}
+				},
+				{
+					"comment": "`as parallel` after the parameters of a message: the handler runs in the parallel phase",
+					"match": "(?<=\\))[ \\t]*\\b(as)[ \\t]+(parallel)\\b",
+					"captures": {
+						"1": {
+							"name": "keyword.control.aly"
+						},
+						"2": {
+							"name": "keyword.control.parallel.aly"
+						}
+					}
+				},
+				{
+					"comment": "parallel do opens a block that runs in the parallel phase. `local parallel = true` and `parallel(x)` keep the name.",
+					"name": "keyword.control.parallel.aly",
+					"match": "(?<![.:])\\bparallel\\b(?=[ \\t]+do\\b)"
+				}
+			]
+		},
 		"keyword": {
 			"patterns": [
 				{
@@ -452,7 +497,7 @@
 				{
 					"comment": "export opens a declaration or an export list; `export = t`, `export(x)`, and `export.f` are a local named export",
 					"name": "storage.type.aly",
-					"match": "(?<![.:])\\bexport\\b(?=[ \\t]*\\{|[ \\t]+(?:type|default|local|const|function|class|open|async|enum|struct|trait|interface|remote|attribute|macro|namespace|impl)\\b)"
+					"match": "(?<![.:])\\bexport\\b(?=[ \\t]*\\{|[ \\t]+(?:type|default|local|const|function|class|open|async|enum|struct|trait|interface|remote|message|attribute|macro|namespace|impl)\\b)"
 				},
 				{
 					"comment": "async is the modifier before function or do; `local async = false` and `async(x)` are a local named async",
@@ -465,9 +510,9 @@
 					"match": "(?<![.:])\\bawait\\b(?=[ \\t]+(?:(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue|with|from|band|bor|bxor|shl|shr)\\b)[A-Za-z_$#]|[0-9]|-[^-]))"
 				},
 				{
-					"comment": "import opens the statement, and import(...) is its expression form; `local import = {}` and `import.cache` are a local named import",
+					"comment": "import opens the statement, and import(...) and import \"m\" are its expression form; `local import = {}` and `import.cache` are a local named import",
 					"name": "storage.type.aly",
-					"match": "(?<![.:])\\bimport\\b(?=[ \\t]*(?:\\(|<<|\\*|\\{)|[ \\t]+(?:type[ \\t]*\\{|(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue|with|from|band|bor|bxor|shl|shr)\\b)[A-Za-z_]))"
+					"match": "(?<![.:])\\bimport\\b(?=[ \\t]*(?:\\(|<<|\\*|\\{|[\"'])|[ \\t]+(?:type[ \\t]*\\{|(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue|with|from|band|bor|bxor|shl|shr)\\b)[A-Za-z_]))"
 				},
 				{
 					"name": "keyword.operator.expression.delete.aly",
@@ -910,23 +955,24 @@
 					]
 				},
 				{
-					"comment": "x is T and x is not T type tests; `local is = 1`, `is(x)`, `t.is`, and `t:is()` are a local named is",
-					"begin": "(?<![.:])\\b(is)\\b(?:[ \\t]+(not)\\b)?(?=[ \\t]+(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue|with|from|band|bor|bxor|shl|shr)\\b)[A-Za-z_])",
-					"beginCaptures": {
+					"comment": "x is T and x is not T type tests; `local is = 1`, `is(x)`, `t.is`, and `t:is()` are a local named is. The parser reads a dotted name after `is`, so the rule stops there, and the ternary in `x is T ? a : b` keeps its own colors",
+					"match": "(?<![.:])\\b(is)\\b(?:[ \\t]+(not)\\b)?[ \\t]+(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue|with|from|band|bor|bxor|shl|shr)\\b)([A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*)",
+					"captures": {
 						"1": {
 							"name": "keyword.operator.wordlike.aly"
 						},
 						"2": {
 							"name": "keyword.operator.wordlike.aly"
+						},
+						"3": {
+							"name": "meta.type.is.aly",
+							"patterns": [
+								{
+									"include": "#type-content"
+								}
+							]
 						}
-					},
-					"end": "(?=[=,;)\\]}]|\\b(?:then|do|end|with|from|band|bor|bxor|shl|shr|in|return|local|const|if|for|while|repeat|until|and|or|not)\\b|$)",
-					"name": "meta.type.is.aly",
-					"patterns": [
-						{
-							"include": "#type-content"
-						}
-					]
+					}
 				},
 				{
 					"comment": "expr satisfies T",

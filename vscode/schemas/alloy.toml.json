@@ -144,6 +144,7 @@
                   "raw_require",
                   "game_alias",
                   "manual_class",
+                  "prefer_new",
                   "manual_ternary_return",
                   "redundant_return",
                   "local_then_return",
@@ -244,6 +245,7 @@
                   "raw_require",
                   "game_alias",
                   "manual_class",
+                  "prefer_new",
                   "manual_ternary_return",
                   "redundant_return",
                   "local_then_return",
@@ -344,6 +346,7 @@
                   "raw_require",
                   "game_alias",
                   "manual_class",
+                  "prefer_new",
                   "manual_ternary_return",
                   "redundant_return",
                   "local_then_return",
@@ -882,6 +885,15 @@
               ],
               "description": "`X.__index = X`, the class idiom by hand. Default: `warn`."
             },
+            "prefer_new": {
+              "type": "string",
+              "enum": [
+                "allow",
+                "warn",
+                "deny"
+              ],
+              "description": "`X.new(...)` in place of `new X(...)`. Default: `warn`."
+            },
             "manual_ternary_return": {
               "type": "string",
               "enum": [
@@ -1042,7 +1054,7 @@
                 "warn",
                 "deny"
               ],
-              "description": "`Instance.new(class, parent)`, the parent as an argument. Default: `warn`."
+              "description": "`Instance.new(class, parent)` or `new Instance(class, parent)`, the parent as an argument. Default: `warn`."
             },
             "deprecated_body_mover": {
               "type": "string",
@@ -1245,6 +1257,7 @@
                   "raw_require",
                   "game_alias",
                   "manual_class",
+                  "prefer_new",
                   "manual_ternary_return",
                   "redundant_return",
                   "local_then_return",
