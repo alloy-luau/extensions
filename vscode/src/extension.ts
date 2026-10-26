@@ -4,10 +4,12 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { delimiter, dirname, join } from 'node:path'
 import {
+	type CancellationToken,
 	commands,
 	type Disposable,
 	type ExtensionContext,
 	extensions,
+	type FormattingOptions,
 	IndentAction,
 	languages,
 	type OutputChannel,
@@ -15,7 +17,9 @@ import {
 	Range,
 	Selection,
 	SnippetString,
+	type TextDocument,
 	type TextDocumentChangeEvent,
+	type TextEdit,
 	Uri,
 	window,
 	workspace,
@@ -37,6 +41,7 @@ function list(
 import {
 	LanguageClient,
 	type LanguageClientOptions,
+	type ProvideOnTypeFormattingEditsSignature,
 	type ServerOptions,
 } from 'vscode-languageclient/node'
 import { matchIndent, signatureEndIndent, signatureIndent } from './indent'
@@ -509,6 +514,46 @@ async function closeTag(event: TextDocumentChangeEvent): Promise<void> {
 }
 
 /**
+ * Writes the `end` that the server answers Enter after an opener with,
+ * and keeps the caret in the block. VS Code applies an on-type edit with
+ * "replace and move", so a caret at the insert point moves past the new
+ * text. The server inserts at the caret, and the caret landed after the
+ * `end`. A snippet's `$0` holds the caret where it was.
+ */
+async function endAtCaret(
+	document: TextDocument,
+	position: Position,
+	ch: string,
+	options: FormattingOptions,
+	token: CancellationToken,
+	next: ProvideOnTypeFormattingEditsSignature,
+): Promise<TextEdit[] | null | undefined> {
+	const version = document.version
+	const edits = await next(document, position, ch, options, token)
+	const edit = edits?.length === 1 ? edits[0] : undefined
+	const editor = window.activeTextEditor
+	if (
+		ch !== '\n' ||
+		edit === undefined ||
+		!edit.range.isEmpty ||
+		!edit.range.start.isEqual(position) ||
+		editor === undefined ||
+		editor.document !== document ||
+		document.version !== version ||
+		!editor.selection.isEmpty ||
+		!editor.selection.active.isEqual(position)
+	) {
+		return edits
+	}
+	await editor.insertSnippet(
+		new SnippetString().appendTabstop(0).appendText(edit.newText),
+		position,
+		{ undoStopBefore: true, undoStopAfter: true, keepWhitespace: true },
+	)
+	return []
+}
+
+/**
  * Enter between an opening and a closing tag puts each tag on its own
  * line, with the caret on an indented line between them. VS Code owns
  * the rule, so the server never sees the keystroke.
@@ -612,6 +657,7 @@ async function startClient(): Promise<void> {
 			{ scheme: 'file', language: 'alloy-luau-jsx' },
 		],
 		initializationOptions: await serverSettings(),
+		middleware: { provideOnTypeFormattingEdits: endAtCaret },
 		outputChannel: output,
 		synchronize: {
 			fileEvents: [
