@@ -354,4 +354,56 @@ for (const [line, ...wanted] of cases) {
 	)
 }
 
+// A component file: the script is Alloy up to `</script>`, a rune
+// colours as a macro, and each block tag colours its sigil and word.
+{
+	const alx = await grammarOf('source.alx')
+	const lines = [
+		'<script>',
+		'  local count = $state(0)',
+		'</script>',
+		'{#if count > 5}',
+		'  <TextLabel>Many</TextLabel>',
+		'{:else if count > 1}',
+		'{:else}',
+		'{/if}',
+		'{#each items as item, i (item.id)}',
+		'{/each}',
+	]
+	const tokens = tokenize(alx, lines)
+	const scope = (row, text) => {
+		const token = tokens[row].find((t) => t.text === text)
+
+		assert.ok(token, `no \`${text}\` token in: ${lines[row]}`)
+		return token.scopes.at(-1)
+	}
+	const BLOCK = 'keyword.control.block.alx'
+
+	assert.equal(scope(0, 'script'), 'entity.name.tag.alx', 'the script tag')
+	assert.equal(scope(1, 'state'), 'entity.name.function.macro.aly', 'a rune')
+	assert.ok(
+		tokens[1].every((t) => !t.scopes.includes('text.alx')),
+		'the script is code, not text',
+	)
+	assert.equal(
+		scope(2, 'script'),
+		'entity.name.tag.alx',
+		'the close of the script',
+	)
+	assert.equal(scope(3, '#'), BLOCK, 'the sigil of {#if}')
+	assert.equal(scope(3, 'if'), BLOCK, 'the word of {#if}')
+	assert.equal(
+		scope(4, 'TextLabel'),
+		'entity.name.tag.alx',
+		'markup inside a block',
+	)
+	assert.equal(scope(5, 'else'), BLOCK, '{:else if}')
+	assert.equal(scope(5, 'if'), BLOCK, 'the if of {:else if}')
+	assert.equal(scope(6, 'else'), BLOCK, '{:else}')
+	assert.equal(scope(7, 'if'), BLOCK, '{/if}')
+	assert.equal(scope(8, 'each'), BLOCK, '{#each}')
+	assert.equal(scope(8, 'as'), BLOCK, 'the as of {#each}')
+	assert.equal(scope(9, 'each'), BLOCK, '{/each}')
+}
+
 console.log(`token scopes: ${cases.length} lines ok`)
