@@ -8,7 +8,9 @@
 			"patterns": [
 				{ "include": "#comment" },
 				{ "include": "#fragment" },
+				{ "include": "#script" },
 				{ "include": "#style" },
+				{ "include": "#block" },
 				{ "include": "#element" }
 			]
 		},
@@ -37,6 +39,43 @@
 				"2": { "name": "punctuation.definition.tag.end.alx" }
 			},
 			"patterns": [{ "include": "#children" }]
+		},
+		"script": {
+			"comment": "<script>: the Alloy of a component file, up to </script>. The compiler makes it the body of the component.",
+			"name": "meta.tag.alx",
+			"begin": "(<)(script)\\s*(>)",
+			"beginCaptures": {
+				"1": { "name": "punctuation.definition.tag.begin.alx" },
+				"2": { "name": "entity.name.tag.alx" },
+				"3": { "name": "punctuation.definition.tag.end.alx" }
+			},
+			"end": "(</)(script)\\s*(>)",
+			"endCaptures": {
+				"1": { "name": "punctuation.definition.tag.begin.alx" },
+				"2": { "name": "entity.name.tag.alx" },
+				"3": { "name": "punctuation.definition.tag.end.alx" }
+			},
+			"contentName": "meta.embedded.block.alloy",
+			"patterns": [{ "include": "#markup" }, { "include": "source.aly" }]
+		},
+		"block": {
+			"comment": "A block tag: {#if cond}, {:else if cond}, {:else}, {/if}, {#each items as item, i (key)}, {/each}. An ingot such as svelte-aly compiles it; the head is Alloy.",
+			"name": "meta.block.alx",
+			"begin": "(\\{)([#:/@])([A-Za-z]+)(?:([ \\t]+)(if)\\b)?",
+			"beginCaptures": {
+				"1": { "name": "punctuation.section.block.begin.alx" },
+				"2": { "name": "keyword.control.block.alx" },
+				"3": { "name": "keyword.control.block.alx" },
+				"5": { "name": "keyword.control.block.alx" }
+			},
+			"end": "\\}",
+			"endCaptures": {
+				"0": { "name": "punctuation.section.block.end.alx" }
+			},
+			"patterns": [
+				{ "name": "keyword.control.block.alx", "match": "\\bas\\b" },
+				{ "include": "#hole-content" }
+			]
 		},
 		"style": {
 			"comment": "<style>: CSS up to </style>, as HTML reads it. The Silk ingot compiles it to a StyleSheet.",
@@ -129,6 +168,7 @@
 				{ "include": "#fragment" },
 				{ "include": "#style" },
 				{ "include": "#element" },
+				{ "include": "#block" },
 				{ "include": "#hole" },
 				{
 					"name": "invalid.illegal.tag.alx",
