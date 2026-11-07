@@ -10,7 +10,6 @@
 				{ "include": "#fragment" },
 				{ "include": "#script" },
 				{ "include": "#style" },
-				{ "include": "#block" },
 				{ "include": "#element" }
 			]
 		},
@@ -57,25 +56,6 @@
 			},
 			"contentName": "meta.embedded.block.alloy",
 			"patterns": [{ "include": "#markup" }, { "include": "source.aly" }]
-		},
-		"block": {
-			"comment": "A block tag: {#if cond}, {:else if cond}, {:else}, {/if}, {#each items as item, i (key)}, {/each}. An ingot such as svelte-aly compiles it; the head is Alloy.",
-			"name": "meta.block.alx",
-			"begin": "(\\{)([#:/@])([A-Za-z]+)(?:([ \\t]+)(if)\\b)?",
-			"beginCaptures": {
-				"1": { "name": "punctuation.section.block.begin.alx" },
-				"2": { "name": "keyword.control.block.alx" },
-				"3": { "name": "keyword.control.block.alx" },
-				"5": { "name": "keyword.control.block.alx" }
-			},
-			"end": "\\}",
-			"endCaptures": {
-				"0": { "name": "punctuation.section.block.end.alx" }
-			},
-			"patterns": [
-				{ "name": "keyword.control.block.alx", "match": "\\bas\\b" },
-				{ "include": "#hole-content" }
-			]
 		},
 		"style": {
 			"comment": "<style>: CSS up to </style>, as HTML reads it. The Silk ingot compiles it to a StyleSheet.",
@@ -168,7 +148,6 @@
 				{ "include": "#fragment" },
 				{ "include": "#style" },
 				{ "include": "#element" },
-				{ "include": "#block" },
 				{ "include": "#hole" },
 				{
 					"name": "invalid.illegal.tag.alx",
