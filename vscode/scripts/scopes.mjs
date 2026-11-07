@@ -354,21 +354,25 @@ for (const [line, ...wanted] of cases) {
 	)
 }
 
-// A component file: the script is Alloy up to `</script>`, a rune
-// colours as a macro, and each block tag colours its sigil and word.
+// A component file: the script is Alloy up to `</script>`, and a rune
+// colours as a macro. A block tag such as `{#if}` is an ingot's syntax:
+// the grammar gives it no colour of its own, the ingot's semantic tokens
+// do, and the markup around it stays markup.
 {
 	const alx = await grammarOf('source.alx')
 	const lines = [
 		'<script>',
 		'  local count = $state(0)',
 		'</script>',
-		'{#if count > 5}',
-		'  <TextLabel>Many</TextLabel>',
-		'{:else if count > 1}',
-		'{:else}',
-		'{/if}',
-		'{#each items as item, i (item.id)}',
-		'{/each}',
+		'<Frame>',
+		'  {#if count > 5}',
+		'    <TextLabel>Many</TextLabel>',
+		'  {:else}',
+		'  {/if}',
+		'  {#each items as item, i (item.id)}',
+		'  {/each}',
+		'  <TextButton />',
+		'</Frame>',
 	]
 	const tokens = tokenize(alx, lines)
 	const scope = (row, text) => {
@@ -377,7 +381,6 @@ for (const [line, ...wanted] of cases) {
 		assert.ok(token, `no \`${text}\` token in: ${lines[row]}`)
 		return token.scopes.at(-1)
 	}
-	const BLOCK = 'keyword.control.block.alx'
 
 	assert.equal(scope(0, 'script'), 'entity.name.tag.alx', 'the script tag')
 	assert.equal(scope(1, 'state'), 'entity.name.function.macro.aly', 'a rune')
@@ -390,20 +393,21 @@ for (const [line, ...wanted] of cases) {
 		'entity.name.tag.alx',
 		'the close of the script',
 	)
-	assert.equal(scope(3, '#'), BLOCK, 'the sigil of {#if}')
-	assert.equal(scope(3, 'if'), BLOCK, 'the word of {#if}')
+	assert.ok(
+		tokens.flat().every((t) => !t.scopes.some((s) => s.includes('block.alx'))),
+		'no block scope: the ingot colours its blocks',
+	)
 	assert.equal(
-		scope(4, 'TextLabel'),
+		scope(5, 'TextLabel'),
 		'entity.name.tag.alx',
 		'markup inside a block',
 	)
-	assert.equal(scope(5, 'else'), BLOCK, '{:else if}')
-	assert.equal(scope(5, 'if'), BLOCK, 'the if of {:else if}')
-	assert.equal(scope(6, 'else'), BLOCK, '{:else}')
-	assert.equal(scope(7, 'if'), BLOCK, '{/if}')
-	assert.equal(scope(8, 'each'), BLOCK, '{#each}')
-	assert.equal(scope(8, 'as'), BLOCK, 'the as of {#each}')
-	assert.equal(scope(9, 'each'), BLOCK, '{/each}')
+	assert.equal(
+		scope(10, 'TextButton'),
+		'entity.name.tag.alx',
+		'markup after the blocks',
+	)
+	assert.equal(scope(11, 'Frame'), 'entity.name.tag.alx', 'the close tag')
 }
 
 console.log(`token scopes: ${cases.length} lines ok`)
