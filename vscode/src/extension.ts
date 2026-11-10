@@ -15,12 +15,14 @@ import {
 	type OutputChannel,
 	Position,
 	Range,
+	RelativePattern,
 	Selection,
 	SnippetString,
 	type TextDocument,
 	type TextDocumentChangeEvent,
 	type TextEdit,
 	Uri,
+	type WorkspaceFolder,
 	window,
 	workspace,
 } from 'vscode'
@@ -46,7 +48,17 @@ import {
 } from 'vscode-languageclient/node'
 import { matchIndent, signatureEndIndent, signatureIndent } from './indent'
 
-let client: LanguageClient | undefined
+/** One server per workspace folder, keyed by the folder's URI. A
+ *  server roots its mirror, its luau-lsp, and its ingots at one folder,
+ *  so a second folder needs a server of its own. The key `''` is the
+ *  server of a window with no folder. */
+const clients = new Map<string, LanguageClient>()
+
+/** The server of a document's folder. */
+function clientFor(uri: Uri): LanguageClient | undefined {
+	const folder = workspace.getWorkspaceFolder(uri)
+	return clients.get(folder?.uri.toString() ?? '')
+}
 let output: OutputChannel | undefined
 let storage: string | undefined
 
@@ -469,7 +481,7 @@ async function closeTag(event: TextDocumentChangeEvent): Promise<void> {
 	const document = event.document
 	const change = event.contentChanges[0]
 	if (
-		client === undefined ||
+		clientFor(document.uri) === undefined ||
 		document.languageId !== ALX ||
 		event.reason !== undefined ||
 		event.contentChanges.length !== 1 ||
@@ -488,13 +500,12 @@ async function closeTag(event: TextDocumentChangeEvent): Promise<void> {
 	const version = document.version
 	let name: string | undefined
 	try {
-		const answer = await client.sendRequest<{ name?: string } | null>(
-			'alloy/closeTag',
-			{
-				uri: document.uri.toString(),
-				position: { line: at.line, character: at.character },
-			},
-		)
+		const answer = await clientFor(document.uri)?.sendRequest<{
+			name?: string
+		} | null>('alloy/closeTag', {
+			uri: document.uri.toString(),
+			position: { line: at.line, character: at.character },
+		})
 		name = answer?.name
 	} catch (error) {
 		output?.appendLine(`closeTag: ${String(error)}`)
@@ -639,7 +650,33 @@ function serverVersion(command: string): Promise<string> {
 	})
 }
 
-async function startClient(): Promise<void> {
+/** The languages the server answers for. */
+const SERVED = [
+	'alloy-luau',
+	'alloy-luau-config',
+	'alloy-luau-declaration',
+	'alloy-luau-jsx',
+]
+
+/** Starts the server of a document's folder when the document is the
+ *  first Alloy file of that folder. A file outside every folder of a
+ *  window that has folders gets no server. */
+async function startFor(document: TextDocument): Promise<void> {
+	if (document.uri.scheme !== 'file' || !SERVED.includes(document.languageId)) {
+		return
+	}
+	const folder = workspace.getWorkspaceFolder(document.uri)
+	if (folder === undefined && (workspace.workspaceFolders?.length ?? 0) > 0) {
+		return
+	}
+	await startClient(folder)
+}
+
+async function startClient(folder: WorkspaceFolder | undefined): Promise<void> {
+	const key = folder?.uri.toString() ?? ''
+	if (clients.has(key)) {
+		return
+	}
 	output ??= window.createOutputChannel('Alloy')
 	const { command, args } = await serverCommand()
 	output.appendLine(`starting: ${command} ${args.join(' ')}`)
@@ -649,36 +686,50 @@ async function startClient(): Promise<void> {
 		run: { command, args, options },
 		debug: { command, args, options },
 	}
+	const watch = (glob: string) =>
+		workspace.createFileSystemWatcher(
+			folder === undefined ? glob : new RelativePattern(folder, glob),
+		)
 	const clientOptions: LanguageClientOptions = {
-		documentSelector: [
-			{ scheme: 'file', language: 'alloy-luau' },
-			{ scheme: 'file', language: 'alloy-luau-config' },
-			{ scheme: 'file', language: 'alloy-luau-declaration' },
-			{ scheme: 'file', language: 'alloy-luau-jsx' },
-		],
+		documentSelector: SERVED.map((language) =>
+			folder === undefined
+				? { scheme: 'file', language }
+				: { scheme: 'file', language, pattern: `${folder.uri.fsPath}/**/*` },
+		),
+		workspaceFolder: folder,
 		initializationOptions: await serverSettings(),
 		middleware: { provideOnTypeFormattingEdits: endAtCaret },
 		outputChannel: output,
 		synchronize: {
 			fileEvents: [
-				workspace.createFileSystemWatcher('**/*.{aly,alx,luau,lua,json,toml}'),
-				workspace.createFileSystemWatcher('**/.luaurc'),
+				watch('**/*.{aly,alx,luau,lua,json,toml}'),
+				watch('**/.luaurc'),
 			],
 		},
 	}
-	client = new LanguageClient(
+	const client = new LanguageClient(
 		'alloy-luau',
 		'Alloy',
 		serverOptions,
 		clientOptions,
 	)
+	// Set before the start, so a second document of the folder that
+	// opens meanwhile does not start a second server.
+	clients.set(key, client)
 	try {
 		await client.start()
 	} catch (error) {
-		client = undefined
+		clients.delete(key)
 		const detail = error instanceof Error ? error.message : String(error)
 		output.appendLine(`cannot start ${command}: ${detail}`)
 		window.showErrorMessage(`Alloy: cannot start ${command}: ${detail}`)
+	}
+}
+
+/** Starts a server for each folder that has an Alloy file open. */
+async function startOpen(): Promise<void> {
+	for (const document of workspace.textDocuments) {
+		await startFor(document)
 	}
 }
 
@@ -705,15 +756,16 @@ function restartForConfig(): void {
 	}
 	configRestart = setTimeout(() => {
 		configRestart = undefined
-		const running = client
-		if (running === undefined) {
+		if (clients.size === 0) {
 			return
 		}
 		output?.appendLine('the configuration changed: restarting the server')
-		running.restart().catch((error: unknown) => {
-			const detail = error instanceof Error ? error.message : String(error)
-			output?.appendLine(`cannot restart the server: ${detail}`)
-		})
+		for (const running of clients.values()) {
+			running.restart().catch((error: unknown) => {
+				const detail = error instanceof Error ? error.message : String(error)
+				output?.appendLine(`cannot restart the server: ${detail}`)
+			})
+		}
 	}, CONFIG_RESTART_DELAY)
 }
 
@@ -722,12 +774,9 @@ async function stopClient(): Promise<void> {
 		clearTimeout(configRestart)
 		configRestart = undefined
 	}
-	if (client === undefined) {
-		return
-	}
-	const running = client
-	client = undefined
-	await running.stop()
+	const running = [...clients.values()]
+	clients.clear()
+	await Promise.all(running.map((c) => c.stop()))
 }
 
 /** The rename that follows a refactor such as "Extract to local
@@ -753,11 +802,20 @@ export async function activate(context: ExtensionContext): Promise<void> {
 	context.subscriptions.push(
 		commands.registerCommand('alloy-luau.restartServer', async () => {
 			await stopClient()
-			await startClient()
+			await startOpen()
 		}),
 		commands.registerCommand('alloy-luau.generateSourcemap', generateSourcemap),
 		commands.registerCommand('alloy-luau.rename', renameAt),
 		markupEnterRule(),
+		workspace.onDidOpenTextDocument(startFor),
+		workspace.onDidChangeWorkspaceFolders(async (event) => {
+			for (const folder of event.removed) {
+				const key = folder.uri.toString()
+				const running = clients.get(key)
+				clients.delete(key)
+				await running?.stop()
+			}
+		}),
 		workspace.onDidChangeTextDocument(closeTag),
 		workspace.onDidChangeTextDocument(matchArmIndent),
 		workspace.onDidChangeTextDocument(signatureEnter),
@@ -790,11 +848,11 @@ export async function activate(context: ExtensionContext): Promise<void> {
 				event.affectsConfiguration('luau-lsp.platform')
 			) {
 				await stopClient()
-				await startClient()
+				await startOpen()
 				return
 			}
 			if (
-				client !== undefined &&
+				clients.size > 0 &&
 				(event.affectsConfiguration('alloy-luau.inlayHints') ||
 					event.affectsConfiguration('alloy-luau.studioPlugin') ||
 					event.affectsConfiguration('alloy-luau.sourcemap.file') ||
@@ -805,13 +863,16 @@ export async function activate(context: ExtensionContext): Promise<void> {
 					event.affectsConfiguration('alloy-luau.arrowReturnHints') ||
 					event.affectsConfiguration('luau-lsp'))
 			) {
-				await client.sendNotification('workspace/didChangeConfiguration', {
-					settings: await serverSettings(),
-				})
+				const settings = await serverSettings()
+				for (const running of clients.values()) {
+					await running.sendNotification('workspace/didChangeConfiguration', {
+						settings,
+					})
+				}
 			}
 		}),
 	)
-	await startClient()
+	await startOpen()
 }
 
 export function deactivate(): Promise<void> {
