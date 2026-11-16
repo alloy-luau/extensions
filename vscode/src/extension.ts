@@ -310,6 +310,9 @@ async function fflagsSection(
 		enableByDefault: config.get<boolean>('enableByDefault', true),
 		enableNewSolver: config.get<boolean>('enableNewSolver', true),
 		override,
+		// Alloy's own flags. The server puts them over `[fflags]` of
+		// the project; the other keys here are Luau's, for luau-lsp.
+		alloy: config.get<Record<string, boolean>>('alloy', {}),
 	}
 }
 

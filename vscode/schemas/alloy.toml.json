@@ -2282,6 +2282,24 @@
       },
       "additionalProperties": false
     },
+    "fflags": {
+      "type": "object",
+      "title": "[fflags]",
+      "description": "The features that are not the default yet. Each one is off until the project turns it on here, and the list changes from one version to the next: a flag leaves it when its feature becomes the default.",
+      "properties": {
+        "native_if_local": {
+          "type": "boolean",
+          "description": "Keep `if local x = e then`, `elseif local`, and the `if` expression form as Luau's own syntax in the ship artifact. Luau reads the syntax only where its `if local` flag is on. A condition with `where`, `not`, a pattern, or more than one name still lowers, and so does every `while local`.",
+          "default": false
+        },
+        "native_export": {
+          "type": "boolean",
+          "description": "Write the exports of a module as Luau's own `export const` statements in the ship artifact, in place of the returned table. Luau reads the syntax only where its export flag is on, and it freezes the table an importer gets. A module with `export default`, or with a `return` at its top level, keeps the returned table.",
+          "default": false
+        }
+      },
+      "additionalProperties": false
+    },
     "mount": {
       "type": "object",
       "title": "[mount]",
