@@ -1,6 +1,6 @@
 id = "alloy-luau"
 name = "Alloy"
-version = "0.1.0"
+version = "0.1.1"
 schema_version = 1
 authors = ["Andrew Bordis <andrewbordis2005@gmail.com>"]
 description = "Alloy, a strict superset of Luau: syntax highlighting and the alloy-lsp language server for .aly and .alx files."
