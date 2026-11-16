@@ -32,9 +32,11 @@ Studio (default true), `enableNewSolver` keeps the new type solver on
 single flags last. A change restarts the server.
 
 Alloy has feature flags of its own, for a feature that is not the
-default yet. `alloy-luau.fflags.alloy` sets them by name, as
-`{ "native_if_local": true }`. The list goes over `[fflags]` in
-alloy.toml, in the editor alone: `alloy build` reads the file.
+default yet. The name of each one starts with `Alloy`, and `override`
+takes it beside the Luau flags: `{ "AlloyNativeIfLocal": true }`. The
+server keeps the `Alloy` names and passes the rest to luau-lsp. The list
+goes over `[fflags]` in alloy.toml, in the editor alone: `alloy build`
+reads the file.
 
 ## Typing helpers
 

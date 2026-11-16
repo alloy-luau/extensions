@@ -383,15 +383,7 @@
 							"number"
 						]
 					},
-					"description": "Flags passed to the language server last, by name: `{ \"LuauTableTypeMaximumStringifierLength\": 200 }`. A change restarts the server."
-				},
-				"alloy-luau.fflags.alloy": {
-					"type": "object",
-					"default": {},
-					"additionalProperties": {
-						"type": "boolean"
-					},
-					"description": "Alloy's own feature flags, by name: `{ \"native_if_local\": true }`. Each one turns on a feature that is not the default yet. The list goes over `[fflags]` in alloy.toml, in the editor alone: `alloy build` reads the file."
+					"description": "Flags set last, by name: `{ \"LuauTableTypeMaximumStringifierLength\": 200, \"AlloyNativeIfLocal\": true }`. A name that starts with `Alloy` is a feature flag of Alloy itself, and the rest go to luau-lsp. The list goes over `[fflags]` in alloy.toml, in the editor alone: `alloy build` reads the file. A change restarts the server."
 				},
 				"alloy-luau.inlayHints.makeInsertable": {
 					"type": "boolean",
