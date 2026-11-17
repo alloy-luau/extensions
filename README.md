@@ -7,6 +7,7 @@ strict superset of Luau that compiles to plain Luau.
 |----------|---------|---------------------------------------|
 | `vscode` | VS Code | Syntax, the language server, commands |
 | `zed`    | Zed     | Syntax through the Luau grammar, the language server |
+| `nvim`   | Neovim  | Syntax, the language server, the settings of VS Code |
 
 Each extension starts `alloy-lsp` from PATH or from a setting. The
 binaries come from the `alloy` repository: `scripts/build.sh --install`
