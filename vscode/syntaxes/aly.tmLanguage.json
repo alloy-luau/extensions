@@ -346,7 +346,7 @@
 				},
 				{
 					"comment": "function name, local function name, async function name",
-					"match": "\\b(function)\\s+([A-Za-z_][A-Za-z0-9_.:]*)",
+					"match": "\\b(function)\\*?\\s+([A-Za-z_][A-Za-z0-9_.:]*)",
 					"captures": {
 						"1": {
 							"name": "storage.type.aly"
@@ -505,9 +505,22 @@
 					"match": "(?<![.:])\\basync\\b(?=[ \\t]+(?:function|do)\\b)"
 				},
 				{
+					"comment": "yield opens a statement and takes a value; `yield = f`, `yield.f`, and `yield, a = 1, 2` are a local named yield",
+					"name": "keyword.control.aly",
+					"match": "^[ \\t]*\\byield\\b(?![ \\t]*(?:[=,.:]|$|[-+*/%^]=|\\.\\.=))"
+				},
+				{
 					"comment": "await takes an operand; `await(p)`, `await = f`, and `await.f` are a local named await",
 					"name": "keyword.control.aly",
 					"match": "(?<![.:])\\bawait\\b(?=[ \\t]+(?:(?!(?:end|then|else|elseif|do|until|and|or|not|in|is|as|satisfies|where|return|local|const|break|continue|with|from|band|bor|bxor|shl|shr)\\b)[A-Za-z_$#]|[0-9]|-[^-]))"
+				},
+				{
+					"comment": "import inline data from: `inline` is the modifier when a name, a `{`, or a `*` follows it; `import inline from` is a module under the name inline",
+					"match": "(?<![.:])\\b(import)[ \\t]+(inline)\\b(?=[ \\t]*(?:\\*|\\{)|[ \\t]+(?!from\\b)[A-Za-z_])",
+					"captures": {
+						"1": { "name": "storage.type.aly" },
+						"2": { "name": "storage.modifier.aly" }
+					}
 				},
 				{
 					"comment": "import opens the statement, and import(...) and import \"m\" are its expression form; `local import = {}` and `import.cache` are a local named import",
