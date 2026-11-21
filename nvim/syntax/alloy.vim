@@ -51,8 +51,11 @@ syn keyword alloyOperatorWord and or not
 " Each of these is also a legal name, as `continue` and `type` are in
 " Luau. A word after `.` or `:`, or before `=`, `,`, `.`, `:`, `)`, is a
 " name, and keeps the color of one.
+syn match alloyKeyword "\<import\s\+\zsinline\>\ze\s*\%([*{]\|\s\%(from\>\)\@!\a\)"
 syn match alloyKeyword "[.:]\@1<!\<\%(const\|continue\|export\|import\|from\|global\|struct\|enum\|trait\|impl\|interface\|namespace\|macro\|attribute\|remote\|extends\|satisfies\|declare\|extern\|requires\|async\|await\|try\|where\|with\|as\|is\|new\|delete\|destroy\|after\|on\|read\|write\|private\|public\|static\|type\|typeof\|parallel\)\>\%(\s*[=,.:)]\)\@!"
 syn match alloyConditional "[.:]\@1<!\<\%(match\|case\|default\)\>\%(\s*[=,.:)(]\)\@!"
+" `yield` opens a statement of a generator and takes a value.
+syn match alloyKeyword "^\s*\zs\<yield\>\%(\s*\%([=,.:]\|$\)\)\@!"
 syn match alloyOperatorWord "[.:]\@1<!\<\%(band\|bor\|bxor\|shl\|shr\)\>\%(\s*[=,.:)(]\)\@!"
 
 " The supertypes: `x is struct`, `x is not object`, and `p: struct<T>`,
