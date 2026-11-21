@@ -61,7 +61,7 @@ syn match alloyType "\%(\<is\s\+\%(not\s\+\)\=\)\@<=\<\%(struct\|enum\|object\)\
 syn match alloyType "\%(\h\w*\s*:\s*\)\@<=\<\%(struct\|enum\)\>"
 
 " --- operators -------------------------------------------------------------
-syn match alloyOperator "|>\|->\|=>\|?\.\|??=\=\|\.\.\.\|\.\.=\=\|[-+*/%^#<>=~!]=\=\|//=\="
+syn match alloyOperator "|>\|:=\|->\|=>\|?\.\|??=\=\|\.\.\.\|\.\.=\=\|[-+*/%^#<>=~!]=\=\|//=\="
 
 " Last, so `--` is a comment before it is two operators.
 syn keyword alloyTodo contained TODO FIXME XXX NOTE HACK
