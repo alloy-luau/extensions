@@ -54,6 +54,10 @@ syn keyword alloyOperatorWord and or not
 syn match alloyKeyword "\<import\s\+\zsinline\>\ze\s*\%([*{]\|\s\%(from\>\)\@!\a\)"
 syn match alloyKeyword "[.:]\@1<!\<\%(const\|continue\|export\|import\|from\|global\|struct\|enum\|trait\|impl\|interface\|namespace\|macro\|attribute\|remote\|extends\|satisfies\|declare\|extern\|requires\|async\|await\|try\|where\|with\|as\|is\|new\|delete\|destroy\|after\|on\|read\|write\|private\|public\|static\|type\|typeof\|parallel\)\>\%(\s*[=,.:)]\)\@!"
 syn match alloyConditional "[.:]\@1<!\<\%(match\|case\|default\)\>\%(\s*[=,.:)(]\)\@!"
+" `using name = value`: a name follows, then `=` or the `:` of its type.
+syn match alloyKeyword "^\s*\zs\<using\>\ze\s\+\h\w*\s*[=:]"
+" `defer` opens a statement, and a name or `do` follows it.
+syn match alloyKeyword "^\s*\zs\<defer\>\ze\s\+\h"
 " `yield` opens a statement of a generator and takes a value.
 syn match alloyKeyword "^\s*\zs\<yield\>\%(\s*\%([=,.:]\|$\)\)\@!"
 syn match alloyOperatorWord "[.:]\@1<!\<\%(band\|bor\|bxor\|shl\|shr\)\>\%(\s*[=,.:)(]\)\@!"

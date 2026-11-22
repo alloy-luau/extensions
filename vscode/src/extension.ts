@@ -577,6 +577,13 @@ function markupEnterRule(): Disposable {
 				afterText: /^<\/[A-Za-z_][\w.]*>/,
 				action: { indentAction: IndentAction.IndentOutdent },
 			},
+			// These rules replace the list of language-configuration-alx.json,
+			// so the rule for a call chain stands here too.
+			{
+				beforeText: /^\s*$/,
+				previousLineText: /^\s*[:.][A-Za-z_].*$/,
+				action: { indentAction: IndentAction.Outdent },
+			},
 		],
 	})
 }

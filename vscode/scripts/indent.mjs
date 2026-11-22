@@ -180,6 +180,9 @@ const cases = [
 	// next line. Attributes, `export default`, and a visibility word can
 	// come first, and a generic default holds an `=`.
 	['struct P', true, false],
+	['struct UserId(number)', false, false],
+	['export struct Key(string)', false, false],
+	['struct UserId (number) -- an id', false, false],
 	['enum E', true, false],
 	['trait T', true, false],
 	['interface I extends J', true, false],

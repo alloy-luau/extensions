@@ -323,3 +323,18 @@
     "attribute" "remote" "import" "export" "extends" "satisfies"
     "async" "await" "declare" "extern" "requires"))
 
+
+; `defer` and `using` open a statement. The Luau grammar reads each one
+; as a name, so the word colours here. As a field, `task.defer`, the
+; word keeps the colour of a field: the two patterns below put it back.
+((identifier) @keyword
+  (#any-of? @keyword "defer" "using"))
+
+((dot_index_expression
+  field: (identifier) @variable.member)
+  (#any-of? @variable.member "defer" "using"))
+
+((function_call
+  name: (dot_index_expression
+    field: (identifier) @function.call))
+  (#any-of? @function.call "defer" "using"))
