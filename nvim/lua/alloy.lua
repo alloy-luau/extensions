@@ -461,6 +461,10 @@ local function opens(line)
   end
   -- A declaration that holds members: `struct Point`, `impl Shape for Circle`.
   local first = line:gsub("^%s*export%s+", ""):gsub("^%s*default%s+", ""):match("^%s*([%a_]+)")
+  -- `struct UserId(number)` wraps one type and holds no members.
+  if first == "struct" and line:match("%f[%w_]struct%s+[%a_][%w_]*%s*%(") then
+    return false
+  end
   for _, word in ipairs({ "struct", "enum", "impl", "trait", "interface", "namespace", "declare", "extern", "case", "default" }) do
     if first == word and not line:match("%f[%w_]end$") then
       return true
@@ -479,10 +483,22 @@ function M.indent()
   local width = vim.fn.shiftwidth()
   local indent = vim.fn.indent(prev)
   local before = vim.fn.getline(prev)
+  local here = vim.fn.getline(lnum)
+  -- A call chain, `:Start()` or `.field` on a line of its own, sits
+  -- deeper than the statement it continues. The line right under it can
+  -- continue the chain, so it keeps the column. A line after a blank
+  -- line, or one that holds other text, goes back to the statement.
+  local link = "^%s*[:.][%a_]"
+  if before:match(link) and not here:match(link) and (prev < lnum - 1 or here:match("%S")) then
+    local head = prev
+    while head > 1 and vim.fn.getline(head):match(link) do
+      head = vim.fn.prevnonblank(head - 1)
+    end
+    indent = vim.fn.indent(head)
+  end
   if opens(before) then
     indent = indent + width
   end
-  local here = vim.fn.getline(lnum)
   local word = here:match("^%s*([%a_]+)")
   local closes = here:match("^%s*[%)}%]]")
     or word == "end" or word == "else" or word == "elseif" or word == "until"

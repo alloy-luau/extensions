@@ -31,9 +31,10 @@ const KEYWORD =
 
 /** A declaration word opens a block only before a name on its line, and
  *  never after `.` or `:`, as `keyword_at` in contextual.rs decides.
- *  `local trait = 1`, `macro(1)`, and `t.impl` are names. */
+ *  `local trait = 1`, `macro(1)`, and `t.impl` are names, and
+ *  `struct UserId(number)` wraps one type and takes no body. */
 const DECLARATION = new RegExp(
-	String.raw`(?<![.:\w])(?:struct|trait|impl|macro|enum|interface|namespace|class)[ \t]+(?!(?:${KEYWORD})\b)[A-Za-z_]`,
+	String.raw`(?<![.:\w])(?:(?:trait|impl|macro|enum|interface|namespace|class)[ \t]+(?!(?:${KEYWORD})\b)[A-Za-z_]|struct[ \t]+(?!(?:${KEYWORD})\b)[A-Za-z_]\w*(?!\w|[ \t]*\())`,
 	'g',
 )
 
