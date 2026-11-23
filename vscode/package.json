@@ -341,7 +341,7 @@
 				"alloy-luau.sourcemap.autogenerate": {
 					"type": "boolean",
 					"default": false,
-					"description": "Run the sourcemap generator command each time a script is saved."
+					"description": "Keep the sourcemap current. In a project with a `[mount]` table the server writes it from the tree each time a file or a folder comes or goes. In any other project the generator command runs each time a script is saved."
 				},
 				"alloy-luau.sourcemap.generatorCommand": {
 					"type": "string",
