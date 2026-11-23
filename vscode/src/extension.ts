@@ -1,5 +1,5 @@
 import { exec } from 'node:child_process'
-import { existsSync, readdirSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { delimiter, dirname, join } from 'node:path'
@@ -349,6 +349,7 @@ async function serverSettings(): Promise<Record<string, unknown>> {
 		},
 		sourcemap: {
 			file: sourcemap.get<string>('file', 'sourcemap.json'),
+			autogenerate: sourcemap.get<boolean>('autogenerate', false),
 		},
 	}
 }
@@ -591,6 +592,15 @@ function markupEnterRule(): Disposable {
 let generating = false
 let generateAgain = false
 
+/** Whether the `alloy.toml` of this root has a mount table. */
+function hasMounts(root: string): boolean {
+	try {
+		return /^\[mount[\].]/m.test(readFileSync(join(root, 'alloy.toml'), 'utf8'))
+	} catch {
+		return false
+	}
+}
+
 /**
  * Runs the sourcemap generator in the project root. A save during a run
  * queues one more run, so the file always reflects the last save.
@@ -615,6 +625,13 @@ async function generateSourcemap(): Promise<void> {
 	) {
 		output ??= window.createOutputChannel('Alloy')
 		output.appendLine('sourcemap: using .alloy/sourcemap.json from alloy build')
+		generating = false
+		return
+	}
+	// The server writes the sourcemap of a project with mounts, from the
+	// tree. Rojo reads no `.aly` file as a script, so its sourcemap of
+	// such a tree is `null`.
+	if (hasMounts(root)) {
 		generating = false
 		return
 	}
@@ -862,7 +879,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 				clients.size > 0 &&
 				(event.affectsConfiguration('alloy-luau.inlayHints') ||
 					event.affectsConfiguration('alloy-luau.studioPlugin') ||
-					event.affectsConfiguration('alloy-luau.sourcemap.file') ||
+					event.affectsConfiguration('alloy-luau.sourcemap') ||
 					event.affectsConfiguration('alloy-luau.autoCloseTags') ||
 					event.affectsConfiguration('alloy-luau.autoEnd') ||
 					event.affectsConfiguration('alloy-luau.hideRobloxDeprecated') ||
